@@ -1,0 +1,19 @@
+<html>
+<head>
+    <title> Aahar | Sign Up</title>
+</head>
+<body>
+<h2>Sign up</h2>
+<br>
+<b>In case you are creating a vendor account, enter your Shop's name as the username.</b>
+<br>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+<!--    Type of user: <br>-->
+<!--    <input type="radio" name="userType" value="User"> Customer <br>-->
+<!--    <input type="radio" name="userType" value="vendor"> Vendor <br>-->
+    <button type="submit">Next</button>
+</form>
+</body>
+</html>

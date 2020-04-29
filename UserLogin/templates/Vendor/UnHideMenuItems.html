@@ -1,0 +1,15 @@
+<html>
+<head>
+    <title>Aahar</title>
+</head>
+<body>
+<h3> Select a hidden item to be added to Menu </h3>
+<br>
+{% for i in menu %}
+    {{i.itemName}} @ Rs.{{i.price}} <a href="{% url 'un-hide-item' %}{{i.id}}">Un-hide</a> <br>
+{% endfor %}
+<br> <hr> <br>
+    <a href="{% url 'vendor-menu' %}"> Back </a> <br>
+    <a href="{% url 'logout' %}"> Logout </a>
+</body>
+</html>

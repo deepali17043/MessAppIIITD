@@ -1,0 +1,16 @@
+<html>
+{% if user.is_authenticated %}
+    <meta http-equiv="refresh" content="0; http://127.0.0.1:8000/accounts/dashboard" />
+{% else %}
+    <head>
+        <title>Aahar</title>
+    </head>
+    <body>
+        <h1>AAHAR</h1>
+        <br> <br>
+        <a href="/signup"> Register </a>
+        <br> <br>
+        <a href="/login"> Sign in to existing account </a>
+    </body>
+{% endif %}
+</html>

@@ -1,0 +1,14 @@
+<html>
+<head>
+    <title> Home </title>
+</head>
+<body>
+    <h1> Hello, {{user.name}} </h1>
+    <br> <hr> <br>
+    Your user type is {{user.userType}}
+
+    // Not yet developed. This is just to show that users will be redirected to a different page depending on their account type.
+    <br> <hr> <br>
+    <a href="{% url 'logout' %}"> Logout </a>
+</body>
+</html>
