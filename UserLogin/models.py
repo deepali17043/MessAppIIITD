@@ -66,3 +66,17 @@ class MenuItems(models.Model):
     price = models.IntegerField(default=0)
     itemName = models.CharField(max_length=255)
     hidden = models.BooleanField(default=False)
+
+
+class Cart(models.Model):
+    item = models.ForeignKey(MenuItems, on_delete=models.CASCADE, related_name='item')
+    qty = models.PositiveSmallIntegerField(default=1)
+    customer = models.ForeignKey(User, on_delete=models.PROTECT, related_name='user')
+    orderPlaced = models.PositiveSmallIntegerField(default=0, choices=((0, 0), (1, 1), (2, 2)))
+    status = models.CharField(max_length=50,
+                              choices=(('Added to Cart', 'Added to Cart'),
+                                       ('Order Placed', 'Order Placed'),
+                                       ('Being Prepared', 'Being Prepared'),
+                                       ('Prepared', 'Prepared'),
+                                       ('Collected', 'Collected')),
+                              default='Added to Cart')

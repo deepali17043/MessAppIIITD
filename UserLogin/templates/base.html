@@ -1,12 +1,19 @@
-{% if user.is_authenticated %}
-    <meta http-equiv="refresh" content="0; http://127.0.0.1:8000/accounts/dashboard" />
+<html>
+<head>
+    <title></title>
+</head>
+<body>
+    {% if user.is_authenticated %}
+        <meta http-equiv="refresh" content="0; http://127.0.0.1:8000/accounts/dashboard" />
 
-{% else %}
-    <p>You are not logged in.</p>
-    Don't have an account? <br/>
-    <a href="http://127.0.0.1:8000/signup">Signup here</a>
-    <hr/>
-    {% block content %}
-    {% endblock content %}
-    <hr/>
-{% endif %}
+    {% else %}
+        <p>You are not logged in.</p>
+        Don't have an account? <br/>
+        <a href="http://127.0.0.1:8000/signup">Signup here</a>
+        <hr/>
+        {% block content %}
+        {% endblock content %}
+        <hr/>
+    {% endif %}
+</body>
+</html>

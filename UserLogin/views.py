@@ -1,18 +1,15 @@
 import csv, io
 from django.http import Http404
 from django.shortcuts import render, redirect
-# from django.urls import reverse_lazy
-from django.views.generic import CreateView, TemplateView
+from django.views.generic import CreateView
 from .forms import CustomUserCreationForm, AddMenuItem
-from .models import User, MenuItems
+from .models import User, MenuItems, Cart
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, logout
-from django.forms import Form
-
-# Create your views here.
+from django.urls import resolve
 
 
-# ___________________________CLASSES_________________________________
+# _________________________________________________________________________________________________
 
 
 class SignUp(CreateView):
@@ -23,7 +20,7 @@ class SignUp(CreateView):
         self.template_name = 'signup.html'
 
 
-# ___________________________Functions_________________________________
+# _________________________________________________________________________________________________
 
 
 def homePage(request):
@@ -57,9 +54,13 @@ def dashboard(request):
     if user.userType == 'vendor':
         return render(request, 'Vendor/Home.html')
     elif user.userType == 'customer':
-        return render(request, 'Customer/Home.html')
+        vendors = User.objects.all().filter(userType='vendor')
+        args = {'vendors': vendors, }
+        return render(request, 'Customer/Home.html', args)
     raise Http404('invalid user type')
 
+
+# ============================================Vendor===============================================
 
 def checkVendor(request):
     user = User.objects.get(username=request.user.username)
@@ -170,3 +171,94 @@ def vendorProfile(request):
 
 def vendorSettings(request):
     pass
+
+
+# ===========================================Customer==============================================
+def checkCustomer(request):
+    user = request.user
+    if user.userType == 'vendor':
+        raise Http404('invalid Url')
+    return
+
+
+def viewVendorMenu(request, vendorID):
+    checkCustomer(request)
+    vendor = User.objects.get(id=vendorID)
+    menu = MenuItems.objects.all().filter(vendor=vendor)
+    cart = Cart.objects.all().filter(customer=request.user, status='Added to Cart')
+    Menu = list()
+    for i in menu:
+        Menu.append(i)
+    for i in cart:
+        Menu.remove(i.item)
+    print(menu)
+    print(cart)
+    print(Menu)
+    args = {'menu': Menu, 'cart': cart, 'vendorID': vendorID}
+    return render(request, 'Customer/Menu.html', args)
+
+
+def selectvendor(request):
+    pass
+
+
+def selectitem(request, id):
+    pass
+
+
+def addToCart(request, vendorID, itemID):
+    checkCustomer(request)
+    item = MenuItems.objects.get(id=itemID)
+    vendor = User.objects.get(id=vendorID)
+    if item.vendor != vendor:
+        raise Http404('Error in the URL you entered.')
+    it = Cart.objects.all().filter(customer=request.user, item=item, status='Added to Cart')
+    if len(it) == 0:
+        Cart.objects.update_or_create(
+            item=item,
+            customer=request.user
+        )
+    else:
+        for i in it:
+            i.qty += 1
+            i.save()
+    url = request.build_absolute_uri('/accounts/view-vendor-menu/') + str(vendorID)
+    print(url)
+    return redirect(url)
+
+
+def reduceQty(request, vendorId, itemId):
+    menu_item = MenuItems.objects.get(id=itemId)
+    item = Cart.objects.get(item=menu_item)
+    vendor = User.objects.get(id=vendorId)
+    checkCustomer(request)
+    user = request.user
+    if vendor.userType != 'vendor' or menu_item.vendor != vendor or item.customer != user:
+        raise Http404('The URL has some error')
+
+    item.qty -= 1
+    if item.qty == 0:
+        item.delete()
+    else:
+        item.save()
+
+    url = request.build_absolute_uri('/accounts/view-vendor-menu/') + str(vendorId)
+    print(url)
+    return redirect(url)
+
+
+def increaseQty(request, vendorId, itemId):
+    menu_item = MenuItems.objects.get(id=itemId)
+    item = Cart.objects.get(item=menu_item)
+    vendor = User.objects.get(id=vendorId)
+    checkCustomer(request)
+    user = request.user
+    if vendor.userType != 'vendor' or menu_item.vendor != vendor or item.customer != user:
+        raise Http404('The URL has some error')
+
+    item.qty += 1
+    item.save()
+
+    url = request.build_absolute_uri('/accounts/view-vendor-menu/') + str(vendorId)
+    print(url)
+    return redirect(url)

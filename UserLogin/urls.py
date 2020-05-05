@@ -10,6 +10,15 @@ urlpatterns = [
 
     path('accounts/dashboard/', views.dashboard, name='personalised-dashboard'),
 
+    path('accounts/view-vendor-menu/', views.selectvendor, name='view-vendor'),
+    url(r'^accounts/view-vendor-menu/(?P<vendorID>\d+)/$', views.viewVendorMenu, ),
+    url(r'^accounts/view-vendor-menu/(?P<id>\d+)/add-to-cart/$', views.selectitem, name='add-to-cart'),
+    url(r'^accounts/view-vendor-menu/(?P<vendorID>\d+)/add-to-cart/(?P<itemID>\d+)/$', views.addToCart, ),
+    url(r'^accounts/view-vendor-menu/(?P<vendorId>\d+)/reduce-qty/(?P<itemId>\d+)/$',
+        views.reduceQty, name='reduce-qty'),
+    url(r'^accounts/view-vendor-menu/(?P<vendorId>\d+)/increase-qty/(?P<itemId>\d+)/$',
+        views.increaseQty, name='increase-qty'),
+
     path('vendor/menu/', views.vendorMenu, name='vendor-menu'),
     path('vendor/menu/additem/', views.addItem, name='add-item'),
     path('vendor/menu/additems/', views.addItems, name='add-items'),

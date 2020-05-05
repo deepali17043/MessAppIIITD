@@ -1,0 +1,20 @@
+<html>
+<head>
+    <title> Cart </title>
+</head>
+<body>
+    <h1> Cart </h1>
+    <br> <hr> <br>
+    {% for i in cart %}
+        {{i.item.itemName}} @ Rs.{{i.item.price}} &emsp;&emsp;&emsp;&emsp;
+        <a href="{% url 'reduce-qty' vendorId=vendorID itemId=i.item.id %}">(subtract-icon)</a>
+        < qty:{{i.qty}} >
+        <a href="{% url 'increase-qty' vendorId=vendorID itemId=i.item.id %}">(plus-icon)</a> <br>
+    {% endfor %}
+    Total: {{ total }}
+    <a href="{% url 'place-order' %}">Place Order</a>
+    <br> <hr> <br>
+    <a href="{% url 'personalised-dashboard' %}"> Home </a> <br>
+    <a href="{% url 'logout' %}"> Logout </a>
+</body>
+</html>

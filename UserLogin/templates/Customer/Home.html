@@ -5,9 +5,10 @@
 <body>
     <h1> Hello, {{user.name}} </h1>
     <br> <hr> <br>
-    Your user type is {{user.userType}}
-
-    // Not yet developed. This is just to show that users will be redirected to a different page depending on their account type.
+    Hi, order away! <br>
+    {% for vendor in vendors %}
+        <a href="{% url 'view-vendor' %}{{vendor.id}}">{{vendor.username}}</a> <br>
+    {% endfor %}
     <br> <hr> <br>
     <a href="{% url 'logout' %}"> Logout </a>
 </body>
