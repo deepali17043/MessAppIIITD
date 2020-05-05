@@ -1,16 +1,17 @@
 <html>
 <head>
-    <title> Cart </title>
+    <title> Order </title>
 </head>
 <body>
-    <h1> Cart </h1>
+    <h1> Order </h1>
     <br> <hr> <br>
     {% for i in cart %}
         {{i.item.itemName}} @ Rs.{{i.item.price}} &emsp;&emsp;&emsp;&emsp;< qty:{{i.qty}} >
         &emsp;&emsp;&emsp;&emsp; Status: {{i.status}} <br>
     {% endfor %}
     Total: Rs. {{ total }} <br>
-    <a href="{% url 'place-order' %}">Place Order</a>
+
+    <h3>Your order was successfully placed</h3> <br>
     <br> <hr> <br>
     <a href="{% url 'personalised-dashboard' %}"> Home </a> <br>
     <a href="{% url 'logout' %}"> Logout </a>

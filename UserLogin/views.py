@@ -52,7 +52,7 @@ def logoutuser(request):
 def dashboard(request):
     user = User.objects.get(username=request.user.username)
     if user.userType == 'vendor':
-        return render(request, 'Vendor/Home.html')
+        return vendorDashboard(request)
     elif user.userType == 'customer':
         vendors = User.objects.all().filter(userType='vendor')
         args = {'vendors': vendors, }
@@ -61,6 +61,11 @@ def dashboard(request):
 
 
 # ============================================Vendor===============================================
+
+
+def vendorDashboard(request):
+    return render(request, 'Vendor/Home.html')
+
 
 def checkVendor(request):
     user = User.objects.get(username=request.user.username)
@@ -262,3 +267,28 @@ def increaseQty(request, vendorId, itemId):
     url = request.build_absolute_uri('/accounts/view-vendor-menu/') + str(vendorId)
     print(url)
     return redirect(url)
+
+
+def viewCart(request):
+    checkCustomer(request)
+    user = request.user
+    items = Cart.objects.all().filter(customer=user, orderPlaced=0)
+    total = 0
+    for i in items:
+        total += i.qty * i.item.price
+    args = {'total': total, 'cart': items}
+    return render(request, 'Customer/ViewCart.html', args)
+
+
+def placeOrder(request):
+    checkCustomer(request)
+    user = request.user
+    items = Cart.objects.all().filter(customer=user).exclude(orderPlaced=2)
+    total = 0
+    for i in items:
+        i.orderPlaced = 1
+        i.status = 'Order Placed'
+        i.save()
+        total += i.qty * i.item.price
+    args = {'total': total, 'cart': items}
+    return render(request, 'Customer/OrderDetails.html', args)

@@ -18,6 +18,8 @@ urlpatterns = [
         views.reduceQty, name='reduce-qty'),
     url(r'^accounts/view-vendor-menu/(?P<vendorId>\d+)/increase-qty/(?P<itemId>\d+)/$',
         views.increaseQty, name='increase-qty'),
+    path('accounts/view-cart/', views.viewCart, name='view-cart'),
+    path('accounts/place-order/', views.placeOrder, name='place-order'),
 
     path('vendor/menu/', views.vendorMenu, name='vendor-menu'),
     path('vendor/menu/additem/', views.addItem, name='add-item'),

@@ -5,6 +5,7 @@
 <body>
     <h1> Menu </h1>
     <br> <hr> <br>
+    <a href="{% url 'view-cart' %}">View Cart</a> <br>
     {% for i in cart %}
         {{i.item.itemName}} @ Rs.{{i.item.price}} &emsp;&emsp;&emsp;&emsp;
         <a href="{% url 'reduce-qty' vendorId=vendorID itemId=i.item.id %}">(subtract-icon)</a>
