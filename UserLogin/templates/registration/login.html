@@ -1,9 +1,19 @@
 {% extends 'base.html' %}
+{% load static %}
+<html>
+<head>
+    <title>Aahar | Login</title>
+    <link  rel= "stylesheet" type = "text/css" href = "{% static 'css/login_style.css' %}">
+</head>
+<body>
 {% block content %}
+    <img src="{% static 'img/Aahar.jpg' %}" class = "logo" >
     <h2>Login</h2>
-    <form action="http://127.0.0.1:8000/login/" method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Login</button>
+    <form action="{% url 'signin' %}" method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" name="" value="Login">
     </form>
 {% endblock content %}
+</body>
+</html>

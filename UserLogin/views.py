@@ -45,8 +45,7 @@ def logoutuser(request):
     user = User.objects.get(username=request.user.username)
     user.deAuthenticateUser()
     logout(request)
-    url = request.build_absolute_uri('/').strip("/") + "/login"
-    return redirect(url)
+    return redirect('signin')
 
 
 def dashboard(request):
@@ -64,7 +63,10 @@ def dashboard(request):
 
 
 def vendorDashboard(request):
-    return render(request, 'Vendor/Home.html')
+    orders = Cart.objects.filter(item__vendor=request.user, orderPlaced=1).exclude(status='Prepared')
+    print(orders)
+    args = {'orders': orders, }
+    return render(request, 'Vendor/Home.html', args)
 
 
 def checkVendor(request):
@@ -178,6 +180,22 @@ def vendorSettings(request):
     pass
 
 
+def updateOrderStatus(request, cartItemId):
+    checkVendor(request)
+    vendor = request.user
+    cartItem = Cart.objects.get(id=cartItemId)
+    if cartItem.item.vendor != vendor:
+        raise Http404('you are not authorized update the status of this order')
+    if cartItem.status == 'Added to Cart' or cartItem.status == 'Prepared' or cartItem.status == 'Collected':
+        raise Http404('you are not authorized update the status of this order')
+    if cartItem.status == 'Order Placed':
+        cartItem.status = 'Being Prepared'
+    else:
+        cartItem.status = 'Prepared'
+    cartItem.save()
+    return redirect('personalised-dashboard')
+
+
 # ===========================================Customer==============================================
 def checkCustomer(request):
     user = request.user
@@ -287,7 +305,8 @@ def placeOrder(request):
     total = 0
     for i in items:
         i.orderPlaced = 1
-        i.status = 'Order Placed'
+        if i.status == 'Added to Cart':
+            i.status = 'Order Placed'
         i.save()
         total += i.qty * i.item.price
     args = {'total': total, 'cart': items}

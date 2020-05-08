@@ -1,0 +1,108 @@
+body{
+    margin: 0;
+    padding: 0;
+    background: url(ella-olsson-C1Q3qOTlegg-unsplash.jpg);
+    background-size: cover;
+    background-position: center;
+    font-family: 'Lato', sans-serif;
+        /* src: url(Lato) */
+
+}
+.signinbox{
+    width: 340px;
+    height: 420px;
+    background: #4D5061;
+    color: #30323D;
+    /* opacity: 0.65; */
+    top: 50%;
+    left: 50%;
+    position: absolute;
+    transform: translate(-50%, -50%);
+    box-sizing: border-box;
+    padding: 50px 50px;
+    opacity: 0.9;
+    border-radius: 3px;
+}
+.bounding_box{
+    width: 340px;
+    height: 420px;
+    /* background: #353434; */
+    color: #fff;
+    /* opacity: 0.65; */
+    top: 50%;
+    left: 50%;
+    position: absolute;
+    transform: translate(-50%, -50%);
+    box-sizing: border-box;
+    padding: 50px 20px;
+    /* text-align: center; */
+    /* opacity: 0.6; */
+}
+.bounding_box h1{
+    margin: 0;
+    padding: 0 0 10px;
+    font-size: 27px;
+    text-align: center;
+    font: 'Lato';
+    margin-bottom: 12px;
+}
+
+.logo{
+    height:59px;
+    width:185px;
+    position: absolute;
+    top: -30px;
+    left: calc(50% - 90px);
+}
+.bounding_box p{
+   margin: 0;
+   padding: 0;
+}
+.bounding_box input{
+    width: 100%;
+    margin-bottom: 18px;
+}
+.bounding_box input[type="text"], input[type="password"] {
+    border: none;
+    border-bottom: 1px solid #fff;
+    background:transparent;
+    outline: none;
+    height: 30px;
+    color: white;
+    font: 'Lato';
+    font-size: 13px;
+}
+.bounding_box input[type="password"]{
+    margin-bottom: 40px;
+}
+.bounding_box input[type="submit"]{
+    border: none;
+    outline: none;
+    height: 40px;
+    /* width: 40%; */
+    /* left: 50%; */
+    background: #FFC53A ;
+    /* cursor: pointer; */
+    /* position: absolute; */
+    font-size: 16.5px;
+    border-radius: 5px;
+
+}
+::placeholder{
+    color: white;
+    opacity: 0.6;
+    margin-bottom: 2px;
+}
+.bounding_box input[type="submit"]:hover{
+    cursor: pointer;
+    background: #EEA243;
+}
+.bounding_box a{
+    text-decoration: none;
+    font-size: 12px;
+    line-height: 20px;
+    color: darkgrey;
+}
+.bounding_box a:hover{
+    color: #ffc107;
+}

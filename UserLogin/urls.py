@@ -5,7 +5,7 @@ from django.conf.urls import url
 urlpatterns = [
     path('', views.homePage, name='HomePage'),
     path('signup/', views.SignUp.as_view(), name='signup'),
-    path('login/', views.loginUser, name="SignIn"),
+    path('login/', views.loginUser, name='signin'),
     path('logout/', views.logoutuser, name='logout'),
 
     path('accounts/dashboard/', views.dashboard, name='personalised-dashboard'),
@@ -21,6 +21,8 @@ urlpatterns = [
     path('accounts/view-cart/', views.viewCart, name='view-cart'),
     path('accounts/place-order/', views.placeOrder, name='place-order'),
 
+
+    url(r'^vendor/update-order-status/(?P<cartItemId>\d+)/', views.updateOrderStatus, name='update-order-status'),
     path('vendor/menu/', views.vendorMenu, name='vendor-menu'),
     path('vendor/menu/additem/', views.addItem, name='add-item'),
     path('vendor/menu/additems/', views.addItems, name='add-items'),

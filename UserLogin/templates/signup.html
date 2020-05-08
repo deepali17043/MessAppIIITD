@@ -1,6 +1,8 @@
+{% load static %}
 <html>
 <head>
     <title> Aahar | Sign Up</title>
+    <<link  rel= "stylesheet" type = "text/css" href = "'signup_style.css">
 </head>
 <body>
 <h2>Sign up</h2>
@@ -10,9 +12,6 @@
 <form method="post">
     {% csrf_token %}
     {{ form.as_p }}
-<!--    Type of user: <br>-->
-<!--    <input type="radio" name="userType" value="User"> Customer <br>-->
-<!--    <input type="radio" name="userType" value="vendor"> Vendor <br>-->
     <button type="submit">Next</button>
 </form>
 </body>
