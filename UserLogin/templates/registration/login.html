@@ -3,12 +3,11 @@
 <html>
 <head>
     <title>Aahar | Login</title>
-    <link  rel= "stylesheet" type = "text/css" href = "{% static 'css/login_style.css' %}">
 </head>
 <body>
 {% block content %}
-    <img src="{% static 'img/Aahar.jpg' %}" class = "logo" >
-    <h2>Login</h2>
+    <img src="{% static 'img/Aahar.png' %}" class = "logo" >
+    <h1>Login</h1>
     <form action="{% url 'signin' %}" method="post">
         {% csrf_token %}
         {{ form.as_p }}

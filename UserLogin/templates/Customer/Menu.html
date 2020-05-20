@@ -1,23 +1,66 @@
+{% load static %}
 <html>
 <head>
     <title> Menu </title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=width-device, initial-scale=1.0">
+    <link  rel= "stylesheet" type = "text/css" href = "{% static 'css/customer/menu_style.css' %}">
 </head>
 <body>
-    <h1> Menu </h1>
-    <br> <hr> <br>
-    <a href="{% url 'view-cart' %}">View Cart</a> <br>
-    {% for i in cart %}
-        {{i.item.itemName}} @ Rs.{{i.item.price}} &emsp;&emsp;&emsp;&emsp;
-        <a href="{% url 'reduce-qty' vendorId=vendorID itemId=i.item.id %}">(subtract-icon)</a>
-        < qty:{{i.qty}} >
-        <a href="{% url 'increase-qty' vendorId=vendorID itemId=i.item.id %}">(plus-icon)</a> <br>
-    {% endfor %}
-    {% for item in menu %}
-        {{item.itemName}} @ Rs.{{item.price}} &emsp;&emsp;
-        <a href="{% url 'add-to-cart' id=vendorID %}{{item.id}}">Add to Cart</a> <br>
-    {% endfor %}
-    <br> <hr> <br>
-    <a href="{% url 'personalised-dashboard' %}"> Back </a> <br>
-    <a href="{% url 'logout' %}"> Logout </a>
+    <div class="bar">
+        <div class="bar_content">
+            <img src="{% static 'img/Aahar.png' %}" class="logo">
+            <a href="{% url 'logout' %}">Logout</a>
+        </div>
+    </div>
+    <div class="back"><a href="{% url 'personalised-dashboard' %}">Back</a> </div>
+    <div class="remove_item_op"> <h4> Menu </h4>
+        <form action="{% url 'view-cart' %}" class ="view_cart">
+            <button type="submit"> View Cart </button>
+        </form>
+        {% for cart in cart_row %}
+        <div class="row">
+            {%for i in cart %}
+            <div class="column" style="background-color: white; opacity: 0.9">
+                <h2>{{i.item.itemName}}</h2>
+                <p>Rs. {{i.item.price}}</p>
+                <button class="min_qty">
+                    <a href="{% url 'reduce-qty' vendorId=vendorID itemId=i.id %}"> - </a>
+                </button>
+                <p class="qty" style="text-align:center;">
+                    {{i.qty}}
+                </p>
+                <button class="add_qty">
+                    <a href="{% url 'increase-qty' vendorId=vendorID itemId=i.id %}"> + </a>
+                </button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endfor %}
+        {% for menu in menu_row %}
+        <div class="row">
+            {% for i in menu %}
+            <div class="column" style="background-color: white; opacity: 0.9">
+                <h2>{{i.itemName}}</h2>
+                <p>Rs. {{i.price}}</p>
+                <form action="{% url 'add-to-cart' id=vendorID %}{{i.id}}">
+                    <button class="add_to_cart">Add To Cart</button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+        {% endfor %}
+        {% for ordered in ordered_row %}
+        <div class="row">
+            {% for i in ordered %}
+            <div class="column" style="background-color: white; opacity: 0.9">
+                <h2>{{i.item.itemName}}</h2>
+                <p>Rs. {{i.item.price}}</p>
+                <button class="add_to_cart">Already ordered</button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endfor %}
+    </div>
 </body>
 </html>

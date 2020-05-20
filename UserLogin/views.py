@@ -7,6 +7,7 @@ from .models import User, MenuItems, Cart
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, logout
 from django.urls import resolve
+import datetime
 
 
 # _________________________________________________________________________________________________
@@ -31,13 +32,22 @@ def homePage(request):
 def loginUser(request):
     if request.method == 'POST':
         form = AuthenticationForm(data=request.POST)
+        form.fields['username'].widget.attrs['placeholder'] = 'Username'
+        form.fields['username'].label = ''
+        form.fields['password'].widget.attrs['placeholder'] = 'Password'
+        form.fields['password'].label = ''
         if form.is_valid():
+            print(form)
             user = form.get_user()
             login(request, user)
         else:
             raise Http404('invalid')
     else:
         form = AuthenticationForm()
+        form.fields['username'].widget.attrs['placeholder'] = 'Username'
+        form.fields['username'].label = ''
+        form.fields['password'].widget.attrs['placeholder'] = 'Password'
+        form.fields['password'].label = ''
     return render(request, 'registration/login.html', {'form': form})
 
 
@@ -63,8 +73,8 @@ def dashboard(request):
 
 
 def vendorDashboard(request):
-    orders = Cart.objects.filter(item__vendor=request.user, orderPlaced=1).exclude(status='Prepared')
-    print(orders)
+    orders = Cart.objects.filter(item__vendor=request.user, orderPlaced=1).exclude(status='Prepared')\
+        .order_by('orderTime')
     args = {'orders': orders, }
     return render(request, 'Vendor/Home.html', args)
 
@@ -207,17 +217,35 @@ def checkCustomer(request):
 def viewVendorMenu(request, vendorID):
     checkCustomer(request)
     vendor = User.objects.get(id=vendorID)
-    menu = MenuItems.objects.all().filter(vendor=vendor)
-    cart = Cart.objects.all().filter(customer=request.user, status='Added to Cart')
+    menu = MenuItems.objects.all().filter(vendor=vendor, hidden=False)
+    ordered = Cart.objects.all().filter(customer=request.user, orderPlaced=1)
+    cart = Cart.objects.all().filter(customer=request.user, orderPlaced=0)
     Menu = list()
     for i in menu:
         Menu.append(i)
     for i in cart:
         Menu.remove(i.item)
-    print(menu)
-    print(cart)
-    print(Menu)
-    args = {'menu': Menu, 'cart': cart, 'vendorID': vendorID}
+    for i in ordered:
+        Menu.remove(i.item)
+    menu_row = []
+    for i in range(len(Menu)//4 + 1):
+        tmp = []
+        for j in range(i*4, min((i+1)*4, len(Menu))):
+            tmp.append(Menu[j])
+        menu_row.append(tmp)
+    cart_row = []
+    for i in range(len(cart)//4 + 1):
+        tmp = []
+        for j in range(i*4, min((i+1)*4, len(cart))):
+            tmp.append(cart[j])
+        cart_row.append(tmp)
+    ordered_row = []
+    for i in range(len(ordered)//4 + 1):
+        tmp = []
+        for j in range(i*4, min((i+1)*4, len(ordered))):
+            tmp.append(ordered[j])
+        ordered_row.append(tmp)
+    args = {'menu_row': menu_row, 'cart_row': cart_row, 'vendorID': vendorID, 'ordered_row': ordered_row}
     return render(request, 'Customer/Menu.html', args)
 
 
@@ -236,23 +264,28 @@ def addToCart(request, vendorID, itemID):
     if item.vendor != vendor:
         raise Http404('Error in the URL you entered.')
     it = Cart.objects.all().filter(customer=request.user, item=item, status='Added to Cart')
+    for i in it:
+        print(i)
+        print(i.item.itemName, i.status)
     if len(it) == 0:
         Cart.objects.update_or_create(
             item=item,
-            customer=request.user
+            customer=request.user,
+            status='Added to Cart',
+            orderPlaced=0,
+            qty=1,
         )
     else:
         for i in it:
             i.qty += 1
             i.save()
     url = request.build_absolute_uri('/accounts/view-vendor-menu/') + str(vendorID)
-    print(url)
     return redirect(url)
 
 
 def reduceQty(request, vendorId, itemId):
-    menu_item = MenuItems.objects.get(id=itemId)
-    item = Cart.objects.get(item=menu_item)
+    item = Cart.objects.get(id=itemId)
+    menu_item = MenuItems.objects.get(id=item.item.id)
     vendor = User.objects.get(id=vendorId)
     checkCustomer(request)
     user = request.user
@@ -271,8 +304,8 @@ def reduceQty(request, vendorId, itemId):
 
 
 def increaseQty(request, vendorId, itemId):
-    menu_item = MenuItems.objects.get(id=itemId)
-    item = Cart.objects.get(item=menu_item)
+    item = Cart.objects.get(id=itemId)
+    menu_item = MenuItems.objects.get(id=item.item.id)
     vendor = User.objects.get(id=vendorId)
     checkCustomer(request)
     user = request.user
@@ -292,9 +325,12 @@ def viewCart(request):
     user = request.user
     items = Cart.objects.all().filter(customer=user, orderPlaced=0)
     total = 0
+    cart = []
     for i in items:
-        total += i.qty * i.item.price
-    args = {'total': total, 'cart': items}
+        tmp = i.qty * i.item.price
+        total += tmp
+        cart.append((i, tmp))
+    args = {'total': total, 'cart': cart}
     return render(request, 'Customer/ViewCart.html', args)
 
 
@@ -302,12 +338,35 @@ def placeOrder(request):
     checkCustomer(request)
     user = request.user
     items = Cart.objects.all().filter(customer=user).exclude(orderPlaced=2)
-    total = 0
     for i in items:
         i.orderPlaced = 1
+        i.orderTime = datetime.datetime.now()
         if i.status == 'Added to Cart':
             i.status = 'Order Placed'
         i.save()
-        total += i.qty * i.item.price
-    args = {'total': total, 'cart': items}
+    return redirect('order-details')
+
+
+def orderDetails(request):
+    checkCustomer(request)
+    user = request.user
+    items = Cart.objects.all().filter(customer=user, orderPlaced=1)
+    total = 0
+    cart = []
+    for i in items:
+        tmp = i.item.price * i.qty
+        total += tmp
+        k = i.status == 'Prepared'
+        cart.append((i, tmp, k))
+    args = {'cart': cart, 'total': total}
     return render(request, 'Customer/OrderDetails.html', args)
+
+
+def collectedOrder(request, orderId):
+    checkCustomer(request)
+    user = request.user
+    item = Cart.objects.get(id=orderId)
+    item.orderPlaced = 2
+    item.status = 'Collected'
+    item.save()
+    return redirect('order-details')

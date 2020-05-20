@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser
 from django import forms
+import datetime
 
 
 # Create your models here.
@@ -73,6 +74,7 @@ class Cart(models.Model):
     qty = models.PositiveSmallIntegerField(default=1)
     customer = models.ForeignKey(User, on_delete=models.PROTECT, related_name='user')
     orderPlaced = models.PositiveSmallIntegerField(default=0, choices=((0, 0), (1, 1), (2, 2)))
+    orderTime = models.DateTimeField(default=datetime.datetime.now, blank=True)
     status = models.CharField(max_length=50,
                               choices=(('Added to Cart', 'Added to Cart'),
                                        ('Order Placed', 'Order Placed'),

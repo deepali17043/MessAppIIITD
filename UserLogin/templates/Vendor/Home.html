@@ -17,6 +17,7 @@
             <h3>ORDERS</h3>
             <table style="width: 50%;">
                <tr>
+                   <th>Customer Name</th>
                    <th>Item Name</th>
                    <th>Qty</th>
                    <th>Status</th>
@@ -24,6 +25,7 @@
                </tr>
                {% for order in orders %}
                 <tr>
+                    <td>{{order.customer.name}}</td>
                     <td>{{order.item.itemName}}</td>
                     <td>{{order.qty}}</td>
                     <td>{{order.status}}</td>

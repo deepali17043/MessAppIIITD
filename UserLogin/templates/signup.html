@@ -1,18 +1,41 @@
 {% load static %}
 <html>
 <head>
-    <title> Aahar | Sign Up</title>
-    <<link  rel= "stylesheet" type = "text/css" href = "'signup_style.css">
+    <title>Aahar | Sign Up</title>
+    <link  rel= "stylesheet" type = "text/css" href = "{% static 'css/signup_style.css' %}">
 </head>
 <body>
-<h2>Sign up</h2>
-<br>
-<b>In case you are creating a vendor account, enter your Shop's name as the username.</b>
-<br>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Next</button>
-</form>
+    <div class="signupbox"></div>
+    <div class = "bounding_box">
+        <img src="{% static 'img/Aahar.png' %}" class="logo">
+        <h1>Sign up</h1>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.username }}
+            {{ form.name }}
+            {{ form.email }}
+            <div class="user_type">
+                <a> User type: </a>
+            </div>
+            <label class="container">Customer
+                <input type="radio" name="{{form.userType.name}}" value="customer" required id="id_userType_0">
+                <span class="checkmark"></span>
+              </label>
+
+              <label class="container">Vendor
+                <input type="radio" name="{{form.userType.name}}" value="vendor" required id="id_userType_1">
+                <span class="checkmark"></span>
+              </label>
+            {{form.password1}}
+            <div class="pwd_guide">
+                <a id = "Pwd_guide1"> Password should be atleast 8 characters.</a> <br>
+                <a id= "Pwd_guide2"> Password should be alphanumeric.</a>
+            </div>
+            {{form.password2}}
+            <input type="submit" name="" value="Signup">
+        <a class="pwd_guide">Have an account?</a>
+            <a class="pwd_guide" id="redirect" href="{% url 'signin' %}">Sign in</a> <br>
+        </form>
+    </div>
 </body>
 </html>

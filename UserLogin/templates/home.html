@@ -1,16 +1,27 @@
+{% load static %}
 <html>
 {% if user.is_authenticated %}
-    <meta http-equiv="refresh" content="0; http://127.0.0.1:8000/accounts/dashboard" />
+<meta http-equiv="refresh" content="0; {% url 'personalised-dashboard' %}"/>
 {% else %}
-    <head>
-        <title>Aahar</title>
-    </head>
-    <body>
-        <h1>AAHAR</h1>
-        <br> <br>
-        <a href="/signup"> Register </a>
-        <br> <br>
-        <a href="/login"> Sign in to existing account </a>
-    </body>
+<head>
+    <title>Aahar | Welcome!</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/home_style.css' %}">
+</head>
+<body class="home">
+<div class="signin_signup_box"></div>
+<div class="bounding_box">
+    <img src="{% static 'img/Aahar.png' %}" class="logo">
+    <h1> Welcome! </h1>
+    <div class="home-buttons">
+        <form action="{% url 'signup' %}" method="get">
+            <button id="Register" style="margin-bottom:20px; margin-top:18px;"> Register </button>
+        </form>
+        <form action="{% url 'signin' %}" method="get">
+            <button id="Sign in" style="margin-bottom:5px;">Sign in</button>
+        </form>
+    </div>
+</div>
+
+</body>
 {% endif %}
 </html>

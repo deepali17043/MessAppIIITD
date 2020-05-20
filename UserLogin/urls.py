@@ -20,7 +20,8 @@ urlpatterns = [
         views.increaseQty, name='increase-qty'),
     path('accounts/view-cart/', views.viewCart, name='view-cart'),
     path('accounts/place-order/', views.placeOrder, name='place-order'),
-
+    path('accounts/order-details/', views.orderDetails, name='order-details'),
+    url(r'^accounts/order-details/(?P<orderId>\d+)/', views.collectedOrder, name='collected-order'),
 
     url(r'^vendor/update-order-status/(?P<cartItemId>\d+)/', views.updateOrderStatus, name='update-order-status'),
     path('vendor/menu/', views.vendorMenu, name='vendor-menu'),
