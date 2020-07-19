@@ -262,15 +262,15 @@ body{
     /* text-align: center; */
 }
 .heading h1{
-     /* text-align: center; */
-     margin-right: 48.5%;
+     text-align: center;
+     margin-left: 4%;
      margin-top: 4%;
      color: #fff;
      font-weight: 200;
 }
 .vendors_dashboard{
     height: 100%;
-    width: 50%;
+    width: 35%;
     padding-left: 6.5%;
 
     /* padding-right: 4%; */
@@ -279,12 +279,12 @@ body{
 
 
 .menu_options{
-    height: 200px;
-    width: 200px;
+    height: 125px;
+    width: 125px;
     background: white;
     /* margin-top: 75px; */
     /* margin-left: 5.5%;  */
-    margin-right: 2%;
+    margin-right: 5%;
     color: black;
     float: left;
     text-align: center;
@@ -295,12 +295,12 @@ body{
     margin-bottom: -30px;
 }
 .feedback{
-    height: 200px;
-    width: 200px;
+    height: 125px;
+    width: 125px;
     background: white;
     /* margin-top: 75px; */
     /* margin-left: 6.5%;  */
-    margin-right: 2%;
+    margin-right: 5%;
     color: black;
     float: left;
     text-align: center;
@@ -311,12 +311,12 @@ body{
     margin-bottom: -30px;
 }
 .fines{
-    height: 200px;
-    width: 200px;
+    height: 125px;
+    width: 125px;
     background: white;
     /* margin-top: 75px; */
     /* margin-left: 6.5%;  */
-    margin-right: 2%;
+    margin-right: 5%;
     color: black;
     float: left;
     text-align: center;
@@ -327,12 +327,12 @@ body{
     margin-bottom: -30px;
 }
 .profile{
-    height: 200px;
-    width: 200px;
+    height: 125px;
+    width: 125px;
     background: white;
     /* margin-top: 75px; */
-    /* margin-left: 6.5%;  */
-    margin-right: 2%;
+    margin-left: 17%;
+    margin-right: 5%;
     color: black;
     float: left;
     text-align: center;
@@ -342,13 +342,13 @@ body{
     margin-top: 80px;
 }
 .settings{
-    height: 200px;
-    width: 200px;
+    height: 125px;
+    width: 125px;
     background: white;
     /* margin-top: 75px; */
     /* margin-left: 40%;  */
     /* margin-bottom: 5%; */
-    margin-right: 2%;
+    margin-right: 5%;
     color: black;
     float: left;
     text-align: center;
@@ -363,7 +363,8 @@ body{
     margin-top: auto;
     margin-bottom: auto;  */
     margin:auto;
-    /* width: 50%; */
+    width: 50px;
+    height: 50px;
     /* left: 50%; */
     text-align: center;
     /* display: block; */
@@ -372,6 +373,8 @@ body{
 }
 .feedback_icon{
     margin:auto;
+    width: 50px;
+    height: 50px;
     /* width: 50%; */
     /* left: 50%; */
     text-align: center;
@@ -381,6 +384,8 @@ body{
 }
 .fines_icon{
     margin:auto;
+    width: 50px;
+    height: 50px;
     /* width: 50%; */
     /* left: 50%; */
     text-align: center;
@@ -390,6 +395,8 @@ body{
 }
 .profile_icon{
     margin:auto;
+    width: 50px;
+    height: 50px;
     /* width: 50%; */
     /* left: 50%; */
     text-align: center;
@@ -399,6 +406,8 @@ body{
 }
 .settings_icon{
     margin:auto;
+    width: 50px;
+    height: 50px;
     /* width: 50%; */
     /* left: 50%; */
     text-align: center;
@@ -420,8 +429,9 @@ body{
     /* overflow-y: auto; */
     position: relative;
     width: 35%;
-    margin-top: -11%;
+    margin-top: -45%;
     margin-right: 6.5%;
+
     padding-right: 6.5%;
     border-radius: 7px;
     float: right;
@@ -443,7 +453,7 @@ body{
 }
 .vendor_order_table{
     text-align: center;
-    margin-left: 15%;
+    margin-left: 6.5%;
     border-radius:  5px;
     /* margin-top: 20px; */
 }

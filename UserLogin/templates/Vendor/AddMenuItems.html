@@ -1,24 +1,41 @@
+{% load static %}
 <html>
 <head>
     <title>Upload Menu</title>
+    <link  rel= "stylesheet" type = "text/css" href = "{% static 'css/vendor/add_item_style.css' %}">
 </head>
 <body>
-    <h3>Add Menu Items</h3> <br>
-    <hr>
-    <h4>Some Instructions: </h4>
-    If the item already exists, it will result in duplicates that will have to be manually removed/hidden. <br>
-    If one of the entries has not been specified, the item will not be added to Menu. <br>
-    Order of the CSV should be itemName,price. All items will be visible by default.<br> <br>
-    <hr> <br> <br>
-    <form method="POST" enctype="multipart/form-data">
-        {% csrf_token %}
-        <label for="file1"> Upload a file</label>
-        <input type="file" id="file1" name="file"> <br>
-        <small>Only accepts CSV files</small>
-        <button type="submit">Upload</button>
-    </form>
-    <br> <hr> <br>
-    <a href="{% url 'vendor-menu' %}"> Back </a> <br>
-    <a href="{% url 'logout' %}"> Logout </a>
+    <div class="bar">
+        <div class="bar_content">
+            <img src="{% static 'img/Aahar.png' %}" class="logo">
+            <a href="{% url 'logout' %}">Logout</a>
+        </div>
+    </div>
+    <div class="back">
+        <a href="{% url 'vendor-menu' %}">Back</a>
+    </div>
+    <div class="main_box_list">
+        <div class="remove_item_op"> <h4> Add Menu items </h4>
+        </div>
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <label for="file1"> <h5>Upload a file</h5></label>
+            <input type="file" id="file1" name="file"> <br>
+            <small>Only accepts CSV files</small>
+            <div class="upload_button">
+                <button type="submit">Upload</button>
+            </div>
+        </form>
+        <div class="instructions">
+            <h4>
+                Order of the (.csv) should be 'itemName', 'price'. <br>
+                All entries will be displayed by default.
+            </h4>
+        </div>
+
+    </div>
+
+    <div class = "item_name"> </div>
+    </div>
 </body>
 </html>

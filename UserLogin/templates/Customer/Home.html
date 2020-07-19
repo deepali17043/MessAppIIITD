@@ -14,7 +14,7 @@
         </div>
     </div>
     <div class="vendors1">
-        <h1> Hi! </h1>
+        <h1> Hi, {{request.user.name}}! </h1>
         {% for vendor in vendors %}
             <div class="{{vendor.username}}">
                 <img src="{% static 'img/vendor-icon.jpg' %}" class="img_vendor">
