@@ -1,5 +1,5 @@
 from . import views
-from django.urls import path, include
+from django.urls import path
 from django.conf.urls import url
 
 urlpatterns = [
@@ -41,4 +41,10 @@ urlpatterns = [
     path('vendor/profile/', views.vendorProfile, name='vendor-profile'),
 
     path('vendor/settings/', views.vendorSettings, name='vendor-settings'),
+
+    #apis
+    path('user/', views.UserRecordView.as_view(), name='users'), #login/authenticate
+
+    path('user/dashboard/', views.dashboardAPI, name='dashAPI'),
+    path('user/vendor/menu/', views.vendorMenuAPI, name='vendor-menu-api'),
 ]

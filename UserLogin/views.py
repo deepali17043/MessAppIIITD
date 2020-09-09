@@ -2,12 +2,19 @@ import csv, io
 from django.http import Http404
 from django.shortcuts import render, redirect
 from django.views.generic import CreateView
+from rest_framework.decorators import api_view
+
 from .forms import CustomUserCreationForm, AddMenuItem
 from .models import User, MenuItems, Cart
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, logout
 from django.urls import resolve
 import datetime
+from . serializer import UserSerializer, CartSerializer, MenuItemsSerializer
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.permissions import IsAdminUser
 
 
 # _________________________________________________________________________________________________
@@ -19,6 +26,36 @@ class SignUp(CreateView):
 
     def __init__(self):
         self.template_name = 'signup.html'
+
+
+class UserRecordView(APIView):
+    """
+    API View to create or get a list of all the registered
+    users. GET request returns the registered users whereas
+    a POST request allows to create a new user.
+    """
+    permission_classes = [IsAdminUser]
+
+    def get(self, format=None):
+        users = User.objects.all()
+        serializer = UserSerializer(users, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = UserSerializer(data=request.data)
+        if serializer.is_valid(raise_exception=ValueError):
+            serializer.create(validated_data=request.data)
+            return Response(
+                serializer.data,
+                status=status.HTTP_201_CREATED
+            )
+        return Response(
+            {
+                "error": True,
+                "error_msg": serializer.error_messages,
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
 
 # _________________________________________________________________________________________________
@@ -69,6 +106,18 @@ def dashboard(request):
     raise Http404('invalid user type')
 
 
+@api_view(['GET'])
+def dashboardAPI(request):
+    user = User.objects.get(username=request.headers['username'])
+    if user.userType == 'vendor':
+        return vendorDashboardAPI(request)
+    elif user.userType == 'customer':
+        vendors = User.objects.all().filter(userType='vendor')
+        serializer = UserSerializer(vendors, many=True)
+        return Response(serializer.data)
+    raise Http404('invalid user type')
+
+
 # ============================================Vendor===============================================
 
 
@@ -77,6 +126,14 @@ def vendorDashboard(request):
         .order_by('orderTime')
     args = {'orders': orders, }
     return render(request, 'Vendor/Home.html', args)
+
+
+@api_view(['GET'])
+def vendorDashboardAPI(request):
+    orders = Cart.objects.filter(item__vendor=request.user, orderPlaced=1).exclude(status='Prepared') \
+        .order_by('orderTime')
+    serializer = CartSerializer(orders, many=True)
+    return Response(serializer.data)
 
 
 def checkVendor(request):
@@ -90,6 +147,14 @@ def vendorMenu(request):
     menu = MenuItems.objects.filter(vendor=request.user, hidden=False)
     args = {'menu': menu, }
     return render(request, 'Vendor/Menu.html', args)
+
+
+@api_view(['GET'])
+def vendorMenuAPI(request):
+    checkVendor(request)
+    menu = MenuItems.objects.filter(vendor=request.user, hidden=False)
+    serializer = MenuItemsSerializer(menu, many=True)
+    return Response(serializer.data)
 
 
 def addItem(request):
