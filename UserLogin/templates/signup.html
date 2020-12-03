@@ -9,7 +9,7 @@
     <div class = "bounding_box">
         <img src="{% static 'img/Aahar.png' %}" class="logo">
         <h1>Sign up</h1>
-        <form method="post">
+        <form method="post" action="{% url 'signin' %}">
             {% csrf_token %}
             {{ form.username }}
             {{ form.name }}

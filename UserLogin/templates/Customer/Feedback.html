@@ -1,0 +1,15 @@
+{% load static %}
+<html>
+<head>
+    <title>Aahar | Order Feedback</title>
+    <link  rel= "stylesheet" type = "text/css" href = "{% static 'css/signup_style.css' %}">
+</head>
+<body>
+        <h1>Feedback</h1>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <input type="submit" name="" value="submit">
+        </form>
+</body>
+</html>

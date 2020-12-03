@@ -6,15 +6,15 @@ from django import forms
 class CustomUserCreationForm(UserCreationForm):
     class Meta(UserCreationForm.Meta):
         model = User
-        fields = ('username', 'name', 'email', 'userType')
+        fields = ('username', 'name', 'email', 'type')
         widgets = {
-            'userType': forms.RadioSelect(),
+            'type': forms.RadioSelect(),
             'username': forms.TextInput(attrs={'placeholder': 'Username/Shop Name'}),
             'name': forms.TextInput(attrs={'placeholder': 'Name'}),
             'email': forms.TextInput(attrs={'placeholder': 'Email ID'}),
         }
         labels = {
-            'userType': '',
+            'type': '',
             'username': '',
             'name': '',
             'email': '',
@@ -28,7 +28,7 @@ class CustomUserCreationForm(UserCreationForm):
         self.fields['password2'].widget = forms.PasswordInput(attrs={'class': 'form-control',
                                                                      'placeholder': 'Password confirmation'})
         self.fields['password2'].label = ""
-        print('self fields', self.fields['userType'].widget)
+        print('self fields', self.fields['type'].widget)
 
 
 class CustomUserChangeForm(UserChangeForm):
