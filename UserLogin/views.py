@@ -1,13 +1,16 @@
 import csv, io
 import pytz, ast
 from django.http import Http404
+from django.shortcuts import get_object_or_404
 from django.shortcuts import render, redirect
 from django.views.generic import CreateView
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.exceptions import ParseError
 from rest_framework.parsers import FileUploadParser
+from rest_framework.renderers import TemplateHTMLRenderer
+from rest_framework.authtoken import views
 
-from .forms import CustomUserCreationForm, AddMenuItem
+from .forms import CustomUserCreationForm, AddMenuItem, AttendanceList
 from .models import User, MenuItems, Cart, MessUser, MessAttendance
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, logout
@@ -16,14 +19,19 @@ import datetime, calendar
 from .serializers import *
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, generics
 from rest_framework.permissions import IsAuthenticated
+from .meal_timings import *
+
+import urllib
+import json
 
 
 # _________________________________________________________________________________________________
 
 
 IST = pytz.timezone('Asia/Kolkata')
+
 
 class SignUp(CreateView):
     form_class = CustomUserCreationForm
@@ -33,77 +41,28 @@ class SignUp(CreateView):
         self.template_name = 'signup.html'
 
 
-class UserRecordView(APIView):
-    """
-    API View to create or get a list of all the registered
-    users. GET request returns the registered users whereas
-    a POST request allows to create a new user.
-    """
-    permission_classes = [IsAuthenticated]
-
-    def get(self, format=None):
-        users = User.objects.all()
-        serializer = UserSerializer(users, many=True)
-        return Response(serializer.data)
-
-    def post(self, request):
-        serializer = UserSerializer(data=request.data)
-        # print(request.data)
-        if serializer.is_valid(raise_exception=ValueError):
-            serializer.create(validated_data=request.data)
-            return Response(
-                serializer.data,
-                status=status.HTTP_201_CREATED
-            )
-        return Response(
-            {
-                "error": True,
-                "error_msg": serializer.error_messages,
-            },
-            status=status.HTTP_400_BAD_REQUEST
-        )
-
-
 # _________________________________________________________________________________________________
 
 
 def homePage(request):
     # create account or login to existing.
-    return render(request, 'home.html')
+    return redirect('web-login')
 
 
-def loginUser(request):
-    if request.method == 'POST':
-        form = AuthenticationForm(data=request.POST)
-        form.fields['username'].widget.attrs['placeholder'] = 'Username'
-        form.fields['username'].label = ''
-        form.fields['password'].widget.attrs['placeholder'] = 'Password'
-        form.fields['password'].label = ''
-        if form.is_valid():
-            # print(form)
-            user = form.get_user()
-            login(request, user)
-        else:
-            raise Http404('invalid')
-    else:
-        form = AuthenticationForm()
-        form.fields['username'].widget.attrs['placeholder'] = 'Username'
-        form.fields['username'].label = ''
-        form.fields['password'].widget.attrs['placeholder'] = 'Password'
-        form.fields['password'].label = ''
-    return render(request, 'registration/login.html', {'form': form})
-
-
+@api_view(['POST', ])
+@permission_classes([IsAuthenticated, ])
 def logoutuser(request):
-    user = User.objects.get(username=request.user.username)
-    user.deAuthenticateUser()
-    logout(request)
-    return redirect('signin')
+    try:
+        request.user.auth_token.delete()
+    except:
+        pass
+    return Response(status=status.HTTP_200_OK)
 
 
 @api_view(['POST', ])
 def signup(request):
     serializer = RegistrationSerializer(data=request.data)
+    # print(request.data)
     return_data = {}
     if serializer.is_valid():
         user_account = serializer.save()
@@ -116,23 +75,12 @@ def signup(request):
     return Response(return_data)
 
 
-def dashboard(request):
-    user = User.objects.get(username=request.user.username)
-    if user.type == 'vendor':
-        return vendorDashboard(request)
-    elif user.type == 'customer':
-        vendors = User.objects.all().filter(type='vendor')
-        args = {'vendors': vendors, }
-        return render(request, 'Customer/Home.html', args)
-    raise Http404('invalid user type')
-
-
 @api_view(['POST', ])
 @permission_classes([IsAuthenticated, ])
 def dashboardAPI(request):
     user = request.user
     if user.type == 'vendor':
-        return vendorDashboardAPI(request)
+        raise Http404('please use web app')
     elif user.type == 'customer':
         vendors = User.objects.all().filter(type='vendor')
         serializer = UserSerializer(vendors, many=True)
@@ -150,16 +98,6 @@ def vendorDashboard(request):
     return render(request, 'Vendor/Home.html', args)
 
 
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def vendorDashboardAPI(request):
-    vendor = request.user
-    orders = Cart.objects.filter(item__vendor=vendor, orderPlaced=1).exclude(status='Prepared') \
-        .order_by('orderTime')
-    serializer = CartSerializer(orders, many=True)
-    return Response(serializer.data)
-
-
 def checkVendor(request):
     user = User.objects.get(username=request.user.username)
     if user.type == 'customer':
@@ -171,15 +109,6 @@ def vendorMenu(request):
     menu = MenuItems.objects.filter(vendor=request.user, hidden=False)
     args = {'menu': menu, }
     return render(request, 'Vendor/Menu.html', args)
-
-
-@api_view(['POST', ])
-@permission_classes([IsAuthenticated, ])
-def vendorMenuAPI(request):
-    checkVendor(request)
-    menu = MenuItems.objects.filter(vendor=request.user, hidden=False)
-    serializer = MenuItemsSerializer(menu, many=True)
-    return Response(serializer.data)
 
 
 def addItem(request):
@@ -197,25 +126,6 @@ def addItem(request):
         form = AddMenuItem()
     arg = {'form': form}
     return render(request, 'Vendor/AddMenuItem.html', arg)
-
-
-@api_view(['POST', ])
-@permission_classes([IsAuthenticated, ])
-def addItemAPI(request):
-    checkVendor(request)
-    serializer = MenuItemsSerializer(request.data)
-    response_data = {}
-    if serializer.is_valid():
-        item = serializer.save()
-        # print(item)
-        response_data['response'] = 'successful addition to menu'
-        response_data['itemName'] = item.itemName
-        response_data['vendor'] = item.vendor
-        response_data['price'] = item.price
-        response_data['hidden'] = item.hidden
-    else:
-        response_data = serializer.errors
-    return Response(response_data)
 
 
 def addItems(request):
@@ -237,30 +147,6 @@ def addItems(request):
             vendor=request.user
         )
     return redirect('vendor-menu')
-
-
-class UploadMenuItems(APIView):
-    parser_classes = [FileUploadParser, ]
-    permission_classes = [IsAuthenticated, ]
-
-    def post(self, request, format=None):
-        if 'file' not in request.data:
-            raise ParseError('Empty Content')
-        file = request.headers['file']
-        if not file.name.endswith('.csv'):
-            raise Http404('THIS IS NOT A CSV FILE')
-        data_set = file.read().decode('UTF-8')
-        io_string = io.StringIO(data_set)
-        for row in csv.reader(io_string, delimiter=',', quotechar="|"):
-            # print(row)
-            if len(row) <= 1:
-                break
-            MenuItems.objects.update_or_create(
-                itemName=row[0],
-                price=row[1],
-                vendor=request.user
-            )
-        return Response(status=status.HTTP_201_CREATED)
 
 
 def removeItems(request):
@@ -307,81 +193,6 @@ def unHideMenuItem(request, id):
     return redirect('un-hide-item')
 
 
-@api_view(['POST', ])
-@permission_classes([IsAuthenticated, ])
-def removeItemsAPI(request):
-    checkVendor(request)
-    menu = MenuItems.objects.filter(vendor=request.user)
-    serializer = MenuItemsSerializer(menu, many=True)
-    return Response(serializer.data)
-
-
-@api_view(['POST', ])
-@permission_classes([IsAuthenticated, ])
-def removeMenuItemAPI(request):
-    checkVendor(request)
-    id = request.headers['id']
-    instance = MenuItems.objects.get(id=id)
-    instance.delete()
-    return Response(status=status.HTTP_200_OK)
-
-
-@api_view(['POST', ])
-@permission_classes([IsAuthenticated, ])
-def hideItemsAPI(request):
-    checkVendor(request)
-    menu = MenuItems.objects.filter(vendor=request.user, hidden=False)
-    serializer = MenuItemsSerializer(menu, many=True)
-    return Response(serializer.data)
-
-
-@api_view(['POST', ])
-@permission_classes([IsAuthenticated, ])
-def hideMenuItemAPI(request):
-    checkVendor(request)
-    id = request.headers['id']
-    instance = MenuItems.objects.get(id=id)
-    instance.hidden = True
-    instance.save()
-    return Response(status=status.HTTP_200_OK)
-
-
-@api_view(['POST', ])
-@permission_classes([IsAuthenticated, ])
-def unHideItemsAPI(request):
-    checkVendor(request)
-    menu = MenuItems.objects.filter(vendor=request.user, hidden=True)
-    serializer = MenuItemsSerializer(menu, many=True)
-    return Response(serializer.data)
-
-
-@api_view(['POST', ])
-@permission_classes([IsAuthenticated, ])
-def unHideMenuItemAPI(request):
-    checkVendor(request)
-    id = request.headers['id']
-    instance = MenuItems.objects.get(id=id)
-    instance.hidden = False
-    instance.save()
-    return Response(status=status.HTTP_200_OK)
-
-
-def vendorFines(request):
-    pass
-
-
-def vendorFeedback(request):
-    pass
-
-
-def vendorProfile(request):
-    pass
-
-
-def vendorSettings(request):
-    pass
-
-
 def updateOrderStatus(request, cartItemId):
     checkVendor(request)
     vendor = request.user
@@ -398,69 +209,12 @@ def updateOrderStatus(request, cartItemId):
     return redirect('personalised-dashboard')
 
 
-@api_view(['POST', 'GET'])
-@permission_classes([IsAuthenticated, ])
-def updateOrderStatusAPI(request):
-    checkVendor(request)
-    vendor = request.user
-    cartItemId = request.headers['cartItemID']
-    cartItem = Cart.objects.get(id=cartItemId)
-    if cartItem.item.vendor != vendor:
-        raise Http404('you are not authorized update the status of this order')
-    if cartItem.status == 'Added to Cart' or cartItem.status == 'Prepared' or cartItem.status == 'Collected':
-        raise Http404('you are not authorized update the status of this order')
-    if cartItem.status == 'Order Placed':
-        cartItem.status = 'Being Prepared'
-    else:
-        cartItem.status = 'Prepared'
-    cartItem.save()
-    response_data = {
-        'response' : 'successfully updated'
-    }
-    return Response(response_data)
-
-
 # ===========================================Customer==============================================
 def checkCustomer(request):
     user = request.user
-    if user.type == 'vendor':
+    if user.type == 'vendor' or user.type=='mess-vendor':
         raise Http404('invalid Url')
     return
-
-
-def viewVendorMenu(request, vendorID):
-    checkCustomer(request)
-    vendor = User.objects.get(id=vendorID)
-    menu = MenuItems.objects.all().filter(vendor=vendor, hidden=False)
-    ordered = Cart.objects.all().filter(customer=request.user, orderPlaced=1)
-    cart = Cart.objects.all().filter(customer=request.user, orderPlaced=0)
-    Menu = list()
-    for i in menu:
-        Menu.append(i)
-    for i in cart:
-        Menu.remove(i.item)
-    for i in ordered:
-        Menu.remove(i.item)
-    menu_row = []
-    for i in range(len(Menu) // 4 + 1):
-        tmp = []
-        for j in range(i * 4, min((i + 1) * 4, len(Menu))):
-            tmp.append(Menu[j])
-        menu_row.append(tmp)
-    cart_row = []
-    for i in range(len(cart) // 4 + 1):
-        tmp = []
-        for j in range(i * 4, min((i + 1) * 4, len(cart))):
-            tmp.append(cart[j])
-        cart_row.append(tmp)
-    ordered_row = []
-    for i in range(len(ordered) // 4 + 1):
-        tmp = []
-        for j in range(i * 4, min((i + 1) * 4, len(ordered))):
-            tmp.append(ordered[j])
-        ordered_row.append(tmp)
-    args = {'menu_row': menu_row, 'cart_row': cart_row, 'vendorID': vendorID, 'ordered_row': ordered_row}
-    return render(request, 'Customer/Menu.html', args)
 
 
 @api_view(['GET', 'POST'])
@@ -487,37 +241,6 @@ def viewVendorMenuAPI(request):
         'cart_items': cart_serializer
     }
     return Response(response_data)
-
-
-def selectvendor(request):
-    pass
-
-
-def selectitem(request, id):
-    pass
-
-
-def addToCart(request, vendorID, itemID):
-    checkCustomer(request)
-    item = MenuItems.objects.get(id=itemID)
-    vendor = User.objects.get(id=vendorID)
-    if item.vendor != vendor:
-        raise Http404('Error in the URL you entered.')
-    it = Cart.objects.all().filter(customer=request.user, item=item, status='Added to Cart')
-    if len(it) == 0:
-        Cart.objects.update_or_create(
-            item=item,
-            customer=request.user,
-            status='Added to Cart',
-            orderPlaced=0,
-            qty=1,
-        )
-    else:
-        for i in it:
-            i.qty += 1
-            i.save()
-    url = request.build_absolute_uri('/accounts/view-vendor-menu/') + str(vendorID)
-    return redirect(url)
 
 
 @api_view(['POST', ])
@@ -547,27 +270,10 @@ def addToCartAPI(request):
     return Response(response_data)
 
 
-def reduceQty(request, vendorId, itemId):
-    item = Cart.objects.get(id=itemId)
-    menu_item = MenuItems.objects.get(id=item.item.id)
-    vendor = User.objects.get(id=vendorId)
-    checkCustomer(request)
-    user = request.user
-    if vendor.type != 'vendor' or menu_item.vendor != vendor or item.customer != user:
-        raise Http404('The URL has some error')
-    item.qty -= 1
-    if item.qty == 0:
-        item.delete()
-    else:
-        item.save()
-    url = request.build_absolute_uri('/accounts/view-vendor-menu/') + str(vendorId)
-    # print(url)
-    return redirect(url)
-
-
 @api_view(['POST', ])
 @permission_classes([IsAuthenticated, ])
 def reduceQtyAPI(request):
+    checkCustomer(request)
     itemID = request.headers['itemID']
     vendorID = request.headers['vendorID']
     item = Cart.objects.get(id=itemID)
@@ -586,28 +292,12 @@ def reduceQtyAPI(request):
         'response': 'successfully updated'
     }
     return Response(response_data)
-
-
-def increaseQty(request, vendorId, itemId):
-    item = Cart.objects.get(id=itemId)
-    menu_item = MenuItems.objects.get(id=item.item.id)
-    vendor = User.objects.get(id=vendorId)
-    checkCustomer(request)
-    user = request.user
-    if vendor.type != 'vendor' or menu_item.vendor != vendor or item.customer != user:
-        raise Http404('The URL has some error')
-
-    item.qty += 1
-    item.save()
-
-    url = request.build_absolute_uri('/accounts/view-vendor-menu/') + str(vendorId)
-    # print(url)
-    return redirect(url)
 
 
 @api_view(['POST', ])
 @permission_classes([IsAuthenticated, ])
 def increaseQtyAPI(request):
+    checkCustomer(request)
     itemID = request.headers['itemID']
     vendorID = request.headers['vendorID']
     item = Cart.objects.get(id=itemID)
@@ -624,21 +314,6 @@ def increaseQtyAPI(request):
         'response': 'successfully updated'
     }
     return Response(response_data)
-
-
-def viewCart(request):
-    checkCustomer(request)
-    user = request.user
-    items = Cart.objects.all().filter(customer=user, orderPlaced=0)
-    total = 0
-    cart = []
-    for i in items:
-        tmp = i.qty * i.item.price
-        total += tmp
-        serialized_i = CartSerializer(i)
-        cart.append({'item': serialized_i, 'price*qty': tmp})
-    args = {'total': total, 'cart': cart}
-    return render(request, 'Customer/ViewCart.html', args)
 
 
 @api_view(['POST', ])
@@ -655,19 +330,6 @@ def viewCartAPI(request):
         cart.append((i, tmp))
     args = {'total': total, 'cart': cart}
     return Response(args)
-
-
-def placeOrder(request):
-    checkCustomer(request)
-    user = request.user
-    items = Cart.objects.all().filter(customer=user).exclude(orderPlaced=2)
-    for i in items:
-        i.orderPlaced = 1
-        i.orderTime = datetime.datetime.now(IST)
-        if i.status == 'Added to Cart':
-            i.status = 'Order Placed'
-        i.save()
-    return redirect('order-details')
 
 
 @api_view(['POST', ])
@@ -688,24 +350,10 @@ def placeOrderAPI(request):
     return Response(response_data)
 
 
-def orderDetails(request):
-    checkCustomer(request)
-    user = request.user
-    items = Cart.objects.all().filter(customer=user, orderPlaced=1)
-    total = 0
-    cart = []
-    for i in items:
-        tmp = i.item.price * i.qty
-        total += tmp
-        k = i.status == 'Prepared'
-        cart.append((i, tmp, k))
-    args = {'cart': cart, 'total': total}
-    return render(request, 'Customer/OrderDetails.html', args)
-
-
 @api_view(['POST', ])
 @permission_classes([IsAuthenticated, ])
 def orderDetailsAPI(request):
+    checkCustomer(request)
     user = request.user
     items = Cart.objects.all().filter(customer=user, orderPlaced=1)
     total = 0
@@ -724,6 +372,7 @@ def orderDetailsAPI(request):
 @api_view(['POST', ])
 @permission_classes([IsAuthenticated, ])
 def collectedOrderAPI(request):
+    checkCustomer(request)
     orders = request.headers['orders']
     for orderId in orders:
         item = Cart.objects.get(id=orderId)
@@ -739,29 +388,24 @@ def collectedOrderAPI(request):
 @api_view(['POST', ])
 @permission_classes([IsAuthenticated, ])
 def messAttendanceAPI(request):
+    checkCustomer(request)
     user = request.user
     # print(user.username)
     mess_user = MessUser.objects.get(user=user)
     now = datetime.datetime.now(IST)
-    date_today = datetime.date.today()
+    # date_today = datetime.date.today()
     upcoming_attendance = []
     meals = ['Breakfast', 'Lunch', 'Snacks', 'Dinner']
-    timings = [8, 13, 17, 20]
-    days = [0, 1, 2]  # cur, next and day after
+    attendance_qset = MessAttendance.objects.all().filter(user=mess_user)
+    days = [datetime.date(now.year, now.month, now.day+day) for day in range(3)]  # cur, next and day after
     for i in days:
+        qset = attendance_qset.filter(date=i)
         for j in range(len(meals)):
-            deadline_time = now + datetime.timedelta(hours=3)
-            q_date = date_today + datetime.timedelta(days=i)
-            # print(q_date)
-            attendance_entry = MessAttendance.objects.get(date=q_date, meal=meals[j], user=mess_user)
-            if deadline_time.hour < timings[j] or i > 0:
-                attendance_entry.attending = False
-                attendance_entry.save()
+            attendance_entry = qset.get(meal=meals[j])
             upcoming_attendance.append(attendance_entry)
     attendance_serializer = MessAttendanceSerializer(upcoming_attendance, many=True)
     serialized_user = MessUserSerializer(mess_user)
     response_data = {
-        'deadline_time': deadline_time,
         'attendance': attendance_serializer.data,
         'mess_user': serialized_user.data
     }
@@ -771,6 +415,7 @@ def messAttendanceAPI(request):
 @api_view(['POST', ])
 @permission_classes([IsAuthenticated, ])
 def messScheduleAPI(request):
+    checkCustomer(request)
     mess_user = MessUser.objects.get(user=request.user)
     month = int(request.headers['month'])
     # print('mess-schedule', month)
@@ -791,6 +436,8 @@ def messScheduleAPI(request):
         qset = attendance_qset.filter(date=day)
         for j in range(len(meals)):
             attendance_entry = qset.get(meal=meals[j])
+            attendance_entry.editable = editable_meal(meals[j], now, day, date_today)
+            attendance_entry.save()
             attendance.append(attendance_entry)
             # print(attendance_entry.attending, attendance_entry.meal)
             # print(attendance_entry.date, meals[j])
@@ -804,35 +451,40 @@ def messScheduleAPI(request):
     return Response(response_data)
 
 
-def editable_meal(meal, now):
+def editable_meal(meal, now, date_cur, date_today):
     # print(now)
-    if meal == 'Breakfast':
-        meal_deadline = 5
-    elif meal == 'Lunch':
-        meal_deadline = 10
-    elif meal == 'Snacks':
-        meal_deadline = 14
-    else:
-        meal_deadline = 17
-    # print(now.hour, "sudbcksbuvdbdfkviudbvodn")
-    if now.hour < meal_deadline:
+    if date_today > date_cur:
+        return False
+    meal_deadline = now + datetime.timedelta(hours=12)
+    # print(meal_deadline.date())
+    if meal_deadline.date() < date_cur:
         return True
+    if meal == 'Breakfast':
+        return meal_deadline.hour < breakfast_time
+    elif meal == 'Lunch':
+        return meal_deadline.hour < lunch_time
+    elif meal == 'Snacks':
+        return meal_deadline.hour < snacks_time
+    else:
+        return meal_deadline.hour < dinner_time
     return False
 
 
 @api_view(['POST', ])
 @permission_classes([IsAuthenticated, ])
 def editMessScheduleAPI(request):
+    checkCustomer(request)
     user = request.user
     mess_user = MessUser.objects.get(user=user)
     edit_attendance = ast.literal_eval(request.headers['attendance'])
-    print(edit_attendance, type(edit_attendance))
+    # print(edit_attendance, type(edit_attendance))
     """ attendance (list of dictionaries) - date, meals(list of meals) """
     attendance_qset = MessAttendance.objects.all().filter(user=mess_user)
     # print(attendance_qset)
     response_data = {}
     now = datetime.datetime.now(IST)
     date_today = datetime.date(now.year, now.month, now.day)
+    uneditable = list()
     for day in edit_attendance:
         year = int(day['date'][0:4])
         month = int(day['date'][5:7])
@@ -844,75 +496,438 @@ def editMessScheduleAPI(request):
         for meal in day['meals']:
             # print(meal)
             tmp = qset.get(meal=meal)
-            if editable_meal(meal, now) or date_today < date_cur:
+            if editable_meal(meal, now, date_cur, date_today):
                 tmp.attending = not tmp.attending
                 tmp.save()
             else:
+                uneditable.append({'date': date_cur, 'meal': meal})
                 response_data['message'] = 'some dates are not editable'
     response_data['status'] = status.HTTP_200_OK
+    if len(uneditable) > 0:
+        response_data['uneditable'] = uneditable
     return Response(response_data)
 
 
 @api_view(['POST', ])
-@permission_classes([IsAuthenticated, ])
-def editNextMealAPI(request):
-    mess_user = MessUser(user=request.user)
-    choice = bool(request.headers['response'])
-    now = datetime.datetime.now(IST) + datetime.timedelta(hours=3)
-    y = now.year
-    m = now.month
-    d = now.day
-    hr = now.hour
-    if hr < 8:
-        meal = 'BreakFast'
-    elif hr < 13:
-        meal = 'Lunch'
-    elif hr < 17:
-        meal = 'Snacks'
-    elif hr < 20:
-        meal = 'Dinner'
-    else:
-        now = now + datetime.timedelta(hours=7)
-        y = now.year
-        m = now.month
-        d = now.day
-    next_meal_date = datetime.date(y, m, d)
-    attendance_obj = MessAttendance.objects.get(user=mess_user, meal=meal, date=next_meal_date)
-    attendance_obj.attending = choice
-    attendance_obj.save()
-    return Response(status=status.HTTP_200_OK)
-
-
-def add1month(now):
-    month = now.month
-    year = now.year + month//12
-    month = month % 12 + 1
-    ret_date = datetime.date(year, month, now.day)
-    return ret_date
+def addData(request):
+    # MessUser.objects.all().delete()
+    # MessAttendance.objects.all().delete()
+    users = User.objects.all().exclude(type='vendor').exclude(type='mess-vendor')
+    for user in users:
+        MessUser.objects.update_or_create(user=user)
+        mess_user = MessUser.objects.get(user=user)
+        # print(user)
+        # print(mess_user.id)
+        now = datetime.datetime.now(IST)
+        date_today = datetime.date(now.year, now.month, now.day)
+        num_days = calendar.monthrange(date_today.year, date_today.month)[1]
+        days_cur_month = [datetime.date(date_today.year, date_today.month, day) for day in range(1, num_days + 1)]
+        days = days_cur_month
+        meals = ['Breakfast', 'Lunch', 'Snacks', 'Dinner']
+        for day in days:
+            for j in meals:
+                MessAttendance.objects.update_or_create(
+                    user=mess_user,
+                    meal=j,
+                    date=day,
+                )
+    return Response(status=status.HTTP_201_CREATED)
 
 
 @api_view(['POST', ])
 @permission_classes([IsAuthenticated, ])
-def addData(request):
+def sendFeedback(request):
+    checkCustomer(request)
     user = request.user
-    MessUser.objects.update_or_create(user=user)
-    mess_user = MessUser.objects.get(user=user)
-    # print(user)
-    # print(mess_user.id)
-    now = datetime.datetime.now(IST)
-    date_today = datetime.date(now.year, now.month, now.day)
-    num_days = calendar.monthrange(date_today.year, date_today.month)[1]
-    days_cur_month = [datetime.date(date_today.year, date_today.month, day) for day in range(1, num_days + 1)]
-    date_today = add1month(date_today)
-    num_days = calendar.monthrange(date_today.year, date_today.month)[1]
-    days_next_month = [datetime.date(date_today.year, date_today.month, day) for day in range(1, num_days + 1)]
-    days = days_cur_month + days_next_month
+    serializer = FeedbackSerializer(data=request.headers)
+    # print(request.headers)
+    return_data = {}
+    if serializer.is_valid():
+        user_feedback = serializer.validated_data
+        return_data['response'] = 'successful submission'
+        return_data['feedback'] = user_feedback['feedback']
+        return_data['date'] = user_feedback['date']
+        return_data['meal'] = user_feedback['meal']
+        Feedback.objects.update_or_create(
+            user=user,
+            meal=user_feedback['meal'],
+            date=user_feedback['date'],
+            feedback=user_feedback['feedback']
+        )
+    else:
+        return_data = serializer.errors
+    return Response(return_data)
+
+
+@api_view(['POST', ])
+@permission_classes([IsAuthenticated, ])
+def viewPrevFeedbacks(request):
+    checkCustomer(request)
+    user = request.user
+    if user.type == 'customer' or user.type == 'admin':
+        Feedbacks = Feedback.objects.filter(user=user).order_by('-date')
+        serializer = FeedbackStatusSerializer(Feedbacks, many=True)
+        return Response(serializer.data)
+    else:
+        raise Http404('Unauthorized')
+
+
+# ___________________________________Web____________________________________
+def web_signup(request):
+    if request.method == 'POST':
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            username = form.cleaned_data.get('username')
+            raw_password = form.cleaned_data.get('password1')
+            print('sjkbvhbodisbvoisdfbv')
+            user = authenticate(username=username, password=raw_password)
+            print('something')
+            login(request, user)
+            print('blah')
+            return redirect('web-home')
+    else:
+        form = CustomUserCreationForm()
+    return render(request, 'signup.html', {'form': form})
+
+
+def web_login(request):
+    # print(type(request))
+    if request.method == 'POST':
+        form = AuthenticationForm(data=request.POST)
+        form.fields['username'].widget.attrs['placeholder'] = 'Username'
+        form.fields['username'].label = 'Username'
+        form.fields['password'].widget.attrs['placeholder'] = 'Password'
+        form.fields['password'].label = 'Password'
+        if form.is_valid():
+            # print(form)
+            user = form.get_user()
+            print(user)
+            login(request, user)
+        else:
+            raise Http404('invalid')
+    else:
+        form = AuthenticationForm()
+        form.fields['username'].widget.attrs['placeholder'] = 'Username'
+        form.fields['username'].label = 'Username'
+        form.fields['password'].widget.attrs['placeholder'] = 'Password'
+        form.fields['password'].label = 'Password'
+    return render(request, 'login.html', {'form': form})
+
+
+def web_logout(request):
+    try:
+        user = User.objects.get(username=request.user)
+    except:
+        raise Http404('Not authorized')
+    if user.type == 'customer':
+        raise Http404('Not authorized')
+    logout(request)
+    return redirect('web-login')
+
+
+def home(request):
+    try:
+        user = User.objects.get(username=request.user)
+    except:
+        return redirect('web-login')
+    if user.type == 'customer':
+        raise Http404('Not authorized')
+    if user.type == 'vendor':
+        return redirect('vendor-home')
+    return redirect('mess-home')
+
+
+def messHome(request):
+    # print(request)
+    # print(request.user)
+    try:
+        user = User.objects.get(username=request.user)
+    except:
+        raise Http404('Not authorized')
+    if not (user.type == 'admin' or user.type == 'mess-vendor'):
+        raise Http404('Not authorized')
+    now = datetime.datetime.now()
     meals = ['Breakfast', 'Lunch', 'Snacks', 'Dinner']
-    for day in days:
-        for j in meals:
-            MessAttendance.objects.update_or_create(
-                user=mess_user,
-                meal=j,
-                date=day,
-            )
-    return Response(status=status.HTTP_201_CREATED)
+    attendance_qset = MessAttendance.objects.all()
+    response_data = []
+    first = {}
+    days = [datetime.date(now.year, now.month, now.day + day) for day in range(2)]  # cur, next
+    for i in days:
+        qset = attendance_qset.filter(date=i)
+        feedback_qset = Feedback.objects.filter(date=i)
+        for j in range(len(meals)):
+            attendance_entry = qset.filter(meal=meals[j], attending=True).count()
+            if i.day == now.day:
+                first[meals[j]] = attendance_entry
+            feedback_count = feedback_qset.filter(meal=meals[j]).exclude(status='sent').count()
+            response_data.append({'date': i, 'meal': meals[j], 'count': attendance_entry, 'fcount': feedback_count})
+    response_data = {'response': response_data, 'user': user, 'first': first}
+    print(first)
+    if user.type == 'admin':
+        return render(request, 'Mess/home.html', response_data)
+    return render(request, 'MessVendor/home.html', response_data)
+
+
+def getMarkedAttendanceCurMonth(request):
+    try:
+        user = User.objects.get(username=request.user)
+    except:
+        raise Http404('Not authorized')
+    if not (user.type == 'admin' or user.type == 'mess-vendor'):
+        raise Http404('Not authorized')
+    now = datetime.datetime.now(IST)
+    meals = ['Breakfast', 'Lunch', 'Snacks', 'Dinner']
+    attendance_qset = MessAttendance.objects.all()
+    response_data = []
+    num_days = calendar.monthrange(now.year, now.month)[1]
+    days = [datetime.date(now.year, now.month, day) for day in range(1, num_days+1)]
+    for i in days:
+        qset = attendance_qset.filter(date=i)
+        for j in range(len(meals)):
+            attendance_entry = qset.filter(meal=meals[j], attending=True).count()
+            response_data.append({'date': i, 'meal': meals[j], 'count': attendance_entry})
+    response_data = {'response': response_data}
+    if user.type == 'admin':
+        return render(request, 'Mess/attendance.html', response_data)
+    return render(request, 'MessVendor/view_attendance.html', response_data)
+
+
+def getMarkedAttendancePrevMonth(request):
+    try:
+        user = User.objects.get(username=request.user)
+    except:
+        raise Http404('Not authorized')
+    if not user.type == 'admin':
+        raise Http404('Not authorized')
+
+    meals = ['Breakfast', 'Lunch', 'Snacks', 'Dinner']
+    now = datetime.datetime.now(IST) - datetime.timedelta(months=1)
+    attendance_qset = MessAttendance.objects.all()
+    response_data = []
+    num_days = calendar.monthrange(now.year, now.month)[1]
+    days = [datetime.date(now.year, now.month, day) for day in range(1, num_days+1)]
+    for i in days:
+        qset = attendance_qset.filter(date=i)
+        for j in range(len(meals)):
+            attendance_entry = qset.filter(meal=meals[j], attending=True).count()
+            response_data.append({'date': i, 'meal': meals[j], 'count': attendance_entry})
+    response_data = {'response': response_data}
+    return render(request, 'Mess/home.html', response_data)
+
+
+def uploadAttendance(request):
+    try:
+        user = User.objects.get(username=request.user)
+    except:
+        raise Http404('Not authorized')
+    if not user.type == 'admin':
+        raise Http404('Not authorized')
+    if request.method == 'GET':
+        form = AttendanceList()
+        return render(request, 'Mess/upload_attendance.html', {'form': form, })
+
+    form = AttendanceList(data=request.POST)
+    if form.is_valid():
+        meal = form.cleaned_data['meal']
+        date = form.cleaned_data['date']
+        qset = MessAttendance.objects.filter(meal=meal,
+                                             date=date)
+    else:
+        raise Http404('bad data')
+    csv_file = request.FILES['file']
+    if not csv_file.name.endswith('.csv'):
+        raise Http404('THIS IS NOT A CSV FILE')
+    data_set = csv_file.read().decode('UTF-8')
+    io_string = io.StringIO(data_set)
+    for row in csv.reader(io_string, delimiter=',', quotechar="|"):
+        # print(row)
+        if len(row) <= 1:
+            break
+        username = row[0]
+        attended = (row[1] == '1')
+        user = User.objects.get(username=username)
+        mess_user = MessUser.objects.get(user=user)
+        attendance_obj = qset.get(user=mess_user)
+        attendance_obj.attended = attended
+        attendance_obj.defaulter = not (attended == attendance_obj.attending)
+        attendance_obj.save()
+        if attended:
+            if meal == 'Breakfast':
+                mess_user.breakfast_coupons -= 1
+            if meal == 'Lunch':
+                mess_user.lunch_coupons -= 1
+            if meal == 'Snacks':
+                mess_user.snacks_coupons -= 1
+            if meal == 'Dinner':
+                mess_user.dinner_coupons -= 1
+        mess_user.save()
+    return redirect('mess-home')
+
+
+def listDefaulters(request):
+    try:
+        user = User.objects.get(username=request.user)
+    except:
+        raise Http404('Not authorized')
+    if not user.type == 'admin':
+        raise Http404('Not authorized')
+    defaulter_list = []
+    if request.method == 'GET':
+        form = AttendanceList()
+        meal = 'Breakfast'
+        date = datetime.datetime.now(IST)
+        date = datetime.date(date.year, date.month, date.day)
+        qset = MessAttendance.objects.filter(meal=meal, date=date, defaulter=True)
+        feedbackset = Feedback.objects.filter(meal=meal, date=date)
+    else:
+        form = AttendanceList(data=request.POST)
+        if form.is_valid():
+            meal = form.cleaned_data['meal']
+            date = form.cleaned_data['date']
+            qset = MessAttendance.objects.filter(meal=meal, date=date, defaulter=True)
+            feedbackset = Feedback.objects.filter(meal=meal, date=date)
+        else:
+            raise Http404('bad data')
+    for elem in qset:
+        tmp = {}
+        try:
+            feedback = feedbackset.get(user=elem.user.user)
+            tmp['feedback'] = feedback.feedback
+            tmp['status'] = feedback.status
+        except:
+            tmp['feedback'] = ''
+            tmp['status'] = ''
+        tmp['username'] = elem.user.user.username
+        if meal == 'Breakfast':
+            tmp['coupons'] = elem.user.breakfast_coupons
+        elif meal == 'Lunch':
+            tmp['coupons'] = elem.user.lunck_coupons
+        elif meal == 'Snacks':
+            tmp['coupons'] = elem.user.snacks_coupons
+        elif meal == 'Dinner':
+            tmp['coupons'] = elem.user.dinner_coupons
+        tmp['marked'] = elem.attending
+        tmp['attended'] = elem.attended
+
+        defaulter_list.append(tmp)
+
+    return render(request, 'Mess/defaulter.html', {'form': form, 'defaulter_list':defaulter_list, 'user': user})
+
+
+def viewFeedback(request):
+    try:
+        user = User.objects.get(username=request.user)
+    except:
+        raise Http404('Not authorized')
+    if not user.type == 'admin':
+        raise Http404('Not authorized')
+    feedbackqset = Feedback.objects.filter(status='sent').order_by('-date')
+    response_data = {
+        'feedback': feedbackqset,
+        'user': user
+    }
+    return render(request, 'Mess/feedback.html', response_data)
+
+
+def penalise(request, feedbackid):
+    try:
+        user = User.objects.get(username=request.user)
+    except:
+        raise Http404('Not authorized')
+    if not user.type == 'admin':
+        raise Http404('Not authorized')
+    feedback = Feedback.objects.get(id=feedbackid)
+    feedback.status = 'penalised'
+    mess_user = MessUser.objects.get(user=user)
+    mess_attendance_obj = MessAttendance.objects.get(user=mess_user, meal=feedback.meal, date=feedback.date)
+    if not mess_attendance_obj.attended:
+        if feedback.meal == 'Breakfast':
+            if mess_user.breakfast_coupons > 0:
+                mess_user.breakfast_coupons -= 1
+        elif feedback.meal == 'Lunch':
+            if mess_user.lunch_coupons > 0:
+                mess_user.lunch_coupons -= 1
+        elif feedback.meal == 'Snacks':
+            if mess_user.snacks_coupons > 0:
+                mess_user.snacks_coupons -= 1
+        elif feedback.meal == 'Dinner':
+            if mess_user.dinner_coupons > 0:
+                mess_user.dinner_coupons -= 1
+        mess_user.save()
+    feedback.save()
+    return redirect('mess-feedback')
+
+
+def approve(request, feedbackid):
+    try:
+        user = User.objects.get(username=request.user)
+    except:
+        raise Http404('Not authorized')
+    if not user.type == 'admin':
+        raise Http404('Not authorized')
+    feedback = Feedback.objects.get(id=feedbackid)
+    feedback.status = 'approved'
+    feedback.save()
+    return redirect('mess-feedback')
+
+
+def maybe(request, feedbackid):
+    try:
+        user = User.objects.get(username=request.user)
+    except:
+        raise Http404('Not authorized')
+    if not user.type == 'admin':
+        raise Http404('Not authorized')
+    feedback = Feedback.objects.get(id=feedbackid)
+    feedback.status = 'check mail'
+    feedback.save()
+    return redirect('mess-feedback')
+
+
+def viewUsers(request):
+    try:
+        user = User.objects.get(username=request.user)
+    except:
+        raise Http404('Not authorized')
+    if not user.type == 'admin':
+        raise Http404('Not authorized')
+    Users = User.objects.all()
+    return render(request, 'Mess/view_users.html', {'users': Users, 'user':user})
+
+
+def deleteUser(request, user_id):
+    try:
+        user = User.objects.get(username=request.user)
+    except:
+        raise Http404('Not authorized')
+    if not user.type == 'admin':
+        raise Http404('Not authorized')
+    User.objects.get(id=user_id).delete()
+    return redirect('view-users')
+
+
+def giveAdminRights(request, user_id):
+    try:
+        user = User.objects.get(username=request.user)
+    except:
+        raise Http404('Not authorized')
+    if not user.type == 'admin':
+        raise Http404('Not authorized')
+    usr = User.objects.get(id=user_id)
+    usr.type = 'admin'
+    usr.save()
+    return redirect('view-users')
+
+
+def removeAdminRights(request, user_id):
+    try:
+        user = User.objects.get(username=request.user)
+    except:
+        raise Http404('Not authorized')
+    if not user.type == 'admin':
+        raise Http404('Not authorized')
+    usr = User.objects.get(id=user_id)
+    usr.type = 'customer'
+    usr.save()
+    return redirect('view-users')

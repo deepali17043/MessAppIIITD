@@ -34,7 +34,12 @@ class UserManager(BaseUserManager):
 
 class User(AbstractBaseUser):
     username = models.CharField(max_length=255, unique=True)  # vendors will enter their shopname as username.
-    type = models.CharField(max_length=20, choices=(('customer', 'Customer'), ('vendor', 'Vendor')), default='customer')
+    type = models.CharField(max_length=20,
+                            choices=(('customer', 'Customer'),
+                                     ('vendor', 'Vendor'),
+                                     ('admin', 'Admin'),
+                                     ('mess-vendor', 'Mess Vendor')),
+                            default='customer')
     email = models.EmailField()
     name = models.CharField(max_length=255)
     is_active = models.BooleanField(default=True)
@@ -86,3 +91,20 @@ class MessAttendance(models.Model):
                                                     ('Dinner', 'Dinner')))
     attending = models.BooleanField(default=True)
     date = models.DateField(default=datetime.date.today())
+    attended = models.BooleanField(default=False)
+    defaulter = models.BooleanField(default=False)
+    editable = models.BooleanField(default=True)
+
+
+class Feedback(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='usr_feedback')
+    meal = models.CharField(max_length=10, choices=(('Breakfast', 'Breakfast'),
+                                                    ('Lunch', 'Lunch'),
+                                                    ('Snacks', 'Snacks'),
+                                                    ('Dinner', 'Dinner')))
+    date = models.DateField(default=datetime.date.today())
+    feedback = models.TextField()
+    status = models.CharField(max_length=10, choices=(('sent', 'Sent'),
+                                                        ('approved', 'Approved'),
+                                                        ('check mail', 'check mail'),
+                                                        ('penalised', 'Penalised')), default='sent')

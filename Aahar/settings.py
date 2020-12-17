@@ -25,7 +25,7 @@ SECRET_KEY = '9l(7rhajws#we8@r162r@-6u7+xktlou3c*sa$nwky+=k&#_$u'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', '5445c921c957.ngrok.io']
+ALLOWED_HOSTS = ['127.0.0.1', '34b535c1edd4.ngrok.io']
 
 
 # Application definition
@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'UserLogin',
     'rest_framework',
     'rest_framework.authtoken',
+    'crispy_forms',
 ]
 
 MIDDLEWARE = [
@@ -103,6 +104,10 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
+    ],
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.TokenAuthentication',
     ),
@@ -133,6 +138,7 @@ STATICFILES_DIRS = (
 
 # APPEND_SLASH = False
 
+CRISPY_TEMPLATE_PACK = 'uni_form'
 
 AUTH_USER_MODEL = 'UserLogin.User'
 # LOGIN_REDIRECT_URL = '/'

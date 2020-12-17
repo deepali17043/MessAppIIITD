@@ -1,5 +1,5 @@
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
-from .models import User, MenuItems
+from .models import *
 from django import forms
 
 
@@ -12,12 +12,6 @@ class CustomUserCreationForm(UserCreationForm):
             'username': forms.TextInput(attrs={'placeholder': 'Username/Shop Name'}),
             'name': forms.TextInput(attrs={'placeholder': 'Name'}),
             'email': forms.TextInput(attrs={'placeholder': 'Email ID'}),
-        }
-        labels = {
-            'type': '',
-            'username': '',
-            'name': '',
-            'email': '',
         }
 
     def __init__(self, *args, **kwargs):
@@ -44,3 +38,9 @@ class AddMenuItem(forms.ModelForm):
     class Meta:
         model = MenuItems
         fields = ('itemName', 'price')
+
+
+class AttendanceList(forms.ModelForm):
+    class Meta:
+        model = MessAttendance
+        fields = ('meal', 'date')

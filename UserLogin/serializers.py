@@ -1,6 +1,9 @@
+from django.contrib.auth import authenticate
+from django.contrib.auth.models import update_last_login
 from rest_framework import serializers
+from rest_framework.settings import api_settings
 from rest_framework.validators import UniqueTogetherValidator
-from .models import User, MenuItems, Cart, MessUser, MessAttendance
+from .models import *
 
 
 class UserSerializer(serializers.Serializer):
@@ -34,6 +37,37 @@ class UserSerializer(serializers.Serializer):
         print('umm')
         return User.objects.create_user(validated_data.get('username'), validated_data.get('name'),
                                         validated_data.get('email'), validated_data.get('type'))
+
+
+class SignInSerializer(serializers.Serializer):
+    username = serializers.CharField(max_length=255)
+    password = serializers.CharField(style={'input_type': 'password'}, write_only=True)
+
+    def validate(self, data):
+        username = data.get("username", None)
+
+        password = data.get("password", None)
+        user = authenticate(username=username, password=password)
+        if user is None:
+            raise serializers.ValidationError(
+                'A user with this username and password is not found.'
+            )
+        try:
+            # print(user)
+            # payload = api_settings.JWT_PAYLOAD_HANDLER(user)
+            # jwt_token = api_settings.JWT_ENCODE_HANDLER(payload)
+            update_last_login(None, user)
+        except User.DoesNotExist:
+            raise serializers.ValidationError(
+                'User with given username and password does not exists'
+            )
+        return {
+            'username': user,
+            'password': password
+        }
+
+    def create(self, validated_data):
+        return SignInSerializer(**validated_data)
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
@@ -93,4 +127,16 @@ class MessUserSerializer(serializers.ModelSerializer):
 class MessAttendanceSerializer(serializers.ModelSerializer):
     class Meta:
         model = MessAttendance
-        fields = ('meal', 'date', 'attending')
+        fields = ('meal', 'date', 'attending', 'editable')
+
+
+class FeedbackSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Feedback
+        fields = ('meal', 'date', 'feedback')
+
+
+class FeedbackStatusSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Feedback
+        fields = ('meal', 'date', 'feedback', 'status')
