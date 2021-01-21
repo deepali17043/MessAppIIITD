@@ -30,7 +30,7 @@ urlpatterns = [
     path('api/accounts/schedule/edit/', views.editMessScheduleAPI, name='edit-mess-schedule'),
     path('api/accounts/feedback/', views.sendFeedback, name='send-feedback'),
     path('api/accounts/view-feedback/', views.viewPrevFeedbacks, name='view-prev-feedback'),
-    path('dummy/add-data/', views.addData, name='add-data'),
+    # path('dummy/add-data/', views.addData, name='add-data'),
 
     # common Web app pages
     path('web/signup/', views.web_signup, name='web-signup'),

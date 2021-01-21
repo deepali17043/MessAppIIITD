@@ -34,7 +34,7 @@ class UserSerializer(serializers.Serializer):
         :param validated_data: User object.
         :return: User serialized object
         """
-        print('umm')
+        # print('umm')
         return User.objects.create_user(validated_data.get('username'), validated_data.get('name'),
                                         validated_data.get('email'), validated_data.get('type'))
 

@@ -557,11 +557,11 @@ def web_signup(request):
             form.save()
             username = form.cleaned_data.get('username')
             raw_password = form.cleaned_data.get('password1')
-            print('sjkbvhbodisbvoisdfbv')
+            # print('sjkbvhbodisbvoisdfbv')
             user = authenticate(username=username, password=raw_password)
-            print('something')
+            # print('something')
             login(request, user)
-            print('blah')
+            # print('blah')
             return redirect('web-home')
     else:
         form = CustomUserCreationForm()
@@ -579,7 +579,7 @@ def web_login(request):
         if form.is_valid():
             # print(form)
             user = form.get_user()
-            print(user)
+            # print(user)
             login(request, user)
         else:
             raise Http404('invalid')
@@ -640,7 +640,7 @@ def messHome(request):
             feedback_count = feedback_qset.filter(meal=meals[j]).exclude(status='sent').count()
             response_data.append({'date': i, 'meal': meals[j], 'count': attendance_entry, 'fcount': feedback_count})
     response_data = {'response': response_data, 'user': user, 'first': first}
-    print(first)
+    # print(first)
     if user.type == 'admin':
         return render(request, 'Mess/home.html', response_data)
     return render(request, 'MessVendor/home.html', response_data)
@@ -725,7 +725,7 @@ def uploadAttendance(request):
         attended = (row[1] == '1')
         user = User.objects.get(username=username)
         mess_user = MessUser.objects.get(user=user)
-        print(user)
+        # print(user)
         attendance_obj = qset.get(user=mess_user)
         attendance_obj.attended = attended
         meal = attendance_obj.meal
@@ -736,13 +736,13 @@ def uploadAttendance(request):
                 mess_user.breakfast_coupons -= 1
             if meal == 'Lunch':
                 mess_user.lunch_coupons -= 1
-                print('something')
+                # print('something')
             if meal == 'Snacks':
                 mess_user.snacks_coupons -= 1
             if meal == 'Dinner':
                 mess_user.dinner_coupons -= 1
         mess_user.save()
-        print(mess_user.lunch_coupons)
+        # print(mess_user.lunch_coupons)
     return redirect('mess-home')
 
 
