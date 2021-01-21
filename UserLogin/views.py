@@ -433,12 +433,15 @@ def messScheduleAPI(request):
     meals = ['Breakfast', 'Lunch', 'Snacks', 'Dinner']
     attendance_qset = MessAttendance.objects.all().filter(user=mess_user)
     for day in days:
-        qset = attendance_qset.filter(date=day)
-        for j in range(len(meals)):
-            attendance_entry = qset.get(meal=meals[j])
-            attendance_entry.editable = editable_meal(meals[j], now, day, date_today)
-            attendance_entry.save()
-            attendance.append(attendance_entry)
+        try:
+            qset = attendance_qset.filter(date=day)
+            for j in range(len(meals)):
+                attendance_entry = qset.get(meal=meals[j])
+                attendance_entry.editable = editable_meal(meals[j], now, day, date_today)
+                attendance_entry.save()
+                attendance.append(attendance_entry)
+        except:
+            pass
             # print(attendance_entry.attending, attendance_entry.meal)
             # print(attendance_entry.date, meals[j])
     serializer = MessAttendanceSerializer(attendance, many=True)
@@ -871,7 +874,7 @@ def viewUsers(request):
         raise Http404('Not authorized')
     if not user.type == 'admin':
         raise Http404('Not authorized')
-    Users = User.objects.all()
+    Users = User.objects.filter(type='customer')
     return render(request, 'Mess/view_users.html', {'users': Users, 'user':user})
 
 
@@ -904,7 +907,7 @@ def addData(request, user_id):
                 meal=j,
                 date=day,
             )
-    return Response(status=status.HTTP_201_CREATED)
+    return redirect('view-users')
 
 
 def deleteUser(request, user_id):
