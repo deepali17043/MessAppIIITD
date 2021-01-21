@@ -94,6 +94,7 @@
                                                 <th>Make Admin</th>
                                                 <th>Remove as Admin</th>
                                                 <th>Delete User</th>
+                                                <th>Renew Coupons</th>
                                             </tr>
                                         </thead>
                                         <tfoot>
@@ -105,6 +106,7 @@
                                                 <th>Make Admin</th>
                                                 <th>Remove as Admin</th>
                                                 <th>Delete User</th>
+                                                <th>Renew Coupons</th>
                                             </tr>
                                         </tfoot>
                                         <tbody>
@@ -117,6 +119,7 @@
                                                 <td><a href="{% url 'admin-rights-give' user_id=en.id %}">Click here</a></td>
                                                 <td><a href="{% url 'admin-rights-remove' user_id=en.id %}">Click here</a></td>
                                                 <td><a href="{% url 'delete-user' user_id=en.id %}">Click here</a></td>
+                                                <td><a href="{% url 'renew-coupons' user_id=en.id %}">Click here</a></td>
                                             </tr>
                                             {% endfor %}
                                         </tbody>

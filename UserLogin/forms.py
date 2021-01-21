@@ -44,3 +44,9 @@ class AttendanceList(forms.ModelForm):
     class Meta:
         model = MessAttendance
         fields = ('meal', 'date')
+
+
+# class CouponForm(forms.ModelForm):
+#     class Meta:
+#         model = MessUser
+#         fields = ('breakfast_coupons', )

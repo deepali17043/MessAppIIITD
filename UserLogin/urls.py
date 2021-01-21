@@ -57,6 +57,7 @@ urlpatterns = [
     path('mess-admin/upload-attendance/', views.uploadAttendance, name='upload-attendance'),
     path('mess-admin/list-defaulters/', views.listDefaulters, name='list-defaulters'),
     path('mess-admin/view-users/', views.viewUsers, name='view-users'),
+    url(r'^mess-admin/renew-coupons/(?P<user_id>\d+)/$', views.addData, name='renew-coupons'),
     url(r'^mess-admin/delete-user/(?P<user_id>\d+)/$', views.deleteUser, name='delete-user'),
     url(r'^mess-admin/give-user-admin-rights/(?P<user_id>\d+)/$', views.giveAdminRights, name='admin-rights-give'),
     url(r'^mess-admin/remove-user-admin-rights/(?P<user_id>\d+)/$', views.removeAdminRights, name='admin-rights-remove'),

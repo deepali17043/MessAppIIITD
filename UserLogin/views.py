@@ -509,32 +509,6 @@ def editMessScheduleAPI(request):
 
 
 @api_view(['POST', ])
-def addData(request):
-    # MessUser.objects.all().delete()
-    # MessAttendance.objects.all().delete()
-    users = User.objects.all().exclude(type='vendor').exclude(type='mess-vendor')
-    for user in users:
-        MessUser.objects.update_or_create(user=user)
-        mess_user = MessUser.objects.get(user=user)
-        # print(user)
-        # print(mess_user.id)
-        now = datetime.datetime.now(IST)
-        date_today = datetime.date(now.year, now.month, now.day)
-        num_days = calendar.monthrange(date_today.year, date_today.month)[1]
-        days_cur_month = [datetime.date(date_today.year, date_today.month, day) for day in range(1, num_days + 1)]
-        days = days_cur_month
-        meals = ['Breakfast', 'Lunch', 'Snacks', 'Dinner']
-        for day in days:
-            for j in meals:
-                MessAttendance.objects.update_or_create(
-                    user=mess_user,
-                    meal=j,
-                    date=day,
-                )
-    return Response(status=status.HTTP_201_CREATED)
-
-
-@api_view(['POST', ])
 @permission_classes([IsAuthenticated, ])
 def sendFeedback(request):
     checkCustomer(request)
@@ -748,8 +722,10 @@ def uploadAttendance(request):
         attended = (row[1] == '1')
         user = User.objects.get(username=username)
         mess_user = MessUser.objects.get(user=user)
+        print(user)
         attendance_obj = qset.get(user=mess_user)
         attendance_obj.attended = attended
+        meal = attendance_obj.meal
         attendance_obj.defaulter = not (attended == attendance_obj.attending)
         attendance_obj.save()
         if attended:
@@ -757,11 +733,13 @@ def uploadAttendance(request):
                 mess_user.breakfast_coupons -= 1
             if meal == 'Lunch':
                 mess_user.lunch_coupons -= 1
+                print('something')
             if meal == 'Snacks':
                 mess_user.snacks_coupons -= 1
             if meal == 'Dinner':
                 mess_user.dinner_coupons -= 1
         mess_user.save()
+        print(mess_user.lunch_coupons)
     return redirect('mess-home')
 
 
@@ -802,7 +780,7 @@ def listDefaulters(request):
         if meal == 'Breakfast':
             tmp['coupons'] = elem.user.breakfast_coupons
         elif meal == 'Lunch':
-            tmp['coupons'] = elem.user.lunck_coupons
+            tmp['coupons'] = elem.user.lunch_coupons
         elif meal == 'Snacks':
             tmp['coupons'] = elem.user.snacks_coupons
         elif meal == 'Dinner':
@@ -839,6 +817,7 @@ def penalise(request, feedbackid):
         raise Http404('Not authorized')
     feedback = Feedback.objects.get(id=feedbackid)
     feedback.status = 'penalised'
+    user = feedback.user
     mess_user = MessUser.objects.get(user=user)
     mess_attendance_obj = MessAttendance.objects.get(user=mess_user, meal=feedback.meal, date=feedback.date)
     if not mess_attendance_obj.attended:
@@ -894,6 +873,38 @@ def viewUsers(request):
         raise Http404('Not authorized')
     Users = User.objects.all()
     return render(request, 'Mess/view_users.html', {'users': Users, 'user':user})
+
+
+def addData(request, user_id):
+    # MessUser.objects.all().delete()
+    # MessAttendance.objects.all().delete()
+    user = User.objects.get(id=user_id)
+    mess_user_qset = MessUser.objects.filter(user=user)
+    if len(mess_user_qset) <= 0:
+        MessUser.objects.update_or_create(user=user)
+        mess_user = MessUser.objects.get(user=user)
+    else:
+        mess_user = MessUser.objects.get(user=user)
+        mess_user.breakfast_coupons = 20
+        mess_user.lunch_coupons = 20
+        mess_user.snacks_coupons = 20
+        mess_user.dinner_coupons = 20
+    # print(user)
+    # print(mess_user.id)
+    now = datetime.datetime.now(IST)
+    date_today = datetime.date(now.year, now.month, now.day)
+    num_days = calendar.monthrange(date_today.year, date_today.month)[1]
+    days_cur_month = [datetime.date(date_today.year, date_today.month, day) for day in range(1, num_days + 1)]
+    days = days_cur_month
+    meals = ['Breakfast', 'Lunch', 'Snacks', 'Dinner']
+    for day in days:
+        for j in meals:
+            MessAttendance.objects.update_or_create(
+                user=mess_user,
+                meal=j,
+                date=day,
+            )
+    return Response(status=status.HTTP_201_CREATED)
 
 
 def deleteUser(request, user_id):
