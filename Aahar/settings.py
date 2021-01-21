@@ -23,9 +23,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '9l(7rhajws#we8@r162r@-6u7+xktlou3c*sa$nwky+=k&#_$u'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', '0.0.0.0', 'aahar-iiitd.herokuapp.com']
+ALLOWED_HOSTS = ['aahar-iiitd.herokuapp.com']
 
 
 # Application definition
@@ -80,11 +80,12 @@ WSGI_APPLICATION = 'Aahar.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
 
+# postgres://kuajjmigrxgkjj:763cef8e7f627e4c7078d20a8837971d0f3cdd3edfa52c76a2c3c2cda7357feb@ec2-3-215-76-208.compute-1.amazonaws.com:5432/
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
@@ -144,5 +145,17 @@ CRISPY_TEMPLATE_PACK = 'uni_form'
 AUTH_USER_MODEL = 'UserLogin.User'
 # LOGIN_REDIRECT_URL = '/'
 # LOGOUT_REDIRECT_URL = '/login/'
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers':
+        {
+            'console':
+                {
+                    'class': 'logging.StreamHandler',
+                },
+        }
+}
 
 # django_heroku.settings(locals())
