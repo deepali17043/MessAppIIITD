@@ -455,20 +455,29 @@ def messScheduleAPI(request):
 
 
 def editable_meal(meal, now, date_cur, date_today):
-    # print(now)
+    print(now)
     if date_today > date_cur:
         return False
     meal_deadline = now + datetime.timedelta(hours=12)
-    # print(meal_deadline.date())
+    print(meal_deadline.date())
+    print(date_cur)
     if meal_deadline.date() < date_cur:
+        print("skskjskj")
         return True
+    elif meal_deadline.date() > date_cur:
+        print("something")
+        return False
     if meal == 'Breakfast':
+        print("bf")
         return meal_deadline.hour < breakfast_time
     elif meal == 'Lunch':
+        print("lin")
         return meal_deadline.hour < lunch_time
     elif meal == 'Snacks':
+        print("sn")
         return meal_deadline.hour < snacks_time
     else:
+        print("din")
         return meal_deadline.hour < dinner_time
     return False
 
