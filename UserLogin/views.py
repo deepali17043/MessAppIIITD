@@ -429,7 +429,7 @@ def messScheduleAPI(request):
         # print('...')
         raise Http404('Schedule not ready for this month')
     num_days = calendar.monthrange(year, month)[1]
-    days = [datetime.date(year, month, day) for day in range(1, num_days+1)]
+    days = [datetime.date(year, month, day) for day in range(1, 10)]
     meals = ['Breakfast', 'Lunch', 'Snacks', 'Dinner']
     attendance_qset = MessAttendance.objects.all().filter(user=mess_user)
     # print("asdfghjk")
