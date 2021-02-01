@@ -418,21 +418,21 @@ def messScheduleAPI(request):
     checkCustomer(request)
     mess_user = MessUser.objects.get(user=request.user)
     month = int(request.headers['month'])
-    print('mess-schedule', month)
+    # print('mess-schedule', month)
     year = int(request.headers['year'])
-    print('mess-schedule', year)
+    # print('mess-schedule', year)
     now = datetime.datetime.now(IST)
     date_today = datetime.date(now.year, now.month, now.day)
     attendance = []
     cur_month = date_today.month
     if month != cur_month and month != cur_month+1:
-        print('...')
+        # print('...')
         raise Http404('Schedule not ready for this month')
     num_days = calendar.monthrange(year, month)[1]
     days = [datetime.date(year, month, day) for day in range(1, num_days+1)]
     meals = ['Breakfast', 'Lunch', 'Snacks', 'Dinner']
     attendance_qset = MessAttendance.objects.all().filter(user=mess_user)
-    print("asdfghjk")
+    # print("asdfghjk")
     for day in days:
         try:
             qset = attendance_qset.filter(date=day)
@@ -456,39 +456,39 @@ def messScheduleAPI(request):
 
 
 def editable_meal(meal, now, date_cur, date_today):
-    print('in editable_meal', now)
+    # print('in editable_meal', now)
     if date_today > date_cur:
         return False
     try:
         deadline = MealDeadline.objects.get(date=date_cur, meal=meal)
         hrs = deadline.hours
     except:
-        print("editable meal: exception")
+        # print("editable meal: exception")
         if meal == 'Breakfast':
             hrs = breakfast_deadline
         else:
             hrs = default_deadline
     meal_deadline = now + datetime.timedelta(hours=hrs)
     # meal_deadline = datetime.datetime(2021, 1, 28, 11, 59, 0, 0) + datetime.timedelta(hours=12)
-    print("meal_deadline.date(", meal_deadline.date())
-    print("date_cur", date_cur)
+    # print("meal_deadline.date(", meal_deadline.date())
+    # print("date_cur", date_cur)
     if meal_deadline.date() < date_cur:
-        print("meal_deadline.date() < date_cur")
+        # print("meal_deadline.date() < date_cur")
         return True
     elif meal_deadline.date() > date_cur:
-        print("meal_deadline.date() > date_cur")
+        # print("meal_deadline.date() > date_cur")
         return False
     if meal == 'Breakfast':
-        print("bf")
+        # print("bf")
         return meal_deadline.hour < breakfast_time
     elif meal == 'Lunch':
-        print("lin")
+        # print("lin")
         return meal_deadline.hour < lunch_time
     elif meal == 'Snacks':
-        print("sn")
+        # print("sn")
         return meal_deadline.hour < snacks_time
     else:
-        print("din")
+        # print("din")
         return meal_deadline.hour < dinner_time
 
 
@@ -718,14 +718,15 @@ def listAttendees(request):
     list_attendees = []
     tmp = dict()
     try:
-        print("qsert:", qset)
+        # print("qsert:", qset)
         for q in qset:
             tmp['username'] = q.user.user.username
             tmp['name'] = q.user.user.name
             tmp['email'] = q.user.user.email
             list_attendees.append(tmp)
     except:
-        print("umm what happened")
+        # print("umm what happened")
+        pass
     args = {'form': form, 'list_attendees': list_attendees, 'user': user}
     return render(request, 'Mess/list_attendees.html', args)
 
@@ -753,14 +754,15 @@ def customListAttendees(request, meal):
     list_attendees = []
     tmp = dict()
     try:
-        print("qsert:", qset)
+        # print("qsert:", qset)
         for q in qset:
             tmp['username'] = q.user.user.username
             tmp['name'] = q.user.user.name
             tmp['email'] = q.user.user.email
             list_attendees.append(tmp)
     except:
-        print("umm what happened")
+        # print("umm what happened")
+        pass
     args = {'list_attendees': list_attendees, 'user': user, 'meal': meal, 'date_today': date}
     return render(request, 'Mess/custom_list_attendees.html', args)
 
@@ -847,7 +849,7 @@ def uploadAttendance(request):
         # print(user)
         attendance_obj = qset.get(user=mess_user)
         attendance_obj.attended = attended
-        meal = attendance_obj.meal
+        # meal = attendance_obj.meal
         attendance_obj.defaulter = not (attended == attendance_obj.attending)
         attendance_obj.save()
         # if attended:
