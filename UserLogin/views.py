@@ -717,11 +717,15 @@ def listAttendees(request):
             raise Http404('bad data')
     list_attendees = []
     tmp = dict()
-    for q in qset:
-        tmp['username'] = q.user.user.username
-        tmp['name'] = q.user.user.name
-        tmp['email'] = q.user.user.email
-        list_attendees.append(tmp)
+    try:
+        print("qsert:", qset)
+        for q in qset:
+            tmp['username'] = q.user.user.username
+            tmp['name'] = q.user.user.name
+            tmp['email'] = q.user.user.email
+            list_attendees.append(tmp)
+    except:
+        print("umm what happened")
     args = {'form': form, 'list_attendees': list_attendees, 'user': user}
     return render(request, 'Mess/list_attendees.html', args)
 
