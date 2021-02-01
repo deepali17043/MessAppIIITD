@@ -663,7 +663,10 @@ def messHome(request):
         qset = attendance_qset.filter(date=i)
         feedback_qset = Feedback.objects.filter(date=i)
         for j in range(len(meals)):
-            attendance_entry = qset.filter(meal=meals[j]).filter(attending=True).count()
+            try:
+                attendance_entry = qset.filter(meal=meals[j]).filter(attending=True).count()
+            except:
+                attendance_entry = 0
             if i.day == now.day:
                 first[meals[j]] = attendance_entry
             feedback_count = feedback_qset.filter(meal=meals[j]).exclude(status='sent').count()
