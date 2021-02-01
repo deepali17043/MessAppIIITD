@@ -570,6 +570,11 @@ def viewPrevFeedbacks(request):
 
 # ___________________________________Web____________________________________
 def web_signup(request):
+    try:
+        User.objects.get(username=request.user)
+        return redirect('web-home')
+    except:
+        pass
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
@@ -588,7 +593,12 @@ def web_signup(request):
 
 
 def web_login(request):
-    # print(type(request))
+    # print(request.user)
+    try:
+        User.objects.get(username=request.user)
+        return redirect('web-home')
+    except:
+        pass
     if request.method == 'POST':
         form = AuthenticationForm(data=request.POST)
         form.fields['username'].widget.attrs['placeholder'] = 'Username'
