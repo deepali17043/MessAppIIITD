@@ -1,1 +1,1 @@
-web: gunicorn Aahar.wsgi
+web: gunicorn Aahar.wsgi --log-file -

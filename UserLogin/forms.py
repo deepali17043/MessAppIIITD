@@ -46,7 +46,21 @@ class AttendanceList(forms.ModelForm):
         fields = ('meal', 'date')
 
 
+class AttendeesForm(forms.Form):
+    date = forms.DateField(label='Date', widget=forms.SelectDateWidget)
+    meal = forms.ChoiceField(choices=(('Breakfast', 'Breakfast'),
+                                    ('Lunch', 'Lunch'),
+                                    ('Snacks', 'Snacks'),
+                                    ('Dinner', 'Dinner')))
+
+
 # class CouponForm(forms.ModelForm):
 #     class Meta:
 #         model = MessUser
 #         fields = ('breakfast_coupons', )
+
+
+class MealDeadlineForm(forms.ModelForm):
+    class Meta:
+        model = MealDeadline
+        fields = ('date', 'meal', 'hours')

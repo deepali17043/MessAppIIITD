@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 import os
+import django_heroku
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -23,7 +24,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '9l(7rhajws#we8@r162r@-6u7+xktlou3c*sa$nwky+=k&#_$u'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['127.0.0.1', '0.0.0.0', 'aahar-iiitd.herokuapp.com']
 
@@ -78,13 +79,31 @@ WSGI_APPLICATION = 'Aahar.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'ddnb0jsanuehdo',
+#         'HOST': 'ec2-3-215-76-208.compute-1.amazonaws.com',
+#         'PORT': 5432,
+#         'USER': 'kuajjmigrxgkjj',
+#         'PASSWORD': '763cef8e7f627e4c7078d20a8837971d0f3cdd3edfa52c76a2c3c2cda7357feb'
+#     }
+# }
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'djongo',
+        'CLIENT': {
+            'name': 'aahar-db',
+            'host': 'mongodb+srv://admin:6Ox2N0nwmewTfkZi@aahar-cluster.omv4t.mongodb.net/aahar-db?retryWrites=true&w=majority',
+            'username': 'admin',
+            'password': '6Ox2N0nwmewTfkZi',
+            'authMechanism': 'SCRAM-SHA-1'
+        }
     }
 }
 
+# DB URL - postgres://kuajjmigrxgkjj:763cef8e7f627e4c7078d20a8837971d0f3cdd3edfa52c76a2c3c2cda7357feb@ec2-3-215-76-208.compute-1.amazonaws.com:5432/ddnb0jsanuehdo
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
@@ -133,7 +152,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, 'static'),
+)
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 
@@ -157,4 +179,4 @@ LOGGING = {
         }
 }
 
-# django_heroku.settings(locals())
+django_heroku.settings(locals())

@@ -89,7 +89,7 @@ class MessAttendance(models.Model):
                                                     ('Lunch', 'Lunch'),
                                                     ('Snacks', 'Snacks'),
                                                     ('Dinner', 'Dinner')))
-    attending = models.BooleanField(default=True)
+    attending = models.BooleanField(default=False)
     date = models.DateField(default=datetime.date.today())
     attended = models.BooleanField(default=False)
     defaulter = models.BooleanField(default=False)
@@ -108,3 +108,12 @@ class Feedback(models.Model):
                                                         ('approved', 'Approved'),
                                                         ('check mail', 'check mail'),
                                                         ('penalised', 'Penalised')), default='sent')
+
+
+class MealDeadline(models.Model):
+    date = models.DateField(default=datetime.date.today())
+    meal = models.CharField(max_length=10, choices=(('Breakfast', 'Breakfast'),
+                                                    ('Lunch', 'Lunch'),
+                                                    ('Snacks', 'Snacks'),
+                                                    ('Dinner', 'Dinner')))
+    hours = models.PositiveSmallIntegerField(default=6)

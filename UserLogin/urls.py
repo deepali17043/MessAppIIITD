@@ -39,20 +39,23 @@ urlpatterns = [
     path('web/home/', views.home, name='web-home'),
 
     # vendor
-    path('vendor/home/', views.vendorDashboard, name='vendor-home'),
-    url(r'^vendor/update-order-status/(?P<cartItemId>\d+)/', views.updateOrderStatus, name='update-order-status'),
-    path('vendor/menu/', views.vendorMenu, name='vendor-menu'),
-    path('vendor/menu/additem/', views.addItem, name='add-item'),
-    path('vendor/menu/additems/', views.addItems, name='add-items'),
-    path('vendor/menu/removeitem/', views.removeItems, name='remove-item'),
-    url(r'^vendor/menu/removeitem/(?P<id>\d+)/', views.removeMenuItem, name='vendor-delete-menu-item'),
-    path('vendor/menu/hideitem/', views.hideItems, name='hide-item'),
-    url(r'^vendor/menu/hideitem/(?P<id>\d+)/', views.hideMenuItem, name='vendor-hide-menu-item'),
-    path('vendor/menu/unhideitem/', views.unHideItems, name='un-hide-item'),
-    url(r'^vendor/menu/unhideitem/(?P<id>\d+)/', views.unHideMenuItem, name='vendor-un-hide-menu-item'),
+    # path('vendor/home/', views.vendorDashboard, name='vendor-home'),
+    # url(r'^vendor/update-order-status/(?P<cartItemId>\d+)/', views.updateOrderStatus, name='update-order-status'),
+    # path('vendor/menu/', views.vendorMenu, name='vendor-menu'),
+    # path('vendor/menu/additem/', views.addItem, name='add-item'),
+    # path('vendor/menu/additems/', views.addItems, name='add-items'),
+    # path('vendor/menu/removeitem/', views.removeItems, name='remove-item'),
+    # url(r'^vendor/menu/removeitem/(?P<id>\d+)/', views.removeMenuItem, name='vendor-delete-menu-item'),
+    # path('vendor/menu/hideitem/', views.hideItems, name='hide-item'),
+    # url(r'^vendor/menu/hideitem/(?P<id>\d+)/', views.hideMenuItem, name='vendor-hide-menu-item'),
+    # path('vendor/menu/unhideitem/', views.unHideItems, name='un-hide-item'),
+    # url(r'^vendor/menu/unhideitem/(?P<id>\d+)/', views.unHideMenuItem, name='vendor-un-hide-menu-item'),
 
     # Mess Admin
     path('mess/home/', views.messHome, name='mess-home'), #both admin and vendor
+    path('mess/edit-meal-deadline/', views.editMealDeadline, name='meal-deadline'),
+    path('mess/list-attendance/', views.listAttendees, name='list-attendance'),
+    url(r'^mess/list-attendance/(?P<meal>\d+)/$', views.customListAttendees, name='list-attendees'),
     path('mess/view-attendance/cur-month/', views.getMarkedAttendanceCurMonth, name='mess-attendance-cur'), #both admin and vendor
     path('mess-admin/upload-attendance/', views.uploadAttendance, name='upload-attendance'),
     path('mess-admin/list-defaulters/', views.listDefaulters, name='list-defaulters'),
@@ -62,7 +65,7 @@ urlpatterns = [
     url(r'^mess-admin/give-user-admin-rights/(?P<user_id>\d+)/$', views.giveAdminRights, name='admin-rights-give'),
     url(r'^mess-admin/remove-user-admin-rights/(?P<user_id>\d+)/$', views.removeAdminRights, name='admin-rights-remove'),
     path('mess-admin/view-feedback/', views.viewFeedback, name='mess-feedback'),
-    url(r'^mess-admin/view-feedback/penalise/(?P<feedbackid>\d+)/$', views.penalise, name='mess-feedback-penalise'),
+    # url(r'^mess-admin/view-feedback/penalise/(?P<feedbackid>\d+)/$', views.penalise, name='mess-feedback-penalise'),
     url(r'^mess-admin/view-feedback/approve/(?P<feedbackid>\d+)/$', views.approve, name='mess-feedback-approve'),
     url(r'^mess-admin/view-feedback/maybe/(?P<feedbackid>\d+)/$', views.maybe, name='mess-feedback-maybe'),
 ]
