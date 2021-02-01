@@ -653,7 +653,7 @@ def messHome(request):
         raise Http404('Not authorized')
     if not (user.type == 'admin' or user.type == 'mess-vendor'):
         raise Http404('Not authorized')
-    now = datetime.datetime.now()
+    now = datetime.datetime.now(IST)
     meals = ['Breakfast', 'Lunch', 'Snacks', 'Dinner']
     attendance_qset = MessAttendance.objects.all()
     response_data = []
@@ -663,9 +663,7 @@ def messHome(request):
         qset = attendance_qset.filter(date=i)
         feedback_qset = Feedback.objects.filter(date=i)
         for j in range(len(meals)):
-            attendance_entry = qset.filter(meal=meals[j]).filter(attending=True)
-            print(attendance_entry)
-            attendance_entry = attendance_entry.count()
+            attendance_entry = qset.filter(meal=meals[j]).filter(attending=True).count()
             if i.day == now.day:
                 first[meals[j]] = attendance_entry
             feedback_count = feedback_qset.filter(meal=meals[j]).exclude(status='sent').count()
