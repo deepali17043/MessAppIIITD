@@ -417,37 +417,22 @@ def messAttendanceAPI(request):
 def messScheduleAPI(request):
     checkCustomer(request)
     mess_user = MessUser.objects.get(user=request.user)
-    month = int(request.headers['month'])
-    # print('mess-schedule', month)
-    year = int(request.headers['year'])
-    # print('mess-schedule', year)
     now = datetime.datetime.now(IST)
-    date_today = datetime.date(now.year, now.month, now.day)
     attendance = []
-    cur_month = date_today.month
-    if month != cur_month and month != cur_month+1:
-        # print('...')
-        raise Http404('Schedule not ready for this month')
-    num_days = calendar.monthrange(year, month)[1]
-    days = [datetime.date(year, month, day) for day in range(1, 10)]
+    days = [datetime.date(now.year, now.month, day) for day in range(now.day, now.day+7)]
     meals = ['Breakfast', 'Lunch', 'Snacks', 'Dinner']
     attendance_qset = MessAttendance.objects.all().filter(user=mess_user)
-    # print("asdfghjk")
     for day in days:
         try:
             qset = attendance_qset.filter(date=day)
             for j in range(len(meals)):
                 attendance_entry = qset.get(meal=meals[j])
-                attendance_entry.editable = editable_meal(meals[j], now, day, date_today)
+                attendance_entry.editable = editable_meal(meals[j], now, day)
                 attendance_entry.save()
                 attendance.append(attendance_entry)
         except:
             pass
-            # print(attendance_entry.attending, attendance_entry.meal)
-            # print(attendance_entry.date, meals[j])
     serializer = MessAttendanceSerializer(attendance, many=True)
-    # print(serializer)
-    # print(serializer.data)
     response_data = {
         'attendance':
             serializer.data
@@ -455,40 +440,27 @@ def messScheduleAPI(request):
     return Response(response_data)
 
 
-def editable_meal(meal, now, date_cur, date_today):
-    # print('in editable_meal', now)
-    if date_today > date_cur:
+def editable_meal(meal, now, date_cur):
+    if now.date() > date_cur:
         return False
     try:
         deadline = MealDeadline.objects.get(date=date_cur, meal=meal)
         hrs = deadline.hours
     except:
-        # print("editable meal: exception")
-        if meal == 'Breakfast':
-            hrs = breakfast_deadline
-        else:
-            hrs = default_deadline
+        default_deadline = DefaultDeadline.objects.get(meal=meal)
+        hrs = default_deadline.hours
     meal_deadline = now + datetime.timedelta(hours=hrs)
-    # meal_deadline = datetime.datetime(2021, 1, 28, 11, 59, 0, 0) + datetime.timedelta(hours=12)
-    # print("meal_deadline.date(", meal_deadline.date())
-    # print("date_cur", date_cur)
     if meal_deadline.date() < date_cur:
-        # print("meal_deadline.date() < date_cur")
         return True
     elif meal_deadline.date() > date_cur:
-        # print("meal_deadline.date() > date_cur")
         return False
     if meal == 'Breakfast':
-        # print("bf")
         return meal_deadline.hour < breakfast_time
     elif meal == 'Lunch':
-        # print("lin")
         return meal_deadline.hour < lunch_time
     elif meal == 'Snacks':
-        # print("sn")
         return meal_deadline.hour < snacks_time
     else:
-        # print("din")
         return meal_deadline.hour < dinner_time
 
 
@@ -706,6 +678,37 @@ def editMealDeadline(request):
     deadlines = MealDeadline.objects.all()
     arg = {'form': form, 'deadlines': deadlines, 'user': user}
     return render(request, 'Mess/meal_deadline.html', arg)
+
+
+def defualtMealDeadline(request):
+    try:
+        user = User.objects.get(username=request.user)
+    except:
+        raise Http404('Not authorized')
+    if not (user.type == 'admin'):
+        raise Http404('Not authorized')
+    if request.method == 'POST':
+        form = DefaultDeadlineForm(request.POST)
+        item = {
+            'meal': form.data['meal'],
+            'hours': form.data['hours']
+        }
+        try:
+            deadline = DefaultDeadline.objects.get(meal=item['meal'])
+            deadline.hours = item['hours']
+            deadline.save()
+        except:
+            DefaultDeadline.objects.update_or_create(
+                meal=item['meal'],
+                hours=item['hours']
+            )
+        return redirect('default-deadline')
+    else:
+        form = DefaultDeadlineForm()
+    # Show all past/upcoming deadlines
+    deadlines = DefaultDeadline.objects.all()
+    arg = {'form': form, 'deadlines': deadlines, 'user': user}
+    return render(request, 'Mess/default_deadline.html', arg)
 
 
 def listAttendees(request):

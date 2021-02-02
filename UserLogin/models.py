@@ -117,3 +117,11 @@ class MealDeadline(models.Model):
                                                     ('Snacks', 'Snacks'),
                                                     ('Dinner', 'Dinner')))
     hours = models.PositiveSmallIntegerField(default=6)
+
+
+class DefaultDeadline(models.Model):
+    meal = models.CharField(max_length=10, unique=True, choices=(('Breakfast', 'Breakfast'),
+                                                    ('Lunch', 'Lunch'),
+                                                    ('Snacks', 'Snacks'),
+                                                    ('Dinner', 'Dinner')))
+    hours = models.PositiveSmallIntegerField(default=6)

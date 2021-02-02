@@ -54,10 +54,10 @@ class AttendeesForm(forms.Form):
                                     ('Dinner', 'Dinner')))
 
 
-# class CouponForm(forms.ModelForm):
-#     class Meta:
-#         model = MessUser
-#         fields = ('breakfast_coupons', )
+class DefaultDeadlineForm(forms.ModelForm):
+    class Meta:
+        model = DefaultDeadline
+        fields = ('meal', 'hours')
 
 
 class MealDeadlineForm(forms.ModelForm):

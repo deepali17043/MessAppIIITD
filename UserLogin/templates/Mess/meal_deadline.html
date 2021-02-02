@@ -59,6 +59,10 @@
                                     </a>
                                 </nav>
                             </div>
+                            <a class="nav-link " href="{% url 'default-deadline' %}">
+                                <div class="sb-nav-link-icon"><i class="fas fa-magic"></i></div>
+                                Edit Default Meal Deadline
+                            </a>
                             <a class="nav-link active" href="{% url 'meal-deadline' %}">
                                 <div class="sb-nav-link-icon"><i class="fas fa-edit"></i></div>
                                 Set/Edit Meal Deadline
@@ -91,7 +95,7 @@
                 <main>
                     <div class="container-fluid">
                         <div class="card shadow-lg border-0 rounded-lg mt-5">
-                            <div class="card-header"><h3 class="text-center font-weight-light my-4">Upload Attendance</h3></div>
+                            <div class="card-header"><h3 class="text-center font-weight-light my-4">Deadline for a particular day, meal</h3></div>
                             <div class="card-body text-center">
                                 <form  method="POST" enctype="multipart/form-data">
                                     {% csrf_token %}
@@ -99,7 +103,8 @@
                                     <div class="upload_button">
                                         <button type="submit">Save</button>
                                     </div>
-                                    By Default Breakfast has a 12 hour deadline, other meals have a 6 hour deadline.
+                                    This deadline will be applicable only for the meal and date you select. <br>
+                                    To update the meal-wise default deadline, please check the 'Default Deadlines' tab.<br>
                                 </form>
                             </div>
                         </div>

@@ -54,6 +54,7 @@ urlpatterns = [
     # Mess Admin
     path('mess/home/', views.messHome, name='mess-home'), #both admin and vendor
     path('mess/edit-meal-deadline/', views.editMealDeadline, name='meal-deadline'),
+    path('mess/edit-default-deadline/', views.defualtMealDeadline, name='default-deadline'),
     path('mess/list-attendance/', views.listAttendees, name='list-attendance'),
     url(r'^mess/list-attendance/(?P<meal>\d+)/$', views.customListAttendees, name='list-attendees'),
     path('mess/view-attendance/cur-month/', views.getMarkedAttendanceCurMonth, name='mess-attendance-cur'), #both admin and vendor
