@@ -490,7 +490,7 @@ def editMessScheduleAPI(request):
         for meal in day['meals']:
             # print(meal)
             tmp = qset.get(meal=meal)
-            if editable_meal(meal, now, date_cur, date_today):
+            if editable_meal(meal, now, date_cur):
                 tmp.attending = not tmp.attending
                 tmp.save()
             else:
