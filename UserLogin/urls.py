@@ -33,7 +33,7 @@ urlpatterns = [
     # path('dummy/add-data/', views.addData, name='add-data'),
 
     # common Web app pages
-    path('web/signup/', views.web_signup, name='web-signup'),
+    # path('web/signup/', views.web_signup, name='web-signup'),
     path('web/login/', views.web_login, name='web-login'),
     path('web/logout/', views.web_logout, name='web-logout'),
     path('web/home/', views.home, name='web-home'),
