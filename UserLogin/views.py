@@ -90,17 +90,21 @@ def create_mess_objects(user_account):
         mess_user.snacks_coupons = 20
         mess_user.dinner_coupons = 20
     now = datetime.datetime.now(IST)
-    num_days = calendar.monthrange(now.year, now.month)[1]
-    days_cur_month = [datetime.date(now.year, now.month, day) for day in range(1, num_days + 1)]
+    days_cur_month = [datetime.date(now.year, now.month, now.day + day) for day in range(0, 7)]
     days = days_cur_month
     meals = ['Breakfast', 'Lunch', 'Snacks', 'Dinner']
+    attendance_qset = MessAttendance.objects.filter(user=mess_user)
     for day in days:
+        qset = attendance_qset.filter(date=day)
+        if qset.count() == 4:
+            continue
         for j in meals:
-            MessAttendance.objects.update_or_create(
-                user=mess_user,
-                meal=j,
-                date=day,
-            )
+            if qset.filter(meal=j).count() <= 0:
+                MessAttendance.objects.update_or_create(
+                    user=mess_user,
+                    meal=j,
+                    date=day,
+                )
 
 
 @api_view(['POST', ])
@@ -459,7 +463,7 @@ def messScheduleAPI(request):
                 attendance_entry.save()
                 attendance.append(attendance_entry)
         except:
-            pass
+            create_mess_objects(request.user)
     serializer = MessAttendanceSerializer(attendance, many=True)
     response_data = {
         'attendance':
@@ -517,7 +521,10 @@ def editMessScheduleAPI(request):
         # print(qset)
         for meal in day['meals']:
             # print(meal)
-            tmp = qset.get(meal=meal)
+            try:
+                tmp = qset.get(meal=meal)
+            except:
+                create_mess_objects(request.user)
             if editable_meal(meal, now, date_cur):
                 tmp.attending = not tmp.attending
                 tmp.save()
