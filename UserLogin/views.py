@@ -26,7 +26,6 @@ from .meal_timings import *
 import urllib
 import json
 
-
 # _________________________________________________________________________________________________
 
 
@@ -70,9 +69,38 @@ def signup(request):
         return_data['username'] = user_account.username
         return_data['email'] = user_account.email
         return_data['type'] = user_account.type
+
+        # Remove when coupon system resumes:
+        create_mess_objects(user_account)
     else:
         return_data = serializer.errors
     return Response(return_data)
+
+
+def create_mess_objects(user_account):
+    user = User.objects.get(username=user_account.username)
+    mess_user_qset = MessUser.objects.filter(user=user)
+    if len(mess_user_qset) <= 0:
+        MessUser.objects.update_or_create(user=user)
+        mess_user = MessUser.objects.get(user=user)
+    else:
+        mess_user = MessUser.objects.get(user=user)
+        mess_user.breakfast_coupons = 20
+        mess_user.lunch_coupons = 20
+        mess_user.snacks_coupons = 20
+        mess_user.dinner_coupons = 20
+    now = datetime.datetime.now(IST)
+    num_days = calendar.monthrange(now.year, now.month)[1]
+    days_cur_month = [datetime.date(now.year, now.month, day) for day in range(1, num_days + 1)]
+    days = days_cur_month
+    meals = ['Breakfast', 'Lunch', 'Snacks', 'Dinner']
+    for day in days:
+        for j in meals:
+            MessAttendance.objects.update_or_create(
+                user=mess_user,
+                meal=j,
+                date=day,
+            )
 
 
 @api_view(['POST', ])
@@ -212,7 +240,7 @@ def updateOrderStatus(request, cartItemId):
 # ===========================================Customer==============================================
 def checkCustomer(request):
     user = request.user
-    if user.type == 'vendor' or user.type=='mess-vendor':
+    if user.type == 'vendor' or user.type == 'mess-vendor':
         raise Http404('invalid Url')
     return
 
@@ -266,7 +294,7 @@ def addToCartAPI(request):
             i.save()
     cart = Cart.objects.all().filter(customer=request.user, status='Added to Cart')
     customer_cart = CartSerializer(cart, many=True)
-    response_data = { 'cart' : customer_cart}
+    response_data = {'cart': customer_cart}
     return Response(response_data)
 
 
@@ -363,7 +391,7 @@ def orderDetailsAPI(request):
         total += tmp
         k = i.status == 'Prepared'
         serialized_i = CartSerializer(i)
-        cart.append({'item':serialized_i, 'price*qty': tmp, 'prepared':k})
+        cart.append({'item': serialized_i, 'price*qty': tmp, 'prepared': k})
     # print(cart)
     args = {'cart': cart, 'total': total}
     return Response(args)
@@ -397,7 +425,7 @@ def messAttendanceAPI(request):
     upcoming_attendance = []
     meals = ['Breakfast', 'Lunch', 'Snacks', 'Dinner']
     attendance_qset = MessAttendance.objects.all().filter(user=mess_user)
-    days = [datetime.date(now.year, now.month, now.day+day) for day in range(3)]  # cur, next and day after
+    days = [datetime.date(now.year, now.month, now.day + day) for day in range(3)]  # cur, next and day after
     for i in days:
         qset = attendance_qset.filter(date=i)
         for j in range(len(meals)):
@@ -419,7 +447,7 @@ def messScheduleAPI(request):
     mess_user = MessUser.objects.get(user=request.user)
     now = datetime.datetime.now(IST)
     attendance = []
-    days = [datetime.date(now.year, now.month, day) for day in range(now.day, now.day+7)]
+    days = [datetime.date(now.year, now.month, day) for day in range(now.day, now.day + 7)]
     meals = ['Breakfast', 'Lunch', 'Snacks', 'Dinner']
     attendance_qset = MessAttendance.objects.all().filter(user=mess_user)
     for day in days:
@@ -662,7 +690,7 @@ def editMealDeadline(request):
         item = form.save(commit=False)
         try:
             deadline = MealDeadline.objects.get(
-                date=item.date,meal=item.meal)
+                date=item.date, meal=item.meal)
             deadline.hours = item.hours
             deadline.save()
         except:
@@ -795,7 +823,7 @@ def getMarkedAttendanceCurMonth(request):
     attendance_qset = MessAttendance.objects.all()
     response_data = []
     num_days = calendar.monthrange(now.year, now.month)[1]
-    days = [datetime.date(now.year, now.month, day) for day in range(1, num_days+1)]
+    days = [datetime.date(now.year, now.month, day) for day in range(1, num_days + 1)]
     for i in days:
         qset = attendance_qset.filter(date=i)
         for j in range(len(meals)):
@@ -820,7 +848,7 @@ def getMarkedAttendancePrevMonth(request):
     attendance_qset = MessAttendance.objects.all()
     response_data = []
     num_days = calendar.monthrange(now.year, now.month)[1]
-    days = [datetime.date(now.year, now.month, day) for day in range(1, num_days+1)]
+    days = [datetime.date(now.year, now.month, day) for day in range(1, num_days + 1)]
     for i in days:
         qset = attendance_qset.filter(date=i)
         for j in range(len(meals)):
@@ -929,7 +957,7 @@ def listDefaulters(request):
         tmp['attended'] = elem.attended
 
         defaulter_list.append(tmp)
-    args = {'form': form, 'defaulter_list':defaulter_list, 'user': user}
+    args = {'form': form, 'defaulter_list': defaulter_list, 'user': user}
     return render(request, 'Mess/defaulter.html', args)
 
 
@@ -1012,7 +1040,7 @@ def viewUsers(request):
     if not user.type == 'admin':
         raise Http404('Not authorized')
     Users = User.objects.filter(type='customer')
-    return render(request, 'Mess/view_users.html', {'users': Users, 'user':user})
+    return render(request, 'Mess/view_users.html', {'users': Users, 'user': user})
 
 
 def addData(request, user_id):
@@ -1082,3 +1110,49 @@ def removeAdminRights(request, user_id):
     usr.type = 'customer'
     usr.save()
     return redirect('view-users')
+
+
+# _____________________________________Extra_______________________________
+def renew(request):
+    # users = User.objects.all()
+    # for user in users:
+    #     try:
+    #         mess_user_tmp = MessUser.objects.get(user=user)
+    #         if user.type == 'customer':
+    #             continue
+    #         mess_user_tmp.delete()
+    #     except:
+    #         MessUser.objects.update_or_create(user=user)
+    # mess_users = MessUser.objects.all()
+    # now = datetime.datetime.now(IST)
+    # num_days = calendar.monthrange(now.year, now.month)[1]
+    # days_cur_month = [datetime.date(now.year, now.month, day) for day in range(1, num_days + 1)]
+    # days = days_cur_month
+    # meals = ['Breakfast', 'Lunch', 'Snacks', 'Dinner']
+    # for mess_user in mess_users:
+    #     for day in days:
+    #         for j in meals:
+    #             try:
+    #                 MessAttendance.objects.get(user=mess_user, date=day, meal=j)
+    #             except:
+    #                 MessAttendance.objects.update_or_create(
+    #                     user=mess_user,
+    #                     meal=j,
+    #                     date=day,
+    #                 )
+    users = User.objects.all()
+    cntr = 0
+    for user in users:
+        if user.type == 'customer':
+            print(user.username, '*************')
+            try:
+                mess_user = MessUser.objects.get(user=user)
+                cnt = MessAttendance.objects.filter(user=mess_user).count()
+                print(cnt)
+                cntr += 1
+            except:
+                print('!!!!!!!!!!!!!!!!!!!!!!', user.username)
+        else:
+            print(user.username, 'hjcvjhdvd', user.type)
+    print('total_customers', cntr)
+    return redirect('default-deadline')
