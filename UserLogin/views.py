@@ -835,8 +835,12 @@ def getMarkedAttendanceCurMonth(request):
         qset = attendance_qset.filter(date=i)
         for j in range(len(meals)):
             attendance_entry = qset.filter(meal=meals[j])
-            attendance_entry1 = attendance_entry.filter(attending=True)
-            attendance_cnt = attendance_entry1.count()
+            try:
+                attendance_entry1 = attendance_entry.filter(attending=True)
+                print(attendance_entry1)
+                attendance_cnt = attendance_entry1.count()
+            except:
+                attendance_cnt = 0
             response_data.append({'date': i, 'meal': meals[j], 'count': attendance_cnt})
     response_data = {'response': response_data, 'user': user}
     if user.type == 'admin':
