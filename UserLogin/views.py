@@ -834,8 +834,10 @@ def getMarkedAttendanceCurMonth(request):
     for i in days:
         qset = attendance_qset.filter(date=i)
         for j in range(len(meals)):
-            attendance_entry = qset.filter(meal=meals[j]).filter(attending=True).count()
-            response_data.append({'date': i, 'meal': meals[j], 'count': attendance_entry})
+            attendance_entry = qset.filter(meal=meals[j])
+            attendance_entry1 = attendance_entry.filter(attending=True)
+            attendance_cnt = attendance_entry1.count()
+            response_data.append({'date': i, 'meal': meals[j], 'count': attendance_cnt})
     response_data = {'response': response_data, 'user': user}
     if user.type == 'admin':
         return render(request, 'Mess/attendance.html', response_data)
