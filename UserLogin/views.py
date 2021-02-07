@@ -834,7 +834,7 @@ def getMarkedAttendanceCurMonth(request):
     for i in days:
         qset = attendance_qset.filter(date=i)
         for j in range(len(meals)):
-            attendance_entry = qset.filter(meal=meals[j], attending=True).count()
+            attendance_entry = qset.filter(meal=meals[j]).filter(attending=True).count()
             response_data.append({'date': i, 'meal': meals[j], 'count': attendance_entry})
     response_data = {'response': response_data, 'user': user}
     if user.type == 'admin':
