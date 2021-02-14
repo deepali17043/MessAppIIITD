@@ -765,34 +765,33 @@ def listAttendees(request):
             date = form.cleaned_data['date']
             print(type(date), 'type dateeeeeeeeeeee')
             meal = form.cleaned_data['meal']
-            qset = MessAttendance.objects.filter(date=date)
+            qset = MessAttendance.objects.filter(attending=True)
+            print('shjbvsdhfbvjdkbvsdb', qset)
+            qset = qset.filter(date=date)
             print(qset)
             qset = qset.filter(meal=meal)
-            print(qset)
-            if qset.count() > 0:
-                qset = qset.filter(attending=True)
             print(qset)
         else:
             raise Http404('bad data')
     list_attendees = []
     # tmp = dict()
-    # try:
-    print("qsert:", qset)
-    for q in qset:
-        print('q', q)
-        tmp = dict()
-        tmp['username'] = q.user.user.username
-        # print(tmp['username'])
-        tmp['name'] = q.user.user.name
-        # print(tmp['name'])
-        tmp['email'] = q.user.user.email
-        # print(tmp['email'])
-        list_attendees.append(tmp)
-    # except:
-    #     print('asdfghjk')
-    #     e = sys.exc_info()[0]
-    #     print(e)
-    #     pass
+    try:
+        print("qsert:", qset)
+        for q in qset:
+            print('q', q)
+            tmp = dict()
+            tmp['username'] = q.user.user.username
+            # print(tmp['username'])
+            tmp['name'] = q.user.user.name
+            # print(tmp['name'])
+            tmp['email'] = q.user.user.email
+            # print(tmp['email'])
+            list_attendees.append(tmp)
+    except:
+        print('asdfghjk')
+        e = sys.exc_info()[0]
+        print(e)
+        pass
     args = {'form': form, 'list_attendees': list_attendees, 'user': user}
     print('list_ttendess', list_attendees)
     return render(request, 'Mess/list_attendees.html', args)
@@ -819,10 +818,10 @@ def customListAttendees(request, meal):
     date = datetime.date(date.year, date.month, date.day)
     qset = MessAttendance.objects.filter(date=date, attending=True, meal=meal)
     list_attendees = []
-    tmp = dict()
     try:
         # print("qsert:", qset)
         for q in qset:
+            tmp = dict()
             tmp['username'] = q.user.user.username
             tmp['name'] = q.user.user.name
             tmp['email'] = q.user.user.email
