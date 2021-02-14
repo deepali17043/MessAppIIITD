@@ -763,10 +763,15 @@ def listAttendees(request):
         form = AttendeesForm(data=request.POST)
         if form.is_valid():
             date = form.cleaned_data['date']
+            print(type(date), 'type dateeeeeeeeeeee')
             meal = form.cleaned_data['meal']
             qset = MessAttendance.objects.filter(date=date)
+            print(qset)
             qset = qset.filter(meal=meal)
-            qset = qset.filter(attending=True)
+            print(qset)
+            if qset.count() > 0:
+                qset = qset.filter(attending=True)
+            print(qset)
         else:
             raise Http404('bad data')
     list_attendees = []
