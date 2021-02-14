@@ -768,20 +768,19 @@ def listAttendees(request):
             raise Http404('bad data')
     list_attendees = []
     # tmp = dict()
-    try:
-        # print("qsert:", qset)
-        for q in qset:
-            tmp = dict()
-            tmp['username'] = q.user.user.username
-            # print(tmp['username'])
-            tmp['name'] = q.user.user.name
-            # print(tmp['name'])
-            tmp['email'] = q.user.user.email
-            # print(tmp['email'])
-            list_attendees.append(tmp)
-    except:
-        print("umm what happened")
-        pass
+    # try:
+    # print("qsert:", qset)
+    for q in qset:
+        tmp = dict()
+        tmp['username'] = q.user.user.username
+        # print(tmp['username'])
+        tmp['name'] = q.user.user.name
+        # print(tmp['name'])
+        tmp['email'] = q.user.user.email
+        # print(tmp['email'])
+        list_attendees.append(tmp)
+    # except:
+    #     pass
     args = {'form': form, 'list_attendees': list_attendees, 'user': user}
     print('list_ttendess', list_attendees)
     return render(request, 'Mess/list_attendees.html', args)
