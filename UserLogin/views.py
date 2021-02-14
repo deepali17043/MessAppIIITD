@@ -765,9 +765,7 @@ def listAttendees(request):
             date = form.cleaned_data['date']
             print(type(date), 'type dateeeeeeeeeeee')
             meal = form.cleaned_data['meal']
-            qset = MessAttendance.objects.exclude(attending=False)
-            print('shjbvsdhfbvjdkbvsdb', qset)
-            qset = qset.filter(date=date)
+            qset = MessAttendance.objects.filter(date=date)
             print(qset)
             qset = qset.filter(meal=meal)
             print(qset)
@@ -778,15 +776,16 @@ def listAttendees(request):
     try:
         print("qsert:", qset)
         for q in qset:
-            print('q', q)
-            tmp = dict()
-            tmp['username'] = q.user.user.username
-            # print(tmp['username'])
-            tmp['name'] = q.user.user.name
-            # print(tmp['name'])
-            tmp['email'] = q.user.user.email
             # print(tmp['email'])
-            list_attendees.append(tmp)
+            if q.attending:
+                print('q', q)
+                tmp = dict()
+                tmp['username'] = q.user.user.username
+                # print(tmp['username'])
+                tmp['name'] = q.user.user.name
+                # print(tmp['name'])
+                tmp['email'] = q.user.user.email
+                list_attendees.append(tmp)
     except:
         print('asdfghjk')
         e = sys.exc_info()[0]
