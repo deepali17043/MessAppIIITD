@@ -765,7 +765,7 @@ def listAttendees(request):
             date = form.cleaned_data['date']
             print(type(date), 'type dateeeeeeeeeeee')
             meal = form.cleaned_data['meal']
-            qset = MessAttendance.objects.filter(attending=True)
+            qset = MessAttendance.objects.exclude(attending=False)
             print('shjbvsdhfbvjdkbvsdb', qset)
             qset = qset.filter(date=date)
             print(qset)
