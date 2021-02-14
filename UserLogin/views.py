@@ -755,21 +755,23 @@ def listAttendees(request):
         raise Http404('Not authorized')
     if request.method == 'GET':
         form = AttendeesForm()
-        date = datetime.datetime.now(IST)
-        date = datetime.date(date.year, date.month, date.day)
-        qset = MessAttendance.objects.filter(date=date, attending=True)
+        # date = datetime.datetime.now(IST)
+        # date = datetime.date(date.year, date.month, date.day)
+        qset = list()
     else:
         form = AttendeesForm(data=request.POST)
         if form.is_valid():
             date = form.cleaned_data['date']
             meal = form.cleaned_data['meal']
-            qset = MessAttendance.objects.filter(date=date, meal=meal, attending=True)
+            qset = MessAttendance.objects.filter(date=date)
+            qset = qset.filter(meal=meal)
+            qset = qset.filter(attending=True)
         else:
             raise Http404('bad data')
     list_attendees = []
     # tmp = dict()
     # try:
-    # print("qsert:", qset)
+    print("qsert:", qset)
     for q in qset:
         tmp = dict()
         tmp['username'] = q.user.user.username
