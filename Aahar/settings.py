@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 
 import os
 import django_heroku
+from .db_data import db_host
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -95,7 +96,7 @@ DATABASES = {
         'ENGINE': 'djongo',
         'CLIENT': {
             'name': 'aahar-db',
-            'host': 'mongodb+srv://admin:6Ox2N0nwmewTfkZi@aahar-cluster.omv4t.mongodb.net/aahar-db?retryWrites=true&w=majority',
+            'host': db_host,
             'username': 'admin',
             'password': '6Ox2N0nwmewTfkZi',
             'authMechanism': 'SCRAM-SHA-1'
