@@ -769,7 +769,7 @@ def listAttendees(request):
     list_attendees = []
     # tmp = dict()
     try:
-        print("qsert:", qset)
+        # print("qsert:", qset)
         for q in qset:
             tmp = dict()
             tmp['username'] = q.user.user.username
