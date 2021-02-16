@@ -854,12 +854,15 @@ def getMarkedAttendanceCurMonth(request):
         qset = attendance_qset.filter(date=i)
         for j in range(len(meals)):
             attendance_entry = qset.filter(meal=meals[j])
-            try:
-                attendance_entry1 = attendance_entry.filter(attending=True)
-                print(attendance_entry1)
-                attendance_cnt = attendance_entry1.count()
-            except:
-                attendance_cnt = 0
+            # try:
+            # attendance_entry1 = attendance_entry.filter(attending=True)
+            # print(attendance_entry1)
+            attendance_cnt = 0
+            for a in attendance_entry:
+                if a.attending:
+                    attendance_cnt += 1
+            # except:
+            #     attendance_cnt = 0
             response_data.append({'date': i, 'meal': meals[j], 'count': attendance_cnt})
     response_data = {'response': response_data, 'user': user}
     if user.type == 'admin':
@@ -953,42 +956,43 @@ def listDefaulters(request):
     defaulter_list = []
     if request.method == 'GET':
         form = AttendanceList()
-        meal = 'Breakfast'
-        date = datetime.datetime.now(IST)
-        date = datetime.date(date.year, date.month, date.day)
-        qset = MessAttendance.objects.filter(meal=meal, date=date, defaulter=True)
-        feedbackset = Feedback.objects.filter(meal=meal, date=date)
+        # meal = 'Breakfast'
+        # date = datetime.datetime.now(IST)
+        # date = datetime.date(date.year, date.month, date.day)
+        qset = []
+        feedbackset = []
     else:
         form = AttendanceList(data=request.POST)
         if form.is_valid():
             meal = form.cleaned_data['meal']
             date = form.cleaned_data['date']
-            qset = MessAttendance.objects.filter(meal=meal, date=date, defaulter=True)
+            qset = MessAttendance.objects.filter(meal=meal, date=date)
             feedbackset = Feedback.objects.filter(meal=meal, date=date)
         else:
             raise Http404('bad data')
     for elem in qset:
-        tmp = {}
-        try:
-            feedback = feedbackset.get(user=elem.user.user)
-            tmp['feedback'] = feedback.feedback
-            tmp['status'] = feedback.status
-        except:
-            tmp['feedback'] = ''
-            tmp['status'] = ''
-        tmp['username'] = elem.user.user.username
-        if meal == 'Breakfast':
-            tmp['coupons'] = elem.user.breakfast_coupons
-        elif meal == 'Lunch':
-            tmp['coupons'] = elem.user.lunch_coupons
-        elif meal == 'Snacks':
-            tmp['coupons'] = elem.user.snacks_coupons
-        elif meal == 'Dinner':
-            tmp['coupons'] = elem.user.dinner_coupons
-        tmp['marked'] = elem.attending
-        tmp['attended'] = elem.attended
+        if elem.defaulter:
+            tmp = {}
+            try:
+                feedback = feedbackset.get(user=elem.user.user)
+                tmp['feedback'] = feedback.feedback
+                tmp['status'] = feedback.status
+            except:
+                tmp['feedback'] = ''
+                tmp['status'] = ''
+            tmp['username'] = elem.user.user.username
+            if meal == 'Breakfast':
+                tmp['coupons'] = elem.user.breakfast_coupons
+            elif meal == 'Lunch':
+                tmp['coupons'] = elem.user.lunch_coupons
+            elif meal == 'Snacks':
+                tmp['coupons'] = elem.user.snacks_coupons
+            elif meal == 'Dinner':
+                tmp['coupons'] = elem.user.dinner_coupons
+            tmp['marked'] = elem.attending
+            tmp['attended'] = elem.attended
 
-        defaulter_list.append(tmp)
+            defaulter_list.append(tmp)
     args = {'form': form, 'defaulter_list': defaulter_list, 'user': user}
     return render(request, 'Mess/defaulter.html', args)
 
