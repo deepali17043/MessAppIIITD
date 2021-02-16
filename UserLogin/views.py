@@ -771,7 +771,6 @@ def listAttendees(request):
         else:
             raise Http404('bad data')
     list_attendees = []
-    # tmp = dict()
     try:
         print("qsert:", qset)
         for q in qset:
@@ -817,8 +816,9 @@ def customListAttendees(request, meal):
     qset = MessAttendance.objects.filter(date=date, meal=meal)
     list_attendees = []
     try:
-        # print("qsert:", qset)
+        print("qsert:", qset)
         for q in qset:
+            # print(tmp['email'])
             if q.attending:
                 print('q', q)
                 tmp = dict()
@@ -829,7 +829,9 @@ def customListAttendees(request, meal):
                 tmp['email'] = q.user.user.email
                 list_attendees.append(tmp)
     except:
-        # print("umm what happened")
+        print('asdfghjk')
+        e = sys.exc_info()[0]
+        print(e)
         pass
     args = {'list_attendees': list_attendees, 'user': user, 'meal': meal, 'date_today': date}
     return render(request, 'Mess/custom_list_attendees.html', args)
