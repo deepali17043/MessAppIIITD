@@ -653,8 +653,6 @@ def home(request):
 
 
 def messHome(request):
-    # print(request)
-    # print(request.user)
     try:
         user = User.objects.get(username=request.user)
     except:
@@ -671,16 +669,17 @@ def messHome(request):
         qset = attendance_qset.filter(date=i)
         feedback_qset = Feedback.objects.filter(date=i)
         for j in range(len(meals)):
-            try:
-                attendance_entry = qset.filter(meal=meals[j]).filter(attending=True).count()
-            except:
-                attendance_entry = 0
+            tmp_qset = qset.filter(meal=meals[j])
+            attendance_entry = 0
+            for q in tmp_qset:
+                if q.attending:
+                    attendance_entry += 1
             if i.day == now.day:
                 first[meals[j]] = attendance_entry
             feedback_count = feedback_qset.filter(meal=meals[j]).exclude(status='sent').count()
             response_data.append({'date': i, 'meal': meals[j], 'count': attendance_entry, 'fcount': feedback_count})
     response_data = {'response': response_data, 'user': user, 'first': first}
-    # print(first)
+    # print(response_data)
     if user.type == 'admin':
         return render(request, 'Mess/home.html', response_data)
     return render(request, 'MessVendor/home.html', response_data)
@@ -815,16 +814,20 @@ def customListAttendees(request, meal):
         raise Http404('Incorrect URL')
     date = datetime.datetime.now(IST)
     date = datetime.date(date.year, date.month, date.day)
-    qset = MessAttendance.objects.filter(date=date, attending=True, meal=meal)
+    qset = MessAttendance.objects.filter(date=date, meal=meal)
     list_attendees = []
     try:
         # print("qsert:", qset)
         for q in qset:
-            tmp = dict()
-            tmp['username'] = q.user.user.username
-            tmp['name'] = q.user.user.name
-            tmp['email'] = q.user.user.email
-            list_attendees.append(tmp)
+            if q.attending:
+                print('q', q)
+                tmp = dict()
+                tmp['username'] = q.user.user.username
+                # print(tmp['username'])
+                tmp['name'] = q.user.user.name
+                # print(tmp['name'])
+                tmp['email'] = q.user.user.email
+                list_attendees.append(tmp)
     except:
         # print("umm what happened")
         pass

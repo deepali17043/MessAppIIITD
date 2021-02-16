@@ -58,6 +58,7 @@ class MenuItems(models.Model):
     price = models.IntegerField(default=0)
     itemName = models.CharField(max_length=255)
     hidden = models.BooleanField(default=False)
+    # is_hidden = models.PositiveSmallIntegerField(choices=((0, 0), (1, 1)), default=0)
 
 
 class Cart(models.Model):
@@ -90,10 +91,14 @@ class MessAttendance(models.Model):
                                                     ('Snacks', 'Snacks'),
                                                     ('Dinner', 'Dinner')))
     attending = models.BooleanField(default=False)
+    # is_attending = models.PositiveSmallIntegerField(choices=((0, 0), (1, 1)), default=0)
     date = models.DateField(default=datetime.date.today())
     attended = models.BooleanField(default=False)
+    # has_attended = models.PositiveSmallIntegerField(choices=((0, 0), (1, 1)), default=0)
     defaulter = models.BooleanField(default=False)
+    # is_defaulter = models.PositiveSmallIntegerField(choices=((0, 0), (1, 1)), default=0)
     editable = models.BooleanField(default=True)
+    # is_editable = models.PositiveSmallIntegerField(choices=((0, 0), (1, 1)), default=0)
 
 
 class Feedback(models.Model):
@@ -125,3 +130,12 @@ class DefaultDeadline(models.Model):
                                                     ('Snacks', 'Snacks'),
                                                     ('Dinner', 'Dinner')))
     hours = models.PositiveSmallIntegerField(default=6)
+
+
+class MessMenu(models.Model):
+    items = models.TextField(max_length=250)
+    date = models.DateField()
+    meal = models.CharField(max_length=10, choices=(('Breakfast', 'Breakfast'),
+                                                    ('Lunch', 'Lunch'),
+                                                    ('Snacks', 'Snacks'),
+                                                    ('Dinner', 'Dinner')))
