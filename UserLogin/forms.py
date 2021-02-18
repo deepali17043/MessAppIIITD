@@ -64,3 +64,22 @@ class MealDeadlineForm(forms.ModelForm):
     class Meta:
         model = MealDeadline
         fields = ('date', 'meal', 'hours')
+
+
+class DefaultMessMenuForm(forms.ModelForm):
+    class Meta:
+        model = DefaultMessMenu
+        fields = ('day', 'meal', 'items')
+
+
+class MessMenuForm(forms.ModelForm):
+    class Meta:
+        model = MessMenu
+        fields = ('date', 'meal', 'items')
+        widgets = {
+            'date': forms.SelectDateWidget(),
+        }
+
+
+class MessMenuSearchForm(forms.Form):
+    date = forms.DateField(label='Date ', widget=forms.SelectDateWidget)

@@ -3,6 +3,23 @@ from django.contrib.auth.models import BaseUserManager, AbstractBaseUser
 from django import forms
 import datetime
 
+meal_choices = (
+    ('Breakfast', 'Breakfast'),
+    ('Lunch', 'Lunch'),
+    ('Snacks', 'Snacks'),
+    ('Dinner', 'Dinner')
+)
+
+day_choices = (
+    ('Monday', 'Monday'),
+    ('Tuesday', 'Tuesday'),
+    ('Wednesday', 'Wednesday'),
+    ('Thursday', 'Thursday'),
+    ('Friday', 'Friday'),
+    ('Saturday', 'Saturday'),
+    ('Sunday', 'Sunday'),
+)
+
 
 # Create your models here.
 class UserManager(BaseUserManager):
@@ -86,10 +103,7 @@ class MessUser(models.Model):
 
 class MessAttendance(models.Model):
     user = models.ForeignKey(MessUser, on_delete=models.CASCADE, related_name='mess_customer')
-    meal = models.CharField(max_length=10, choices=(('Breakfast', 'Breakfast'),
-                                                    ('Lunch', 'Lunch'),
-                                                    ('Snacks', 'Snacks'),
-                                                    ('Dinner', 'Dinner')))
+    meal = models.CharField(max_length=10, choices=meal_choices)
     attending = models.BooleanField(default=False)
     # is_attending = models.PositiveSmallIntegerField(choices=((0, 0), (1, 1)), default=0)
     date = models.DateField(default=datetime.date.today())
@@ -103,10 +117,7 @@ class MessAttendance(models.Model):
 
 class Feedback(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='usr_feedback')
-    meal = models.CharField(max_length=10, choices=(('Breakfast', 'Breakfast'),
-                                                    ('Lunch', 'Lunch'),
-                                                    ('Snacks', 'Snacks'),
-                                                    ('Dinner', 'Dinner')))
+    meal = models.CharField(max_length=10, choices=meal_choices)
     date = models.DateField(default=datetime.date.today())
     feedback = models.TextField()
     status = models.CharField(max_length=10, choices=(('sent', 'Sent'),
@@ -117,25 +128,22 @@ class Feedback(models.Model):
 
 class MealDeadline(models.Model):
     date = models.DateField(default=datetime.date.today())
-    meal = models.CharField(max_length=10, choices=(('Breakfast', 'Breakfast'),
-                                                    ('Lunch', 'Lunch'),
-                                                    ('Snacks', 'Snacks'),
-                                                    ('Dinner', 'Dinner')))
+    meal = models.CharField(max_length=10, choices=meal_choices)
     hours = models.PositiveSmallIntegerField(default=6)
 
 
 class DefaultDeadline(models.Model):
-    meal = models.CharField(max_length=10, unique=True, choices=(('Breakfast', 'Breakfast'),
-                                                    ('Lunch', 'Lunch'),
-                                                    ('Snacks', 'Snacks'),
-                                                    ('Dinner', 'Dinner')))
+    meal = models.CharField(max_length=10, unique=True, choices=meal_choices)
     hours = models.PositiveSmallIntegerField(default=6)
 
 
+class DefaultMessMenu(models.Model):
+    meal = models.CharField(max_length=10, choices=meal_choices)
+    day = models.TextField(max_length=15, choices=day_choices)
+    items = models.TextField(max_length=400)
+
+
 class MessMenu(models.Model):
-    items = models.TextField(max_length=250)
+    items = models.TextField(max_length=400)
     date = models.DateField()
-    meal = models.CharField(max_length=10, choices=(('Breakfast', 'Breakfast'),
-                                                    ('Lunch', 'Lunch'),
-                                                    ('Snacks', 'Snacks'),
-                                                    ('Dinner', 'Dinner')))
+    meal = models.CharField(max_length=10, choices=meal_choices)

@@ -31,6 +31,8 @@ urlpatterns = [
     path('api/accounts/feedback/', views.sendFeedback, name='send-feedback'),
     path('api/accounts/view-feedback/', views.viewPrevFeedbacks, name='view-prev-feedback'),
     # path('dummy/add-data/', views.addData, name='add-data'),
+    path('api/accounts/custom-menu/', views.getDateBasedMessMenu, name='date-based-mess-menu'),
+    path('api/accounts/weekly-menu/', views.getDefaultMessMenu, name='default-mess-menu'),
 
     # common Web app pages
     # path('web/signup/', views.web_signup, name='web-signup'),
@@ -69,6 +71,8 @@ urlpatterns = [
     # url(r'^mess-admin/view-feedback/penalise/(?P<feedbackid>\d+)/$', views.penalise, name='mess-feedback-penalise'),
     url(r'^mess-admin/view-feedback/approve/(?P<feedbackid>\d+)/$', views.approve, name='mess-feedback-approve'),
     url(r'^mess-admin/view-feedback/maybe/(?P<feedbackid>\d+)/$', views.maybe, name='mess-feedback-maybe'),
-
+    url(r'^mess-admin/set-menu/', views.setMessMenu, name='set-mess-menu'),
+    url(r'^mess-admin/set-default-menu/', views.setDefaultMessMenu, name='set-default-mess-menu'),
+    path('mess-admin/view-menu/', views.adminViewMessMenu, name='admin-view-mess-menu'),
     # path('automated-renewal/', views.renew, ),
 ]

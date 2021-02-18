@@ -140,3 +140,21 @@ class FeedbackStatusSerializer(serializers.ModelSerializer):
     class Meta:
         model = Feedback
         fields = ('meal', 'date', 'feedback', 'status')
+
+
+class DateDefaultMessMenuSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DefaultMessMenu
+        fields = ('meal', 'item')
+
+
+class DateMessMenuSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MessMenu
+        fields = ('meal', 'items')
+
+
+class DefaultMessMenuSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DefaultMessMenu
+        fields = ('day', 'meal', 'items')

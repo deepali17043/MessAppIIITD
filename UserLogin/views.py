@@ -566,7 +566,7 @@ def sendFeedback(request):
 @api_view(['POST', ])
 @permission_classes([IsAuthenticated, ])
 def viewPrevFeedbacks(request):
-    checkCustomer(request)
+    # checkCustomer(request)
     user = request.user
     if user.type == 'customer' or user.type == 'admin':
         Feedbacks = Feedback.objects.filter(user=user).order_by('-date')
@@ -574,6 +574,48 @@ def viewPrevFeedbacks(request):
         return Response(serializer.data)
     else:
         raise Http404('Unauthorized')
+
+
+@api_view(['POST', ])
+@permission_classes([IsAuthenticated, ])
+def getDateBasedMessMenu(request):
+    checkCustomer(request)
+    # user = request.user
+    days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+    date_str = request.headers['date']
+    year = int(date_str[:4])
+    month = int(date_str[5:7])
+    day = int(date_str[8:])
+    date = datetime.date(year, month, day)
+    weekday = days[date.weekday()]
+    menu_items_list = []
+    default_qset = DefaultMessMenu.objects.filter(day=weekday)
+    queryset = MessMenu.objects.filter(date=date)
+    if default_qset.count() > 0:
+        for q in default_qset:
+            q_custom = queryset.filter(meal=q.meal)
+            if q_custom.count() > 0:
+                q_custom = queryset.get(meal=q.meal)
+                serialized_q = DateMessMenuSerializer(q_custom)
+            else:
+                serialized_q = DateDefaultMessMenuSerializer(q)
+            menu_items_list.append(serialized_q.data)
+    else:
+        for q in queryset:
+            serialized_q = DateMessMenuSerializer(q)
+            menu_items_list.append(serialized_q.data)
+    response_data = {'CustomMenu': menu_items_list}
+    return Response(response_data)
+
+
+@api_view(['POST', ])
+@permission_classes([IsAuthenticated, ])
+def getDefaultMessMenu(request):
+    checkCustomer(request)
+    weekly_menu = DefaultMessMenu.objects.all()
+    serializer = DefaultMessMenuSerializer(weekly_menu, many=True)
+    response_data = {'weekly_menu': serializer.data}
+    return Response(response_data)
 
 
 # ___________________________________Web____________________________________
@@ -887,7 +929,11 @@ def getMarkedAttendancePrevMonth(request):
     for i in days:
         qset = attendance_qset.filter(date=i)
         for j in range(len(meals)):
-            attendance_entry = qset.filter(meal=meals[j], attending=True).count()
+            attendance_tmp = qset.filter(meal=meals[j])
+            attendance_entry = 0
+            for a in attendance_tmp:
+                if a.attending:
+                    attendance_entry += 1
             response_data.append({'date': i, 'meal': meals[j], 'count': attendance_entry})
     response_data = {'response': response_data, 'user': user}
     return render(request, 'Mess/home.html', response_data)
@@ -1146,6 +1192,87 @@ def removeAdminRights(request, user_id):
     usr.type = 'customer'
     usr.save()
     return redirect('view-users')
+
+
+def setMessMenu(request):
+    try:
+        user = User.objects.get(username=request.user)
+    except:
+        raise Http404('Not authorized')
+    if not user.type == 'admin':
+        raise Http404('Not authorized')
+
+    if request.method == 'POST':
+        form = MessMenuForm(request.POST)
+        item = form.save(commit=False)
+        MessMenu.objects.update_or_create(
+            items=item.items,
+            date=item.date,
+            meal=item.meal
+        )
+        return redirect('admin-view-mess-menu')
+    else:
+        form = MessMenuForm()
+    args = {'user': user, 'form': form}
+    return render(request, 'Mess/set_menu.html', args)
+
+
+def setDefaultMessMenu(request):
+    try:
+        user = User.objects.get(username=request.user)
+    except:
+        raise Http404('Not authorized')
+    if not user.type == 'admin':
+        raise Http404('Not authorized')
+
+    if request.method == 'POST':
+        form = DefaultMessMenuForm(request.POST)
+        item = form.save(commit=False)
+        try:
+            item_entry = DefaultMessMenu.objects.get(day=item.day, meal=item.meal)
+            print(item_entry, 'itemmmmm entryyyy')
+            item_entry.items += item.items
+            print(item_entry.items)
+            item_entry.save()
+        except:
+            DefaultMessMenu.objects.update_or_create(
+                items=item.items,
+                day=item.day,
+                meal=item.meal
+            )
+        return redirect('admin-view-mess-menu')
+    else:
+        form = DefaultMessMenuForm()
+    args = {'user': user, 'form': form}
+    return render(request, 'Mess/set_default_menu.html', args)
+
+
+def adminViewMessMenu(request):
+    try:
+        user = User.objects.get(username=request.user)
+    except:
+        raise Http404('Not authorized')
+    if not user.type == 'admin':
+        raise Http404('Not authorized')
+    args = dict()
+
+    # Default Menu - i.e. weekly
+    weekly_menu = DefaultMessMenu.objects.all()
+    args['weekly_menu'] = weekly_menu
+
+    # Search for Custom Menu - i.e. date wise
+    if request.method == 'POST':
+        form = MessMenuSearchForm(data=request.POST)
+        if form.is_valid():
+            date_entered = form.cleaned_data['date']
+            custom_menu = MessMenu.objects.filter(date=date_entered)
+    else:
+        form = MessMenuSearchForm()
+        custom_menu = dict()
+    args['form'] = form
+    args['custom_menu'] = custom_menu
+    args['user'] = user
+    return render(request, 'Mess/view_menu.html', args)
 
 
 # _____________________________________Extra_______________________________
