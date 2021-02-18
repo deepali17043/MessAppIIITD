@@ -138,6 +138,7 @@ class DefaultDeadline(models.Model):
 
 
 class DefaultMessMenu(models.Model):
+    id = models.AutoField(primary_key=True)
     meal = models.CharField(max_length=10, choices=meal_choices)
     day = models.TextField(max_length=15, choices=day_choices)
     items = models.TextField(max_length=400)

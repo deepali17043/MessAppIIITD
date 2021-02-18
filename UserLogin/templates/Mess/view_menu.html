@@ -137,6 +137,7 @@
                                                 <th>Day</th>
                                                 <th>Meal</th>
                                                 <th>Items</th>
+                                                <th>Delete Entry</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -145,6 +146,7 @@
                                                 <td>{{en.day}}</td>
                                                 <td>{{en.meal}}</td>
                                                 <td>{{en.items}}</td>
+                                                <td><a href="{% url 'del-default-menu' itemid=en.id %}">Click here</a></td>
                                             </tr>
                                             {% endfor %}
                                         </tbody>
@@ -164,30 +166,34 @@
                                 </form>
                             </div>
                         </div>
-                        <div class="card-header">
-                            <i class="fas fa-table mr-1"></i>
-                            Date-Wise Menu
-                        </div>
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table class="table table-bordered" id="dataTable1" width="100%" cellspacing="0">
-                                    <thead>
-                                        <tr>
-                                            <th>Date</th>
-                                            <th>Meal</th>
-                                            <th>Items</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for en in custom_menu %}
-                                        <tr>
-                                            <td>{{en.date}}</td>
-                                            <td>{{en.meal}}</td>
-                                            <td>{{en.items}}</td>
-                                        </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <i class="fas fa-table mr-1"></i>
+                                Date-Wise Menu
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered" id="dataTable1" width="100%" cellspacing="0">
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Meal</th>
+                                                <th>Items</th>
+                                                <th>Delete Entry</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for en in custom_menu %}
+                                            <tr>
+                                                <td>{{en.date}}</td>
+                                                <td>{{en.meal}}</td>
+                                                <td>{{en.items}}</td>
+                                                <td><a href="{% url 'del-mess-menu' itemid=en.id %}">Click here</a></td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>

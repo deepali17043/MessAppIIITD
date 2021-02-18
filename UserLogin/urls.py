@@ -74,5 +74,8 @@ urlpatterns = [
     url(r'^mess-admin/set-menu/', views.setMessMenu, name='set-mess-menu'),
     url(r'^mess-admin/set-default-menu/', views.setDefaultMessMenu, name='set-default-mess-menu'),
     path('mess-admin/view-menu/', views.adminViewMessMenu, name='admin-view-mess-menu'),
+    url(r'^mess-admin/delete-default-menu-item/(?P<itemid>\d+)/$', views.deleteDefaultMessMenuItem, name='del-default-menu'),
+    url(r'^mess-admin/delete-menu-item/(?P<itemid>\d+)/$', views.deleteMessMenuItem, name='del-mess-menu'),
+
     # path('automated-renewal/', views.renew, ),
 ]

@@ -1231,7 +1231,7 @@ def setDefaultMessMenu(request):
         try:
             item_entry = DefaultMessMenu.objects.get(day=item.day, meal=item.meal)
             print(item_entry, 'itemmmmm entryyyy')
-            item_entry.items += item.items
+            item_entry.items = item.items
             print(item_entry.items)
             item_entry.save()
         except:
@@ -1273,6 +1273,30 @@ def adminViewMessMenu(request):
     args['custom_menu'] = custom_menu
     args['user'] = user
     return render(request, 'Mess/view_menu.html', args)
+
+
+def deleteDefaultMessMenuItem(request, itemid):
+    try:
+        user = User.objects.get(username=request.user)
+    except:
+        raise Http404('Not authorized')
+    if not user.type == 'admin':
+        raise Http404('Not authorized')
+    default_menu_entry = DefaultMessMenu.objects.get(id=itemid)
+    default_menu_entry.delete()
+    return redirect('admin-view-mess-menu')
+
+
+def deleteMessMenuItem(request, itemid):
+    try:
+        user = User.objects.get(username=request.user)
+    except:
+        raise Http404('Not authorized')
+    if not user.type == 'admin':
+        raise Http404('Not authorized')
+    menu_entry = MessMenu.objects.get(id=itemid)
+    menu_entry.delete()
+    return redirect('admin-view-mess-menu')
 
 
 # _____________________________________Extra_______________________________
