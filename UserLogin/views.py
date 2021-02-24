@@ -91,8 +91,7 @@ def create_mess_objects(user_account):
         mess_user.snacks_coupons = 20
         mess_user.dinner_coupons = 20
     now = datetime.datetime.now(IST)
-    days_cur_month = [datetime.date(now.year, now.month, now.day + day) for day in range(0, 7)]
-    days = days_cur_month
+    days = [(now+datetime.timedelta(days=day)).date() for day in range(0, 7)]
     meals = ['Breakfast', 'Lunch', 'Snacks', 'Dinner']
     attendance_qset = MessAttendance.objects.filter(user=mess_user)
     for day in days:
@@ -430,7 +429,7 @@ def messAttendanceAPI(request):
     upcoming_attendance = []
     meals = ['Breakfast', 'Lunch', 'Snacks', 'Dinner']
     attendance_qset = MessAttendance.objects.all().filter(user=mess_user)
-    days = [datetime.date(now.year, now.month, now.day + day) for day in range(3)]  # cur, next and day after
+    days = [(now + datetime.timedelta(days=day)).date() for day in range(3)]  # cur, next and day after
     for i in days:
         qset = attendance_qset.filter(date=i)
         for j in range(len(meals)):
@@ -452,7 +451,7 @@ def messScheduleAPI(request):
     mess_user = MessUser.objects.get(user=request.user)
     now = datetime.datetime.now(IST)
     attendance = []
-    days = [datetime.date(now.year, now.month, day) for day in range(now.day, now.day + 7)]
+    days = [(now + datetime.timedelta(days=day)).date() for day in range(0, 7)]
     meals = ['Breakfast', 'Lunch', 'Snacks', 'Dinner']
     attendance_qset = MessAttendance.objects.all().filter(user=mess_user)
     for day in days:
@@ -465,7 +464,15 @@ def messScheduleAPI(request):
                 attendance.append(attendance_entry)
         except:
             create_mess_objects(request.user)
+            attendance_qset = MessAttendance.objects.all().filter(user=mess_user)
+            qset = attendance_qset.filter(date=day)
+            for j in range(len(meals)):
+                attendance_entry = qset.get(meal=meals[j])
+                attendance_entry.editable = editable_meal(meals[j], now, day)
+                attendance_entry.save()
+                attendance.append(attendance_entry)
     serializer = MessAttendanceSerializer(attendance, many=True)
+    print(attendance)
     response_data = {
         'attendance':
             serializer.data
@@ -706,7 +713,7 @@ def messHome(request):
     attendance_qset = MessAttendance.objects.all()
     response_data = []
     first = {}
-    days = [datetime.date(now.year, now.month, now.day + day) for day in range(2)]  # cur, next
+    days = [(now+datetime.timedelta(days=day)).date() for day in range(2)]  # cur, next
     for i in days:
         qset = attendance_qset.filter(date=i)
         feedback_qset = Feedback.objects.filter(date=i)
@@ -1144,8 +1151,7 @@ def addData(request, user_id):
     now = datetime.datetime.now(IST)
     date_today = datetime.date(now.year, now.month, now.day)
     num_days = calendar.monthrange(date_today.year, date_today.month)[1]
-    days_cur_month = [datetime.date(date_today.year, date_today.month, day) for day in range(1, num_days + 1)]
-    days = days_cur_month
+    days = [(now + datetime.timedelta(days=day)) for day in range(1, )]
     meals = ['Breakfast', 'Lunch', 'Snacks', 'Dinner']
     for day in days:
         for j in meals:
