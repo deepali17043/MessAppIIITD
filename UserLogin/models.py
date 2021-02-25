@@ -115,6 +115,7 @@ class MessAttendance(models.Model):
     # is_editable = models.PositiveSmallIntegerField(choices=((0, 0), (1, 1)), default=0)
 
 
+# Mess Feedback
 class Feedback(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='usr_feedback')
     meal = models.CharField(max_length=10, choices=meal_choices)
@@ -148,3 +149,12 @@ class MessMenu(models.Model):
     items = models.TextField(max_length=400)
     date = models.DateField()
     meal = models.CharField(max_length=10, choices=meal_choices)
+
+
+class AppFeedback(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_app_feedback')
+    feedback = models.TextField(max_length=500)
+    timestamp = models.DateTimeField()
+    status = models.CharField(max_length=10,
+                              choices=(('Sent', 'Sent'), ('Resolved', 'Resolved')),
+                              default='Sent')

@@ -158,3 +158,9 @@ class DefaultMessMenuSerializer(serializers.ModelSerializer):
     class Meta:
         model = DefaultMessMenu
         fields = ('day', 'meal', 'items')
+
+
+class AppFeedbackSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AppFeedback
+        fields = ('feedback', )

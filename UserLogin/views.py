@@ -551,7 +551,7 @@ def sendFeedback(request):
     checkCustomer(request)
     user = request.user
     serializer = FeedbackSerializer(data=request.headers)
-    # print(request.headers)
+    print(request.headers)
     return_data = {}
     if serializer.is_valid():
         user_feedback = serializer.validated_data
@@ -623,6 +623,32 @@ def getDefaultMessMenu(request):
     serializer = DefaultMessMenuSerializer(weekly_menu, many=True)
     response_data = {'weekly_menu': serializer.data}
     return Response(response_data)
+
+
+@api_view(['POST', ])
+@permission_classes([IsAuthenticated, ])
+def sendAppFeedback(request):
+    checkCustomer(request)
+    user = request.user
+    print(request.headers)
+    serializer = AppFeedbackSerializer(data=request.headers)
+    # print(request.headers)
+    return_data = {}
+    if serializer.is_valid():
+        user_feedback = serializer.validated_data
+        print(serializer.data)
+        return_data['status'] = status.HTTP_200_OK
+        now = datetime.datetime.now(IST)
+        print(user_feedback.keys())
+        resp = user_feedback['feedback']
+        AppFeedback.objects.update_or_create(
+            user=user,
+            feedback=resp,
+            timestamp=now,
+        )
+    else:
+        return_data = serializer.errors
+    return Response(return_data)
 
 
 # ___________________________________Web____________________________________

@@ -32,6 +32,8 @@ urlpatterns = [
     path('api/accounts/view-feedback/', views.viewPrevFeedbacks, name='view-prev-feedback'),
     path('api/accounts/custom-menu/', views.getDateBasedMessMenu, name='date-based-mess-menu'),
     path('api/accounts/weekly-menu/', views.getDefaultMessMenu, name='default-mess-menu'),
+    path('api/accounts/app-feedback/', views.sendAppFeedback, name='default-mess-menu'),
+
 
     # common Web app pages
     # path('web/signup/', views.web_signup, name='web-signup'),
