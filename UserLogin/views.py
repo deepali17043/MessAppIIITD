@@ -91,19 +91,20 @@ def create_mess_objects(user_account):
         mess_user.snacks_coupons = 20
         mess_user.dinner_coupons = 20
     now = datetime.datetime.now(IST)
-    days = [(now+datetime.timedelta(days=day)).date() for day in range(0, 7)]
+    days = [(now + datetime.timedelta(days=day)).date() for day in range(0, 7)]
     meals = ['Breakfast', 'Lunch', 'Snacks', 'Dinner']
-    attendance_qset = MessAttendance.objects.filter(user=mess_user)
+    date_start = now.date()
+    date_end = (now + datetime.timedelta(days=6)).date()
+    attendance_qset = MessAttendance.objects.filter(user=mess_user).filter(date__range=[date_start, date_end])
     for day in days:
-        qset = attendance_qset.filter(date=day)
-        if qset.count() == 4:
-            continue
         for j in meals:
-            if qset.filter(meal=j).count() <= 0:
+            try:
+                q = attendance_qset.get(date=day, meal=j)
+            except:
                 MessAttendance.objects.update_or_create(
                     user=mess_user,
-                    meal=j,
                     date=day,
+                    meal=j
                 )
 
 
@@ -451,32 +452,22 @@ def messScheduleAPI(request):
     mess_user = MessUser.objects.get(user=request.user)
     now = datetime.datetime.now(IST)
     attendance = []
-    days = [(now + datetime.timedelta(days=day)).date() for day in range(0, 7)]
-    meals = ['Breakfast', 'Lunch', 'Snacks', 'Dinner']
-    attendance_qset = MessAttendance.objects.all().filter(user=mess_user)
-    for day in days:
-        try:
-            qset = attendance_qset.filter(date=day)
-            for j in range(len(meals)):
-                attendance_entry = qset.get(meal=meals[j])
-                attendance_entry.editable = editable_meal(meals[j], now, day)
-                attendance_entry.save()
-                attendance.append(attendance_entry)
-        except:
-            create_mess_objects(request.user)
-            attendance_qset = MessAttendance.objects.all().filter(user=mess_user)
-            qset = attendance_qset.filter(date=day)
-            for j in range(len(meals)):
-                attendance_entry = qset.get(meal=meals[j])
-                attendance_entry.editable = editable_meal(meals[j], now, day)
-                attendance_entry.save()
-                attendance.append(attendance_entry)
+    numdays = 7  # returning the data for seven days.
+    date_start = now.date()
+    date_end = (now + datetime.timedelta(days=6)).date()
+    attendance_qset = MessAttendance.objects.filter(user=mess_user).filter(date__range=[date_start, date_end])
+    cnt = numdays * 4
+    print(attendance_qset.count())
+    if attendance_qset.count() < cnt:
+        print("cnksdbhdblk")
+        create_mess_objects(request.user)
+        attendance_qset = MessAttendance.objects.filter(user=mess_user).filter(date__range=[date_start, date_end])
+    for q in attendance_qset:
+        q.editable = editable_meal(q.meal, now, q.date)
+        q.save()
+        attendance.append(q)
     serializer = MessAttendanceSerializer(attendance, many=True)
-    print(attendance)
-    response_data = {
-        'attendance':
-            serializer.data
-    }
+    response_data = {'attendance': serializer.data, }
     return Response(response_data)
 
 
@@ -739,7 +730,7 @@ def messHome(request):
     attendance_qset = MessAttendance.objects.all()
     response_data = []
     first = {}
-    days = [(now+datetime.timedelta(days=day)).date() for day in range(2)]  # cur, next
+    days = [(now + datetime.timedelta(days=day)).date() for day in range(2)]  # cur, next
     for i in days:
         qset = attendance_qset.filter(date=i)
         feedback_qset = Feedback.objects.filter(date=i)
