@@ -93,19 +93,17 @@ def create_mess_objects(user_account):
     now = datetime.datetime.now(IST)
     days = [(now + datetime.timedelta(days=day)).date() for day in range(0, 7)]
     meals = ['Breakfast', 'Lunch', 'Snacks', 'Dinner']
-    date_start = now.date()
-    date_end = (now + datetime.timedelta(days=6)).date()
-    attendance_qset = MessAttendance.objects.filter(user=mess_user).filter(date__range=[date_start, date_end])
     for day in days:
         for j in meals:
-            try:
-                q = attendance_qset.get(date=day, meal=j)
-            except:
+
+            q = MessAttendance.objects.filter(user=mess_user, date=day, meal=j)
+            if q.count() < 1:
                 MessAttendance.objects.update_or_create(
                     user=mess_user,
                     date=day,
                     meal=j
                 )
+    return
 
 
 @api_view(['POST', ])
@@ -455,16 +453,18 @@ def messScheduleAPI(request):
     numdays = 7  # returning the data for seven days.
     date_start = now.date()
     date_end = (now + datetime.timedelta(days=6)).date()
-    attendance_qset = MessAttendance.objects.filter(user=mess_user).filter(date__range=[date_start, date_end])
+    orderByList = ['date']
+    attendance_qset = MessAttendance.objects.filter(user=mess_user).filter(date__range=[date_start, date_end]).order_by('date')
     cnt = numdays * 4
-    print(attendance_qset.count())
     if attendance_qset.count() < cnt:
-        print("cnksdbhdblk")
         create_mess_objects(request.user)
-        attendance_qset = MessAttendance.objects.filter(user=mess_user).filter(date__range=[date_start, date_end])
+        attendance_qset = MessAttendance.objects.filter(user=mess_user).filter(date__range=[date_start, date_end]).order_by('date')
+    prev = False
     for q in attendance_qset:
-        q.editable = editable_meal(q.meal, now, q.date)
-        q.save()
+        if not prev:
+            q.editable = editable_meal(q.meal, now, q.date)
+            q.save()
+            prev = q.editable
         attendance.append(q)
     serializer = MessAttendanceSerializer(attendance, many=True)
     response_data = {'attendance': serializer.data, }
