@@ -142,20 +142,68 @@
                                         <thead>
                                             <tr>
                                                 <th>Day</th>
-                                                <th>Meal</th>
-                                                <th>Items</th>
-                                                <th>Delete Entry</th>
+                                                <th>Breakfast</th>
+                                                <th>Lunch</th>
+                                                <th>Snacks</th>
+                                                <th>Dinner</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {% for en in weekly_menu %}
                                             <tr>
-                                                <td>{{en.day}}</td>
-                                                <td>{{en.meal}}</td>
-                                                <td>{{en.items}}</td>
-                                                <td><a href="{% url 'del-default-menu' itemid=en.id %}">Click here</a></td>
+                                                <th>Monday</th>
+                                                {% for en in weekly_menu.Monday %}
+                                                <td>{{en.items}} <br>{% if en.id %}[<a href="{% url 'del-default-menu' itemid=en.id %}">delete entry</a>] {%endif%}</td>
+                                                {% endfor %}
                                             </tr>
-                                            {% endfor %}
+                                        </tbody>
+                                        <tbody>
+                                            <tr>
+                                                <th>Tuesday</th>
+                                                {% for en in weekly_menu.Tuesday %}
+                                                <td>{{en.items}} <br>{% if en.id %}[<a href="{% url 'del-default-menu' itemid=en.id %}">delete entry</a>] {%endif%}</td>
+                                                {% endfor %}
+                                            </tr>
+                                        </tbody>
+                                        <tbody>
+                                            <tr>
+                                                <th>Wednesday</th>
+                                                {% for en in weekly_menu.Wednesday %}
+                                                <td>{{en.items}} <br>{% if en.id %}[<a href="{% url 'del-default-menu' itemid=en.id %}">delete entry</a>] {%endif%}</td>
+                                                {% endfor %}
+                                            </tr>
+                                        </tbody>
+                                        <tbody>
+                                            <tr>
+                                                <th>Thursday</th>
+                                                {% for en in weekly_menu.Thursday %}
+                                                <td>{{en.items}} <br>{% if en.id %}[<a href="{% url 'del-default-menu' itemid=en.id %}">delete entry</a>] {%endif%}</td>
+                                                {% endfor %}
+                                            </tr>
+                                        </tbody>
+                                        <tbody>
+                                            <tr>
+                                                <th>Friday</th>
+                                                {% for en in weekly_menu.Friday %}
+                                                <td>{{en.items}} <br>{% if en.id %}[<a href="{% url 'del-default-menu' itemid=en.id %}">delete entry</a>] {%endif%}</td>
+                                                {% endfor %}
+                                            </tr>
+                                        </tbody>
+                                        <tbody>
+                                            <tr>
+                                                <th>Saturday</th>
+                                                {% for en in weekly_menu.Saturday %}
+                                                <td>{{en.items}} <br>{% if en.id %}[<a href="{% url 'del-default-menu' itemid=en.id %}">delete entry</a>]{%endif%}</td>
+                                                {% endfor %}
+                                            </tr>
+                                        </tbody>
+                                        <tbody>
+                                            <tr>
+                                                <th>Sunday</th>
+                                                {% for en in weekly_menu.Sunday %}
+                                                <td>{{en.items}} <br>
+                                                    {% if en.id %} [<a href="{% url 'del-default-menu' itemid=en.id %}">delete entry</a>] {%endif%}</td>
+                                                {% endfor %}
+                                            </tr>
                                         </tbody>
                                     </table>
                                 </div>

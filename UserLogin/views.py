@@ -421,10 +421,8 @@ def collectedOrderAPI(request):
 def messAttendanceAPI(request):
     checkCustomer(request)
     user = request.user
-    # print(user.username)
     mess_user = MessUser.objects.get(user=user)
     now = datetime.datetime.now(IST)
-    # date_today = datetime.date.today()
     upcoming_attendance = []
     meals = ['Breakfast', 'Lunch', 'Snacks', 'Dinner']
     attendance_qset = MessAttendance.objects.all().filter(user=mess_user)
@@ -453,7 +451,6 @@ def messScheduleAPI(request):
     numdays = 7  # returning the data for seven days.
     date_start = now.date()
     date_end = (now + datetime.timedelta(days=6)).date()
-    orderByList = ['date']
     attendance_qset = MessAttendance.objects.filter(user=mess_user).filter(date__range=[date_start, date_end]).order_by('date')
     cnt = numdays * 4
     if attendance_qset.count() < cnt:
@@ -502,7 +499,6 @@ def editMessScheduleAPI(request):
     user = request.user
     mess_user = MessUser.objects.get(user=user)
     edit_attendance = ast.literal_eval(request.headers['attendance'])
-    # print(edit_attendance, type(edit_attendance))
     """ attendance (list of dictionaries) - date, meals(list of meals) """
     attendance_qset = MessAttendance.objects.all().filter(user=mess_user)
     # print(attendance_qset)
@@ -578,7 +574,6 @@ def viewPrevFeedbacks(request):
 @permission_classes([IsAuthenticated, ])
 def getDateBasedMessMenu(request):
     checkCustomer(request)
-    # user = request.user
     days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
     date_str = request.headers['date']
     year = int(date_str[:4])
@@ -623,7 +618,6 @@ def sendAppFeedback(request):
     user = request.user
     print(request.headers)
     serializer = AppFeedbackSerializer(data=request.headers)
-    # print(request.headers)
     return_data = {}
     if serializer.is_valid():
         user_feedback = serializer.validated_data
@@ -655,11 +649,8 @@ def web_signup(request):
             form.save()
             username = form.cleaned_data.get('username')
             raw_password = form.cleaned_data.get('password1')
-            # print('sjkbvhbodisbvoisdfbv')
             user = authenticate(username=username, password=raw_password)
-            # print('something')
             login(request, user)
-            # print('blah')
             return redirect('web-home')
     else:
         form = CustomUserCreationForm()
@@ -667,7 +658,6 @@ def web_signup(request):
 
 
 def web_login(request):
-    # print(request.user)
     try:
         User.objects.get(username=request.user)
         return redirect('web-home')
@@ -680,9 +670,7 @@ def web_login(request):
         form.fields['password'].widget.attrs['placeholder'] = 'Password'
         form.fields['password'].label = 'Password'
         if form.is_valid():
-            # print(form)
             user = form.get_user()
-            # print(user)
             login(request, user)
         else:
             raise Http404('invalid')
@@ -745,7 +733,6 @@ def messHome(request):
             feedback_count = feedback_qset.filter(meal=meals[j]).exclude(status='sent').count()
             response_data.append({'date': i, 'meal': meals[j], 'count': attendance_entry, 'fcount': feedback_count})
     response_data = {'response': response_data, 'user': user, 'first': first}
-    # print(response_data)
     if user.type == 'admin':
         return render(request, 'Mess/home.html', response_data)
     return render(request, 'MessVendor/home.html', response_data)
@@ -821,8 +808,6 @@ def listAttendees(request):
         raise Http404('Not authorized')
     if request.method == 'GET':
         form = AttendeesForm()
-        # date = datetime.datetime.now(IST)
-        # date = datetime.date(date.year, date.month, date.day)
         qset = list()
     else:
         form = AttendeesForm(data=request.POST)
@@ -840,14 +825,11 @@ def listAttendees(request):
     try:
         print("qsert:", qset)
         for q in qset:
-            # print(tmp['email'])
             if q.attending:
                 print('q', q)
                 tmp = dict()
                 tmp['username'] = q.user.user.username
-                # print(tmp['username'])
                 tmp['name'] = q.user.user.name
-                # print(tmp['name'])
                 tmp['email'] = q.user.user.email
                 list_attendees.append(tmp)
     except:
@@ -884,14 +866,11 @@ def customListAttendees(request, meal):
     try:
         print("qsert:", qset)
         for q in qset:
-            # print(tmp['email'])
             if q.attending:
                 print('q', q)
                 tmp = dict()
                 tmp['username'] = q.user.user.username
-                # print(tmp['username'])
                 tmp['name'] = q.user.user.name
-                # print(tmp['name'])
                 tmp['email'] = q.user.user.email
                 list_attendees.append(tmp)
     except:
@@ -920,15 +899,10 @@ def getMarkedAttendanceCurMonth(request):
         qset = attendance_qset.filter(date=i)
         for j in range(len(meals)):
             attendance_entry = qset.filter(meal=meals[j])
-            # try:
-            # attendance_entry1 = attendance_entry.filter(attending=True)
-            # print(attendance_entry1)
             attendance_cnt = 0
             for a in attendance_entry:
                 if a.attending:
                     attendance_cnt += 1
-            # except:
-            #     attendance_cnt = 0
             response_data.append({'date': i, 'meal': meals[j], 'count': attendance_cnt})
     response_data = {'response': response_data, 'user': user}
     if user.type == 'admin':
@@ -988,17 +962,14 @@ def uploadAttendance(request):
     data_set = csv_file.read().decode('UTF-8')
     io_string = io.StringIO(data_set)
     for row in csv.reader(io_string, delimiter=',', quotechar="|"):
-        # print(row)
         if len(row) <= 1:
             break
         username = row[0]
         attended = (row[1] == '1')
         user = User.objects.get(username=username)
         mess_user = MessUser.objects.get(user=user)
-        # print(user)
         attendance_obj = qset.get(user=mess_user)
         attendance_obj.attended = attended
-        # meal = attendance_obj.meal
         attendance_obj.defaulter = not (attended == attendance_obj.attending)
         attendance_obj.save()
         # if attended:
@@ -1012,7 +983,6 @@ def uploadAttendance(request):
         #     if meal == 'Dinner':
         #         mess_user.dinner_coupons -= 1
         mess_user.save()
-        # print(mess_user.lunch_coupons)
     return redirect('mess-home')
 
 
@@ -1026,9 +996,6 @@ def listDefaulters(request):
     defaulter_list = []
     if request.method == 'GET':
         form = AttendanceList()
-        # meal = 'Breakfast'
-        # date = datetime.datetime.now(IST)
-        # date = datetime.date(date.year, date.month, date.day)
         qset = []
         feedbackset = []
     else:
@@ -1150,8 +1117,6 @@ def viewUsers(request):
 
 
 def addData(request, user_id):
-    # MessUser.objects.all().delete()
-    # MessAttendance.objects.all().delete()
     user = User.objects.get(id=user_id)
     mess_user_qset = MessUser.objects.filter(user=user)
     if len(mess_user_qset) <= 0:
@@ -1168,7 +1133,7 @@ def addData(request, user_id):
     now = datetime.datetime.now(IST)
     date_today = datetime.date(now.year, now.month, now.day)
     num_days = calendar.monthrange(date_today.year, date_today.month)[1]
-    days = [(now + datetime.timedelta(days=day)) for day in range(1, )]
+    days = [(now + datetime.timedelta(days=day)) for day in range(1, num_days)]
     meals = ['Breakfast', 'Lunch', 'Snacks', 'Dinner']
     for day in days:
         for j in meals:
@@ -1278,10 +1243,17 @@ def adminViewMessMenu(request):
     if not user.type == 'admin':
         raise Http404('Not authorized')
     args = dict()
-
+    meals = {'Breakfast':0, 'Lunch':1, 'Snacks':2, 'Dinner':3}
     # Default Menu - i.e. weekly
     weekly_menu = DefaultMessMenu.objects.all()
-    args['weekly_menu'] = weekly_menu
+    weekly_menu_table = {}
+    weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday',
+                'Friday', 'Saturday', 'Sunday']
+    for day in weekdays:
+        weekly_menu_table[day] = ['-' for k in range(4)]
+    for it in weekly_menu:
+        tmp = meals[it.meal]
+        weekly_menu_table[it.day][tmp] = it
 
     # Search for Custom Menu - i.e. date wise
     if request.method == 'POST':
@@ -1295,6 +1267,7 @@ def adminViewMessMenu(request):
     args['form'] = form
     args['custom_menu'] = custom_menu
     args['user'] = user
+    args['weekly_menu'] = weekly_menu_table
     return render(request, 'Mess/view_menu.html', args)
 
 
