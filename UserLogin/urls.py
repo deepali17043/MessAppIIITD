@@ -68,6 +68,7 @@ urlpatterns = [
     url(r'^mess-admin/delete-user/(?P<user_id>\d+)/$', views.deleteUser, name='delete-user'),
     url(r'^mess-admin/give-user-admin-rights/(?P<user_id>\d+)/$', views.giveAdminRights, name='admin-rights-give'),
     url(r'^mess-admin/remove-user-admin-rights/(?P<user_id>\d+)/$', views.removeAdminRights, name='admin-rights-remove'),
+    path('mess-admin/app-feedback/', views.appFeedback, name='app-feedback'),
     path('mess-admin/view-feedback/', views.viewFeedback, name='mess-feedback'),
     # url(r'^mess-admin/view-feedback/penalise/(?P<feedbackid>\d+)/$', views.penalise, name='mess-feedback-penalise'),
     url(r'^mess-admin/view-feedback/approve/(?P<feedbackid>\d+)/$', views.approve, name='mess-feedback-approve'),

@@ -718,6 +718,7 @@ def messHome(request):
     attendance_qset = MessAttendance.objects.all()
     response_data = []
     first = {}
+    active = {}
     days = [(now + datetime.timedelta(days=day)).date() for day in range(2)]  # cur, next
     for i in days:
         qset = attendance_qset.filter(date=i)
@@ -730,9 +731,10 @@ def messHome(request):
                     attendance_entry += 1
             if i.day == now.day:
                 first[meals[j]] = attendance_entry
+                active[meals[j]] = now.hour < (time[meals[j]]+meal_duration)
             feedback_count = feedback_qset.filter(meal=meals[j]).exclude(status='sent').count()
             response_data.append({'date': i, 'meal': meals[j], 'count': attendance_entry, 'fcount': feedback_count})
-    response_data = {'response': response_data, 'user': user, 'first': first}
+    response_data = {'response': response_data, 'user': user, 'first': first, 'active': active}
     if user.type == 'admin':
         return render(request, 'Mess/home.html', response_data)
     return render(request, 'MessVendor/home.html', response_data)
@@ -1032,6 +1034,21 @@ def listDefaulters(request):
             defaulter_list.append(tmp)
     args = {'form': form, 'defaulter_list': defaulter_list, 'user': user}
     return render(request, 'Mess/defaulter.html', args)
+
+
+def appFeedback(request):
+    try:
+        user = User.objects.get(username=request.user)
+    except:
+        raise Http404('Not authorized')
+    if not user.type == 'admin':
+        raise Http404('Not authorized')
+    feedbackqset = AppFeedback.objects.filter(status='Sent').order_by('-timestamp')
+    response_data = {
+        'feedback': feedbackqset,
+        'user': user
+    }
+    return render(request, 'Mess/app_feedback.html', response_data)
 
 
 def viewFeedback(request):

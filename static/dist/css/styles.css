@@ -6083,6 +6083,10 @@ a.close.disabled {
   background-color: #3FADA8 !important;
 }
 
+.bg-unavailable {
+  background-color: #6c757d !important;
+}
+
 a.bg-primary:hover, a.bg-primary:focus,
 button.bg-primary:hover,
 button.bg-primary:focus {

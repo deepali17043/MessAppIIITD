@@ -64,15 +64,15 @@
                                 Menu & Timings
                                 <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
                             </a>
-                            <div id="collapsePages" aria-labelledby="headingTwo" data-parent="#sidenavAccordion">
+                            <div class="collapse" id="collapsePages" aria-labelledby="headingTwo" data-parent="#sidenavAccordion">
                                 <nav class="sb-sidenav-menu-nested nav accordion" id="sidenavAccordionPages">
                                     <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#pagesCollapseAuth" aria-expanded="false" aria-controls="pagesCollapseAuth">
                                         Menu
                                         <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
                                     </a>
-                                    <div id="pagesCollapseAuth" aria-labelledby="headingOne" data-parent="#sidenavAccordionPages">
+                                    <div class="collapse" id="pagesCollapseAuth" aria-labelledby="headingOne" data-parent="#sidenavAccordionPages">
                                         <nav class="sb-sidenav-menu-nested nav">
-                                            <a class="nav-link active" href="{% url 'set-mess-menu' %}">
+                                            <a class="nav-link" href="{% url 'set-mess-menu' %}">
                                                 <div class="sb-nav-link-icon"><i class="fas fa-magic"></i></div>
                                                 Update Menu By Date
                                             </a>
@@ -112,7 +112,7 @@
                                 <div class="sb-nav-link-icon"><i class="fas fa-chart-area"></i></div>
                                 Feedback
                             </a>
-                            <a class="nav-link" href="{% url 'app-feedback' %}">
+                            <a class="nav-link active" href="{% url 'app-feedback' %}">
                                 <div class="sb-nav-link-icon"><i class="fas fa-tablet"></i></div>
                                 App Feedback
                             </a>
@@ -135,19 +135,41 @@
             <div id="layoutSidenav_content">
                 <main>
                     <div class="container-fluid">
-                        <div class="card shadow-lg border-0 rounded-lg mt-5">
-                            <div class="card-header"><h3 class="text-center font-weight-light my-4">Update Mess Menu By Date</h3></div>
-                            <div class="card-body text-center">
-                                <form  method="POST" enctype="multipart/form-data">
-                                    {% csrf_token %}
-                                    {{ form|crispy }}
-                                    <div class="upload_button">
-                                        <button type="submit">Save</button>
-                                    </div>
-                                </form>
+
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <i class="fas fa-table mr-1"></i>
+                                All Users
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                                        <thead>
+                                            <tr>
+                                                <th>Username</th>
+                                                <th>Feedback</th>
+                                            </tr>
+                                        </thead>
+                                        <tfoot>
+                                            <tr>
+                                                <th>Username</th>
+                                                <th>Feedback</th>
+                                            </tr>
+                                        </tfoot>
+                                        <tbody>
+                                            {% for en in feedback %}
+                                            <tr>
+                                                <td>{{en.user.username}}</td>
+                                                <td>{{en.feedback}}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
+
                 </main>
                 <footer class="py-4 bg-light mt-auto">
                     <div class="container-fluid">
