@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 import os
-import django_heroku
+# import django_heroku
 from .db_data import db_host
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -25,7 +25,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '9l(7rhajws#we8@r162r@-6u7+xktlou3c*sa$nwky+=k&#_$u'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['127.0.0.1', '0.0.0.0', 'aahar-iiitd.herokuapp.com']
 
@@ -180,4 +180,9 @@ LOGGING = {
         }
 }
 
-django_heroku.settings(locals())
+# Celery Configuration Options
+CELERY_TIMEZONE = 'Asia/Kolkata'
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60
+
+# django_heroku.settings(locals())

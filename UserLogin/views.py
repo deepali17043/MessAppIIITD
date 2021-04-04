@@ -1,7 +1,6 @@
 import csv, io
 import pytz, ast
 from django.http import Http404
-from django.shortcuts import get_object_or_404
 from django.shortcuts import render, redirect
 from django.views.generic import CreateView
 from rest_framework.decorators import api_view, permission_classes
@@ -11,7 +10,7 @@ from rest_framework.renderers import TemplateHTMLRenderer
 from rest_framework.authtoken import views
 
 from .forms import *
-from .models import User, MenuItems, Cart, MessUser, MessAttendance
+from .models import *
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, logout
 from django.urls import resolve
@@ -26,6 +25,9 @@ from .meal_timings import *
 import urllib
 import json
 import sys
+
+# from celery.schedules import crontab
+# from celery.task import periodic_task
 
 # _________________________________________________________________________________________________
 
@@ -72,13 +74,13 @@ def signup(request):
         return_data['type'] = user_account.type
 
         # Remove when coupon system resumes:
-        create_mess_objects(user_account)
+        create_mess_objects(user_account, numdays=31)
     else:
         return_data = serializer.errors
     return Response(return_data)
 
 
-def create_mess_objects(user_account):
+def create_mess_objects(user_account, numdays=7):
     user = User.objects.get(username=user_account.username)
     mess_user_qset = MessUser.objects.filter(user=user)
     if len(mess_user_qset) <= 0:
@@ -91,11 +93,11 @@ def create_mess_objects(user_account):
         mess_user.snacks_coupons = 20
         mess_user.dinner_coupons = 20
     now = datetime.datetime.now(IST)
-    days = [(now + datetime.timedelta(days=day)).date() for day in range(0, 7)]
+    date_start = datetime.date(year=now.year, month=now.month, day=1)
+    days = [(date_start + datetime.timedelta(days=day)) for day in range(0, numdays)]
     meals = ['Breakfast', 'Lunch', 'Snacks', 'Dinner']
     for day in days:
         for j in meals:
-
             q = MessAttendance.objects.filter(user=mess_user, date=day, meal=j)
             if q.count() < 1:
                 MessAttendance.objects.update_or_create(
@@ -450,19 +452,29 @@ def messScheduleAPI(request):
     attendance = []
     numdays = 7  # returning the data for seven days.
     date_start = now.date()
-    date_end = (now + datetime.timedelta(days=6)).date()
+    date_end = (now + datetime.timedelta(days=numdays-1)).date()
+
+    # numdays = calendar.monthrange(now.year, now.month)[1]
+    # date_start = datetime.date(year=now.year, month=now.month, day=1)
+    # date_end = datetime.date(year=now.year, month=now.month, day=numdays)
+
     attendance_qset = MessAttendance.objects.filter(user=mess_user).filter(date__range=[date_start, date_end]).order_by('date')
     cnt = numdays * 4
+    # print(cnt)
     if attendance_qset.count() < cnt:
-        create_mess_objects(request.user)
+        create_mess_objects(request.user, numdays)
         attendance_qset = MessAttendance.objects.filter(user=mess_user).filter(date__range=[date_start, date_end]).order_by('date')
     prev = False
     for q in attendance_qset:
+        if not q.editable:
+            attendance.append(q)
+            continue
         if not prev:
             q.editable = editable_meal(q.meal, now, q.date)
             q.save()
             prev = q.editable
         attendance.append(q)
+        # q.delete()
     serializer = MessAttendanceSerializer(attendance, many=True)
     response_data = {'attendance': serializer.data, }
     return Response(response_data)
@@ -1356,3 +1368,7 @@ def renew(request):
             print(user.username, 'hjcvjhdvd', user.type)
     print('total_customers', cntr)
     return redirect('default-deadline')
+
+
+def automated_midnight_checks():
+    pass
