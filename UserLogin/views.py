@@ -450,17 +450,16 @@ def messScheduleAPI(request):
     mess_user = MessUser.objects.get(user=request.user)
     now = datetime.datetime.now(IST)
     attendance = []
-    numdays = 7  # returning the data for seven days.
-    date_start = now.date()
-    date_end = (now + datetime.timedelta(days=numdays-1)).date()
+    # numdays = 7  # returning the data for seven days.
+    # date_start = now.date()
+    # date_end = (now + datetime.timedelta(days=numdays-1)).date()
 
-    # numdays = calendar.monthrange(now.year, now.month)[1]
-    # date_start = datetime.date(year=now.year, month=now.month, day=1)
-    # date_end = datetime.date(year=now.year, month=now.month, day=numdays)
+    numdays = calendar.monthrange(now.year, now.month)[1]
+    date_start = datetime.date(year=now.year, month=now.month, day=1)
+    date_end = datetime.date(year=now.year, month=now.month, day=numdays)
 
     attendance_qset = MessAttendance.objects.filter(user=mess_user).filter(date__range=[date_start, date_end]).order_by('date')
     cnt = numdays * 4
-    # print(cnt)
     if attendance_qset.count() < cnt:
         create_mess_objects(request.user, numdays)
         attendance_qset = MessAttendance.objects.filter(user=mess_user).filter(date__range=[date_start, date_end]).order_by('date')
@@ -474,7 +473,6 @@ def messScheduleAPI(request):
             q.save()
             prev = q.editable
         attendance.append(q)
-        # q.delete()
     serializer = MessAttendanceSerializer(attendance, many=True)
     response_data = {'attendance': serializer.data, }
     return Response(response_data)
