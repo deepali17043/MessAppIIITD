@@ -391,55 +391,58 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="row center">
-                            <div class="card shadow-lg border-0 rounded-lg">
-                                <div class="card-header"><h3 class="text-center font-weight-light my-4">Update Mess Menu By Date</h3></div>
-                                <div class="card-body text-center">
-                                    <form  method="POST" enctype="multipart/form-data">
-                                        {% csrf_token %}
-                                            <label for="{{form2.date.id}}">Day:</label>
-                                            <input id="{{form2.date.id}}" type="text" name="day" value="{{en.day}}" > <br>
-                                            <label for="{{form2.meal.id}}">Meal:</label>
-                                            <input id="{{form2.meal.id}}" type="text" name="meal" value="{{en.meal}}" > <br>
-                                            <label for="{{form2.occasion.id}}">Occasion:</label>
-                                            <input id="{{form2.occasion.id}}" type="text" name="items" value="{{en.items}}"> <br>
-                                            <label for="{{form2.items.id}}">Items:</label>
-                                            <input id="{{form2.items.id}}" type="text" name="items" value="{{en.items}}"> <br>
-                                            <button class="btn btn-primary" type="submit">Save</button>
+                        <div class="row">
+                            <div class="col-xl-4">
+                                <div class="card mb-4 shadow-lg border-0 rounded-lg">
+                                    <div class="card-header"><h3 class="text-center font-weight-light my-4">Update Mess Menu By Date</h3></div>
+                                    <div class="card-body text-center">
+                                        <form  method="POST" enctype="multipart/form-data">
+                                            {% csrf_token %}
+                                                <label for="{{form2.date.id}}">Day:</label>
+                                                <input id="{{form2.date.id}}" type="text" name="day" value="{{en.day}}" > <br>
+                                                <label for="{{form2.meal.id}}">Meal:</label>
+                                                <input id="{{form2.meal.id}}" type="text" name="meal" value="{{en.meal}}" > <br>
+                                                <label for="{{form2.occasion.id}}">Occasion:</label>
+                                                <input id="{{form2.occasion.id}}" type="text" name="items" value="{{en.items}}"> <br>
+                                                <label for="{{form2.items.id}}">Items:</label>
+                                                <input id="{{form2.items.id}}" type="text" name="items" value="{{en.items}}"> <br>
+                                                <button class="btn btn-primary" type="submit">Save</button>
 
-                                    </form>
+                                        </form>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="card shadow-lg border-0 rounded-lg">
-                                <div class="card-header"><h3 class="text-center font-weight-light my-4" style="align:right;">Special Mess Menu</h3></div>
-                                <div class="card-body text-center">
-                                    <div class="table-responsive">
-                                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
-                                        <thead>
-                                            <tr>
-                                                <th>Date</th>
-                                                <th>Meal</th>
-                                                <th>Occasion</th>
-                                                <th>Items</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for en in list %}
-                                            <tr>
-                                                <td>{{en.date}}</td>
-                                                <td>{{en.meal}}</td>
-                                                <td>{{en.occasion}}</td>
-                                                <td>{{en.items}}</td>
-                                            </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div>
+                            <div class="col-xl-8">
+                                <div class="card shadow-lg border-0 rounded-lg">
+                                    <div class="card-header"><h3 class="text-center font-weight-light my-4" style="align:right;">Special Mess Menu</h3></div>
+                                    <div class="card-body text-center">
+                                        <div class="table-responsive">
+                                        <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                                            <thead>
+                                                <tr>
+                                                    <th>Date</th>
+                                                    <th>Meal</th>
+                                                    <th>Occasion</th>
+                                                    <th>Items</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for en in list %}
+                                                <tr>
+                                                    <td>{{en.date}}</td>
+                                                    <td>{{en.meal}}</td>
+                                                    <td>{{en.occasion}}</td>
+                                                    <td>{{en.items}}</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-
                 </main>
                 <footer class="py-4 bg-light mt-auto">
                     <div class="container-fluid">
