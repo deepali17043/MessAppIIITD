@@ -1,0 +1,28 @@
+{% extends 'view_menu.html' %}
+{% block content %}
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal-dialog" role="document">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Update Menu Items</h5>
+            <button class="close" type="button" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+        </div>
+        <form  method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="modal-body">
+                <label for="day">Day:</label>
+                <input id="day" type="text" name="day" value="{{en.day}}" readonly>
+                <label for="meal">Meal:</label>
+                <input id="meal" type="text" name="meal" value="{{en.meal}}" readonly>
+                <label for="items">Items:</label>
+                <input id="items" type="text" name="items" value="{{en.items}}">
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" type="button" data-dismiss="modal">Close</button>
+                <button class="btn btn-primary" type="submit">Save changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+</div>
+{% endblock content %}

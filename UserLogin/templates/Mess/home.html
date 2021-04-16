@@ -64,28 +64,12 @@
                                 Menu & Timings
                                 <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
                             </a>
-                            <div class="collapse" id="collapsePages" aria-labelledby="headingTwo" data-parent="#sidenavAccordion">
-                                <nav class="sb-sidenav-menu-nested nav accordion" id="sidenavAccordionPages">
-                                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#pagesCollapseAuth" aria-expanded="false" aria-controls="pagesCollapseAuth">
-                                        Menu
-                                        <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                            <div class ="collapse" id="collapsePages" aria-labelledby="headingTwo" data-parent="#sidenavAccordion">
+                                <nav class="sb-sidenav-menu-nested nav" id="sidenavAccordionPages">
+                                    <a class="nav-link " href="{% url 'admin-view-mess-menu' %}">
+                                        <div class="sb-nav-link-icon"><i class="fas fa-book"></i></div>
+                                        View Menu
                                     </a>
-                                    <div class="collapse" id="pagesCollapseAuth" aria-labelledby="headingOne" data-parent="#sidenavAccordionPages">
-                                        <nav class="sb-sidenav-menu-nested nav">
-                                            <a class="nav-link" href="{% url 'set-mess-menu' %}">
-                                                <div class="sb-nav-link-icon"><i class="fas fa-magic"></i></div>
-                                                Update Menu By Date
-                                            </a>
-                                            <a class="nav-link" href="{% url 'set-default-mess-menu' %}">
-                                                <div class="sb-nav-link-icon"><i class="fas fa-edit"></i></div>
-                                                Update Menu by Weekday
-                                            </a>
-                                            <a class="nav-link" href="{% url 'admin-view-mess-menu' %}">
-                                                <div class="sb-nav-link-icon"><i class="fas fa-list-ol"></i></div>
-                                                View Menu
-                                            </a>
-                                        </nav>
-                                    </div>
                                     <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#pagesCollapseError" aria-expanded="false" aria-controls="pagesCollapseError">
                                         Meal Deadlines
                                         <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
@@ -137,28 +121,29 @@
                 <main>
                     <div class="container-fluid">
                         <img src="{% static 'src/assets/img/iiitd-logo.png' %}" width="360px" height="60px">
-                        <ol class="breadcrumb mb-4">
-                            <li class="breadcrumb-item active">Today's Attendance</li>
-                        </ol>
+                        <h3>Today's Attendance</h3>
+                        <h6>(Date: {{today_date}})</h6>
                         <div class="row">
                             {% if active.Breakfast %}
                                 <div class="col-xl-3 col-md-6">
-                                    <a class="nav-link" href="{% url 'list-attendees' meal=0 %}">
-                                        <div class="card bg-primary text-white mb-4">
-                                            <div class="card-body">Breakfast</div>
-                                            <div class="card-footer d-flex align-items-center justify-content-between">
-                                                {{first.Breakfast}}
+                                    <a class="nav-link" href="{% url 'list-attendees' meal=0 day=0%}">
+                                        <div class="card shadow-lg border-0 bg-blue text-white mb-4">
+                                            <div class="card-body">Breakfast<br>
+                                            Attending: {{first.Breakfast}}</div>
+                                            <div class="small card-footer d-flex align-items-center justify-content-between">
+                                                View Attendees
                                             </div>
                                         </div>
                                     </a>
                                 </div>
                             {% else %}
                                 <div class="col-xl-3 col-md-6">
-                                    <a class="nav-link" href="#">
-                                        <div class="card bg-unavailable text-white mb-4">
-                                            <div class="card-body">Breakfast</div>
-                                            <div class="card-footer d-flex align-items-center justify-content-between">
-                                                {{first.Breakfast}}
+                                    <a class="nav-link" href="{% url 'list-attendees' meal=0 day=0%}">
+                                        <div class="card shadow-lg border-0 bg-unavailable text-black mb-4" style="opacity:0.5;">
+                                            <div class="card-body text-black">Breakfast<br>
+                                            Attending: {{first.Breakfast}}</div>
+                                            <div class="small text-black card-footer d-flex align-items-center justify-content-between">
+                                                View Attendees
                                             </div>
                                         </div>
                                     </a>
@@ -166,22 +151,24 @@
                             {% endif %}
                             {% if active.Lunch %}
                                 <div class="col-xl-3 col-md-6">
-                                    <a class="nav-link" href="{% url 'list-attendees' meal=1 %}">
-                                        <div class="card bg-warning text-white mb-4">
-                                            <div class="card-body">Lunch</div>
-                                            <div class="card-footer d-flex align-items-center justify-content-between">
-                                                {{first.Lunch}}
+                                    <a class="nav-link" href="{% url 'list-attendees' meal=1 day=0%}">
+                                        <div class="card shadow-lg border-0 bg-warning text-white mb-4">
+                                            <div class="card-body">Lunch<br>
+                                            Attending: {{first.Lunch}}</div>
+                                            <div class="small card-footer d-flex align-items-center justify-content-between">
+                                                View Attendees
                                             </div>
                                         </div>
                                     </a>
                                 </div>
                             {% else %}
                                 <div class="col-xl-3 col-md-6">
-                                    <a class="nav-link" href="#">
-                                        <div class="card bg-unavailable text-white mb-4">
-                                            <div class="card-body">Lunch</div>
-                                            <div class="card-footer d-flex align-items-center justify-content-between">
-                                                {{first.Lunch}}
+                                    <a class="nav-link" href="{% url 'list-attendees' meal=1 day=0 %}">
+                                        <div class="card shadow-lg border-0 bg-unavailable text-black mb-4" style="opacity:0.5;">
+                                            <div class="card-body text-black">Lunch<br>
+                                            Attending: {{first.Lunch}}</div>
+                                            <div class="small text-black card-footer d-flex align-items-center justify-content-between">
+                                                View Attendees
                                             </div>
                                         </div>
                                     </a>
@@ -189,22 +176,24 @@
                             {% endif %}
                             {% if active.Snacks %}
                                 <div class="col-xl-3 col-md-6">
-                                    <a class="nav-link" href="{% url 'list-attendees' meal=2 %}">
-                                        <div class="card bg-success text-white mb-4">
-                                            <div class="card-body">Snacks</div>
-                                            <div class="card-footer d-flex align-items-center justify-content-between">
-                                                {{first.Snacks}}
+                                    <a class="nav-link" href="{% url 'list-attendees' meal=2 day=0%}">
+                                        <div class="card shadow-lg border-0  bg-success text-white mb-4">
+                                            <div class="card-body">Snacks<br>
+                                            Attending: {{first.Snacks}}</div>
+                                            <div class="small card-footer d-flex align-items-center justify-content-between">
+                                                View Attendees
                                             </div>
                                         </div>
                                     </a>
                                 </div>
                             {% else %}
                                 <div class="col-xl-3 col-md-6">
-                                    <a class="nav-link" href="#">
-                                        <div class="card bg-unavailable text-white mb-4">
-                                            <div class="card-body">Snacks</div>
-                                            <div class="card-footer d-flex align-items-center justify-content-between">
-                                                {{first.Snacks}}
+                                    <a class="nav-link" href="{% url 'list-attendees' meal=2 day=0 %}">
+                                        <div class="card  shadow-lg border-0 bg-unavailable text-black mb-4" style="opacity:0.5;">
+                                            <div class="card-body text-black">Snacks<br>
+                                            Attending: {{first.Snacks}}</div>
+                                            <div class="small text-black card-footer d-flex align-items-center justify-content-between">
+                                                View Attendees
                                             </div>
                                         </div>
                                     </a>
@@ -212,68 +201,79 @@
                             {% endif %}
                             {% if active.Dinner %}
                                 <div class="col-xl-3 col-md-6">
-                                    <a class="nav-link" href="{% url 'list-attendees' meal=3 %}">
-                                        <div class="card bg-danger text-white mb-4">
-                                            <div class="card-body">Dinner</div>
-                                            <div class="card-footer d-flex align-items-center justify-content-between">
-                                                {{first.Dinner}}
+                                    <a class="nav-link" href="{% url 'list-attendees' meal=3 day=0 %}">
+                                        <div class="card shadow-lg border-0 bg-danger text-white mb-4">
+                                            <div class="card-body">Dinner<br>
+                                            Attending: {{first.Dinner}}</div>
+                                            <div class="small card-footer d-flex align-items-center justify-content-between">
+                                                View Attendees
                                             </div>
                                         </div>
                                     </a>
                                 </div>
                             {% else %}
                                 <div class="col-xl-3 col-md-6">
-                                    <a class="nav-link" href="#">
-                                        <div class="card bg-unavailable text-white mb-4">
-                                            <div class="card-body">Dinner</div>
-                                            <div class="card-footer d-flex align-items-center justify-content-between">
-                                                {{first.Dinner}}
+                                    <a class="nav-link" href="{% url 'list-attendees' meal=3 day=0 %}">
+                                        <div class="card shadow-lg border-0 bg-unavailable text-black mb-4" style="opacity:0.5;">
+                                            <div class="card-body text-black">Dinner<br>
+                                            Attending: {{first.Dinner}}</div>
+                                            <div class="small text-black card-footer d-flex align-items-center justify-content-between">
+                                                View Attendees
                                             </div>
                                         </div>
                                     </a>
                                 </div>
                             {% endif %}
                         </div>
-                        <div class="card mb-4">
-                            <div class="card-header">
-                                <i class="fas fa-table mr-1"></i>
-                                Upcoming Attendance
+                        <h3>Tomorrow's Attendance</h3>
+                        <h6>(Date: {{tom_date}})</h6>
+                        <div class="row">
+                            <div class="col-xl-3 col-md-6">
+                                <a class="nav-link" href="{% url 'list-attendees' meal=0 day=1%}">
+                                    <div class="card shadow-lg border-0 bg-blue text-white mb-4">
+                                        <div class="card-body">Breakfast<br>
+                                        Attending: {{second.Breakfast}}</div>
+                                        <div class="small card-footer d-flex align-items-center justify-content-between">
+                                            View Attendees
+                                        </div>
+                                    </div>
+                                </a>
                             </div>
-                            <div class="card-body">
-                                <div class="table-responsive">
-                                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
-                                        <thead>
-                                            <tr>
-                                                <th>Date</th>
-                                                <th>Meal</th>
-                                                <th>Marked Attendance</th>
-                                                <th>Number of Feedbacks</th>
-                                            </tr>
-                                        </thead>
-                                        <tfoot>
-                                            <tr>
-                                                <th>Date</th>
-                                                <th>Meal</th>
-                                                <th>Marked Attendance</th>
-                                                <th>Number of Feedbacks</th>
-                                            </tr>
-                                        </tfoot>
-                                        <tbody>
-                                            {% for en in response %}
-                                            <tr>
-                                                <td>{{en.date}}</td>
-                                                <td>{{en.meal}}</td>
-                                                <td>{{en.count}}</td>
-                                                <td>{{en.fcount}}</td>
-                                            </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div>
+                            <div class="col-xl-3 col-md-6">
+                                <a class="nav-link" href="{% url 'list-attendees' meal=1 day=1%}">
+                                    <div class="card shadow-lg border-0 shadow-lg border-0 bg-warning text-white mb-4">
+                                        <div class="card-body">Lunch<br>
+                                        Attending: {{second.Lunch}}</div>
+                                        <div class="small card-footer d-flex align-items-center justify-content-between">
+                                            View Attendees
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="col-xl-3 col-md-6">
+                                <a class="nav-link" href="{% url 'list-attendees' meal=2 day=1 %}">
+                                    <div class="card shadow-lg border-0 bg-success text-white mb-4">
+                                        <div class="card-body">Snacks<br>
+                                        Attending: {{second.Snacks}}</div>
+                                        <div class="small card-footer d-flex align-items-center justify-content-between">
+                                            View Attendees
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="col-xl-3 col-md-6">
+                                <a class="nav-link" href="{% url 'list-attendees' meal=3 day=1%}">
+                                    <div class="card shadow-lg border-0 bg-danger text-white mb-4">
+                                        <div class="card-body">Dinner<br>
+                                        Attending: {{second.Dinner}}</div>
+                                        <div class="small card-footer d-flex align-items-center justify-content-between">
+                                            View Attendees
+                                        </div>
+                                    </div>
+                                </a>
                             </div>
                         </div>
                     </div>
-
                 </main>
                 <footer class="py-4 bg-light mt-auto">
                     <div class="container-fluid">

@@ -65,27 +65,11 @@
                                 <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
                             </a>
                             <div id="collapsePages" aria-labelledby="headingTwo" data-parent="#sidenavAccordion">
-                                <nav class="sb-sidenav-menu-nested nav accordion" id="sidenavAccordionPages">
-                                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#pagesCollapseAuth" aria-expanded="false" aria-controls="pagesCollapseAuth">
-                                        Menu
-                                        <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                                <nav class="sb-sidenav-menu-nested nav" id="sidenavAccordionPages">
+                                    <a class="nav-link active" href="{% url 'admin-view-mess-menu' %}">
+                                        <div class="sb-nav-link-icon"><i class="fas fa-book"></i></div>
+                                        View Menu
                                     </a>
-                                    <div id="pagesCollapseAuth" aria-labelledby="headingOne" data-parent="#sidenavAccordionPages">
-                                        <nav class="sb-sidenav-menu-nested nav">
-                                            <a class="nav-link" href="{% url 'set-mess-menu' %}">
-                                                <div class="sb-nav-link-icon"><i class="fas fa-magic"></i></div>
-                                                Update Menu By Date
-                                            </a>
-                                            <a class="nav-link" href="{% url 'set-default-mess-menu' %}">
-                                                <div class="sb-nav-link-icon"><i class="fas fa-edit"></i></div>
-                                                Update Menu by Weekday
-                                            </a>
-                                            <a class="nav-link active" href="{% url 'admin-view-mess-menu' %}">
-                                                <div class="sb-nav-link-icon"><i class="fas fa-list-ol"></i></div>
-                                                View Menu
-                                            </a>
-                                        </nav>
-                                    </div>
                                     <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#pagesCollapseError" aria-expanded="false" aria-controls="pagesCollapseError">
                                         Meal Deadlines
                                         <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
@@ -135,77 +119,271 @@
             <div id="layoutSidenav_content">
                 <main>
                     <div class="container-fluid">
+                        <h3>Weekly Menu</h3>
                         <div class="card mb-4">
-                            <div class="card-header">
-                                <i class="fas fa-table mr-1"></i>
-                                Weekly Menu
-                            </div>
                             <div class="card-body">
                                 <div class="table-responsive">
-                                    <table class="table table-bordered" id="dataTable0" width="100%" cellspacing="0">
+                                    <table class="table table-bordered" id="dataTable0" width="100%" cellspacing="0" style="text-align:center; border: 2px solid black;">
                                         <thead>
-                                            <tr>
-                                                <th>Day</th>
-                                                <th>Breakfast</th>
-                                                <th>Lunch</th>
-                                                <th>Snacks</th>
-                                                <th>Dinner</th>
+                                            <tr style="background-color: #C0C0C0;">
+                                                <th width="10%" style="border: 2px solid black;">DAY</th>
+                                                <th width="25%" style="border: 2px solid black;">BREAKFAST</th>
+                                                <th width="25%" style="border: 2px solid black;">LUNCH</th>
+                                                <th width="15%" style="border: 2px solid black;">SNACKS</th>
+                                                <th width="25%" style="border: 2px solid black;">DINNER</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <tr>
-                                                <th>Monday</th>
-                                                {% for en in weekly_menu.Monday %}
-                                                <td>{{en.items}} <br>{% if en.id %}[<a href="{% url 'del-default-menu' itemid=en.id %}">delete entry</a>] {%endif%}</td>
+                                            <tr style="background-color: #CCFFCC;">
+                                                <th style="background-color: #C0C0C0; border: 2px solid black;">MONDAY</th>
+                                                {% for en, form_mon in weekly_menu.Monday %}
+
+                                                <td>
+                                                    <button style="padding: 0;border: none;background: none;" type="button" data-toggle="modal" data-target="#Mon{{en.id}}" data-backdrop='static'>{{en.items}}</button>
+                                                    <!-- Modal -->
+                                                    <div class="modal fade" id="Mon{{en.id}}" tabindex="-1" role="dialog" aria-labelledby="MonLabel{{en.id}}" aria-hidden="true">
+                                                        <div class="modal-dialog" role="document">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title" id="MonLabel{{en.id}}">Update Menu Items</h5>
+                                                                    <button class="close" type="button" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                                                                </div>
+                                                                <form  method="POST" enctype="multipart/form-data">
+                                                                    {% csrf_token %}
+                                                                    <div class="modal-body">
+                                                                        <label for="{{form_mon.day.id}}">Day:</label>
+                                                                        <input id="{{form_mon.day.id}}" type="text" name="day" value="{{en.day}}" readonly> <br>
+                                                                        <label for="{{form_mon.meal.id}}">Meal:</label>
+                                                                        <input id="{{form_mon.meal.id}}" type="text" name="meal" value="{{en.meal}}" readonly> <br>
+                                                                        <label for="{{form_mon.items.id}}">Items:</label>
+                                                                        <input id="{{form_mon.items.id}}" type="text" name="items" value="{{en.items}}">
+                                                                    </div>
+                                                                    <div class="modal-footer">
+                                                                        <button class="btn btn-secondary" type="button" data-dismiss="modal">Close</button>
+                                                                        <button class="btn btn-primary" type="submit">Save changes</button>
+                                                                    </div>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </td>
                                                 {% endfor %}
                                             </tr>
                                         </tbody>
                                         <tbody>
-                                            <tr>
-                                                <th>Tuesday</th>
-                                                {% for en in weekly_menu.Tuesday %}
-                                                <td>{{en.items}} <br>{% if en.id %}[<a href="{% url 'del-default-menu' itemid=en.id %}">delete entry</a>] {%endif%}</td>
+                                            <tr style="background-color:#FFE5CC; ">
+                                                <th style="background-color: #C0C0C0;border: 2px solid black;">TUESDAY</th>
+                                                {% for e, form_tue in weekly_menu.Tuesday %}
+                                                <td>
+                                                    <button style="padding: 0;border: none;background: none;" type="button" data-toggle="modal" data-target="#Tue{{e.id}}" data-backdrop='static'>{{e.items}}</button>
+                                                    <!-- Modal -->
+                                                    <div class="modal fade" id="Tue{{e.id}}" tabindex="-1" role="dialog" aria-labelledby="TueLabel{{e.id}}" aria-hidden="true">
+                                                        <div class="modal-dialog" role="document">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title" id="TueLabel{{e.id}}">Update Menu Items</h5>
+                                                                    <button class="close" type="button" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                                                                </div>
+                                                                <form  method="POST" enctype="multipart/form-data">
+                                                                    {% csrf_token %}
+                                                                    <div class="modal-body">
+                                                                        <label for="{{form_tue.day.id}}">Day:</label>
+                                                                        <input id="{{form_tue.day.id}}" type="text" name="day" value="{{e.day}}" readonly> <br>
+                                                                        <label for="{{form_tue.meal.id}}">Meal:</label>
+                                                                        <input id="{{form_tue.meal.id}}" type="text" name="meal" value="{{e.meal}}" readonly> <br>
+                                                                        <label for="{{form_tue.items.id}}">Items:</label>
+                                                                        <input id="{{form_tue.items.id}}" type="text" name="items" value="{{e.items}}">
+                                                                    </div>
+                                                                    <div class="modal-footer">
+                                                                        <button class="btn btn-secondary" type="button" data-dismiss="modal">Close</button>
+                                                                        <button class="btn btn-primary" type="submit">Save changes</button>
+                                                                    </div>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </td>
                                                 {% endfor %}
                                             </tr>
                                         </tbody>
                                         <tbody>
-                                            <tr>
-                                                <th>Wednesday</th>
-                                                {% for en in weekly_menu.Wednesday %}
-                                                <td>{{en.items}} <br>{% if en.id %}[<a href="{% url 'del-default-menu' itemid=en.id %}">delete entry</a>] {%endif%}</td>
+                                            <tr style="background-color: #CCFFCC;">
+                                                <th style="background-color: #C0C0C0; border: 2px solid black;">WEDNESDAY</th>
+                                                {% for en, form_wed in weekly_menu.Wednesday %}
+
+                                                <td>
+                                                    <button style="padding: 0;border: none;background: none;" type="button" data-toggle="modal" data-target="#Wed{{en.id}}" data-backdrop='static'>{{en.items}}</button>
+                                                    <!-- Modal -->
+                                                    <div class="modal fade" id="Wed{{en.id}}" tabindex="-1" role="dialog" aria-labelledby="WedLabel{{en.id}}" aria-hidden="true">
+                                                        <div class="modal-dialog" role="document">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title" id="WedLabel{{en.id}}">Update Menu Items</h5>
+                                                                    <button class="close" type="button" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                                                                </div>
+                                                                <form method="POST" enctype="multipart/form-data">
+                                                                    {% csrf_token %}
+                                                                    <div class="modal-body">
+                                                                        <label for="{{form_wed.day.id}}">Day:</label>
+                                                                        <input id="{{form_wed.day.id}}" type="text" name="day" value="{{en.day}}" readonly> <br>
+                                                                        <label for="{{form_wed.meal.id}}">Meal:</label>
+                                                                        <input id="{{form_wed.meal.id}}" type="text" name="meal" value="{{en.meal}}" readonly> <br>
+                                                                        <label for="{{form_wed.items.id}}">Items:</label>
+                                                                        <input id="{{form_wed.items.id}}" type="text" name="items" value="{{en.items}}">
+                                                                    </div>
+                                                                    <div class="modal-footer">
+                                                                        <button class="btn btn-secondary" type="button" data-dismiss="modal">Close</button>
+                                                                        <button class="btn btn-primary" type="submit">Save changes</button>
+                                                                    </div>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </td>
                                                 {% endfor %}
                                             </tr>
                                         </tbody>
                                         <tbody>
-                                            <tr>
-                                                <th>Thursday</th>
-                                                {% for en in weekly_menu.Thursday %}
-                                                <td>{{en.items}} <br>{% if en.id %}[<a href="{% url 'del-default-menu' itemid=en.id %}">delete entry</a>] {%endif%}</td>
+                                            <tr style="background-color:#FFE5CC;">
+                                                <th style="background-color: #C0C0C0; border: 2px solid black;">THURSDAY</th>
+                                                {% for en, form_thurs in weekly_menu.Thursday %}
+                                                <td>
+                                                    <button style="padding: 0;border: none;background: none;" type="button" data-toggle="modal" data-target="#Thur{{en.id}}" data-backdrop='static'>{{en.items}}</button>
+                                                    <!-- Modal -->
+                                                    <div class="modal fade" id="Thur{{en.id}}" tabindex="-1" role="dialog" aria-labelledby="ThurLabel{{en.id}}" aria-hidden="true">
+                                                        <div class="modal-dialog" role="document">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title" id="ThurLabel{{en.id}}">Update Menu Items</h5>
+                                                                    <button class="close" type="button" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                                                                </div>
+                                                                <form method="POST" enctype="multipart/form-data">
+                                                                    {% csrf_token %}
+                                                                    <div class="modal-body">
+                                                                        <label for="{{form_thurs.day.id}}">Day:</label>
+                                                                        <input id="{{form_thurs.day.id}}" type="text" name="day" value="{{en.day}}" readonly> <br>
+                                                                        <label for="{{form_thurs.meal.id}}">Meal:</label>
+                                                                        <input id="{{form_thurs.meal.id}}" type="text" name="meal" value="{{en.meal}}" readonly> <br>
+                                                                        <label for="{{form_thurs.items.id}}">Items:</label>
+                                                                        <input id="{{form_thurs.items.id}}" type="text" name="items" value="{{en.items}}">
+                                                                    </div>
+                                                                    <div class="modal-footer">
+                                                                        <button class="btn btn-secondary" type="button" data-dismiss="modal">Close</button>
+                                                                        <button class="btn btn-primary" type="submit">Save changes</button>
+                                                                    </div>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </td>
                                                 {% endfor %}
                                             </tr>
                                         </tbody>
                                         <tbody>
-                                            <tr>
-                                                <th>Friday</th>
-                                                {% for en in weekly_menu.Friday %}
-                                                <td>{{en.items}} <br>{% if en.id %}[<a href="{% url 'del-default-menu' itemid=en.id %}">delete entry</a>] {%endif%}</td>
+                                            <tr style="background-color: #CCFFCC;">
+                                                <th style="background-color: #C0C0C0; border: 2px solid black;">FRIDAY</th>
+                                                {% for en, form_fri in weekly_menu.Friday %}
+                                                <td>
+                                                    <button style="padding: 0;border: none;background: none;" type="button" data-toggle="modal" data-target="#Fri{{en.id}}" data-backdrop='static'>{{en.items}}</button>
+                                                    <!-- Modal -->
+                                                    <div class="modal fade" id="Fri{{en.id}}" tabindex="-1" role="dialog" aria-labelledby="FriLabel{{en.id}}" aria-hidden="true">
+                                                        <div class="modal-dialog" role="document">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title" id="FriLabel{{en.id}}">Update Menu Items</h5>
+                                                                    <button class="close" type="button" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                                                                </div>
+                                                                <form method="POST" enctype="multipart/form-data">
+                                                                    {% csrf_token %}
+                                                                    <div class="modal-body">
+                                                                        <label for="{{form_fri.day.id}}">Day:</label>
+                                                                        <input id="{{form_fri.day.id}}" type="text" name="day" value="{{en.day}}" readonly> <br>
+                                                                        <label for="{{form_fri.meal.id}}">Meal:</label>
+                                                                        <input id="{{form_fri.meal.id}}" type="text" name="meal" value="{{en.meal}}" readonly> <br>
+                                                                        <label for="{{form_fri.items.id}}">Items:</label>
+                                                                        <input id="{{form_fri.items.id}}" type="text" name="items" value="{{en.items}}">
+                                                                    </div>
+                                                                    <div class="modal-footer">
+                                                                        <button class="btn btn-secondary" type="button" data-dismiss="modal">Close</button>
+                                                                        <button class="btn btn-primary" type="submit">Save changes</button>
+                                                                    </div>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </td>
                                                 {% endfor %}
                                             </tr>
                                         </tbody>
                                         <tbody>
-                                            <tr>
-                                                <th>Saturday</th>
-                                                {% for en in weekly_menu.Saturday %}
-                                                <td>{{en.items}} <br>{% if en.id %}[<a href="{% url 'del-default-menu' itemid=en.id %}">delete entry</a>]{%endif%}</td>
+                                            <tr style="background-color:#FFE5CC;">
+                                                <th style="background-color: #C0C0C0;border: 2px solid black;">SATURDAY</th>
+                                                {% for en, form_sat in weekly_menu.Saturday %}
+                                                <td>
+                                                    <button style="padding: 0;border: none;background: none;" type="button" data-toggle="modal" data-target="#Sat{{en.id}}" data-backdrop='static'>{{en.items}}</button>
+                                                    <!-- Modal -->
+                                                    <div class="modal fade" id="Sat{{en.id}}" tabindex="-1" role="dialog" aria-labelledby="SatLabel{{en.id}}" aria-hidden="true">
+                                                        <div class="modal-dialog" role="document">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title" id="SatLabel{{en.id}}">Update Menu Items</h5>
+                                                                    <button class="close" type="button" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                                                                </div>
+                                                                <form method="POST" enctype="multipart/form-data">
+                                                                    {% csrf_token %}
+                                                                    <div class="modal-body">
+                                                                        <label for="{{form_sat.day.id}}">Day:</label>
+                                                                        <input id="{{form_sat.day.id}}" type="text" name="day" value="{{en.day}}" readonly> <br>
+                                                                        <label for="{{form_sat.meal.id}}">Meal:</label>
+                                                                        <input id="{{form_sat.meal.id}}" type="text" name="meal" value="{{en.meal}}" readonly> <br>
+                                                                        <label for="{{form_sat.items.id}}">Items:</label>
+                                                                        <input id="{{form_sat.items.id}}" type="text" name="items" value="{{en.items}}">
+                                                                    </div>
+                                                                    <div class="modal-footer">
+                                                                        <button class="btn btn-secondary" type="button" data-dismiss="modal">Close</button>
+                                                                        <button class="btn btn-primary" type="submit">Save changes</button>
+                                                                    </div>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </td>
                                                 {% endfor %}
                                             </tr>
                                         </tbody>
                                         <tbody>
-                                            <tr>
-                                                <th>Sunday</th>
-                                                {% for en in weekly_menu.Sunday %}
-                                                <td>{{en.items}} <br>
-                                                    {% if en.id %} [<a href="{% url 'del-default-menu' itemid=en.id %}">delete entry</a>] {%endif%}</td>
+                                            <tr style="background-color: #CCFFCC;">
+                                                <th style="background-color: #C0C0C0; border: 2px solid black;">SUNDAY</th>
+                                                {% for en, form_sun in weekly_menu.Sunday %}
+                                                <td>
+                                                    <button style="padding: 0;border: none;background: none;" type="button" data-toggle="modal" data-target="#Sun{{en.id}}" data-backdrop='static'>{{en.items}}</button>
+                                                    <!-- Modal -->
+                                                    <div class="modal fade" id="Sun{{en.id}}" tabindex="-1" role="dialog" aria-labelledby="SunLabel{{en.id}}" aria-hidden="true">
+                                                        <div class="modal-dialog" role="document">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title" id="SunLabel{{en.id}}">Update Menu Items</h5>
+                                                                    <button class="close" type="button" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                                                                </div>
+                                                                <form method="POST" enctype="multipart/form-data">
+                                                                    {% csrf_token %}
+                                                                    <div class="modal-body">
+                                                                        <label for="{{form_sun.day.id}}">Day:</label>
+                                                                        <input id="{{form_sun.day.id}}" type="text" name="day" value="{{en.day}}" readonly> <br>
+                                                                        <label for="{{form_sun.meal.id}}">Meal:</label>
+                                                                        <input id="{{form_sun.meal.id}}" type="text" name="meal" value="{{en.meal}}" readonly> <br>
+                                                                        <label for="{{form_sun.items.id}}">Items:</label>
+                                                                        <input id="{{form_sun.items.id}}" type="text" name="items" value="{{en.items}}">
+                                                                    </div>
+                                                                    <div class="modal-footer">
+                                                                        <button class="btn btn-secondary" type="button" data-dismiss="modal">Close</button>
+                                                                        <button class="btn btn-primary" type="submit">Save changes</button>
+                                                                    </div>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </td>
                                                 {% endfor %}
                                             </tr>
                                         </tbody>
@@ -213,49 +391,55 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="card shadow-lg border-0 rounded-lg mt-5">
-                            <div class="card-header"><h3 class="text-center font-weight-light my-4">Search Custom Mess Menu By Date</h3></div>
-                            <div class="card-body text-center">
-                                <form  method="POST" enctype="multipart/form-data">
-                                    {% csrf_token %}
-                                    {{ form|crispy }}
-                                    <div class="upload_button">
-                                        <button type="submit">Search</button>
-                                    </div>
-                                </form>
+                        <div class="row center">
+                            <div class="card shadow-lg border-0 rounded-lg">
+                                <div class="card-header"><h3 class="text-center font-weight-light my-4">Update Mess Menu By Date</h3></div>
+                                <div class="card-body text-center">
+                                    <form  method="POST" enctype="multipart/form-data">
+                                        {% csrf_token %}
+                                            <label for="{{form2.date.id}}">Day:</label>
+                                            <input id="{{form2.date.id}}" type="text" name="day" value="{{en.day}}" > <br>
+                                            <label for="{{form2.meal.id}}">Meal:</label>
+                                            <input id="{{form2.meal.id}}" type="text" name="meal" value="{{en.meal}}" > <br>
+                                            <label for="{{form2.occasion.id}}">Occasion:</label>
+                                            <input id="{{form2.occasion.id}}" type="text" name="items" value="{{en.items}}"> <br>
+                                            <label for="{{form2.items.id}}">Items:</label>
+                                            <input id="{{form2.items.id}}" type="text" name="items" value="{{en.items}}"> <br>
+                                            <button class="btn btn-primary" type="submit">Save</button>
+
+                                    </form>
+                                </div>
                             </div>
-                        </div>
-                        <div class="card mb-4">
-                            <div class="card-header">
-                                <i class="fas fa-table mr-1"></i>
-                                Date-Wise Menu
-                            </div>
-                            <div class="card-body">
-                                <div class="table-responsive">
-                                    <table class="table table-bordered" id="dataTable1" width="100%" cellspacing="0">
+                            <div class="card shadow-lg border-0 rounded-lg">
+                                <div class="card-header"><h3 class="text-center font-weight-light my-4" style="align:right;">Special Mess Menu</h3></div>
+                                <div class="card-body text-center">
+                                    <div class="table-responsive">
+                                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                                         <thead>
                                             <tr>
                                                 <th>Date</th>
                                                 <th>Meal</th>
+                                                <th>Occasion</th>
                                                 <th>Items</th>
-                                                <th>Delete Entry</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {% for en in custom_menu %}
+                                            {% for en in list %}
                                             <tr>
                                                 <td>{{en.date}}</td>
                                                 <td>{{en.meal}}</td>
+                                                <td>{{en.occasion}}</td>
                                                 <td>{{en.items}}</td>
-                                                <td><a href="{% url 'del-mess-menu' itemid=en.id %}">Click here</a></td>
                                             </tr>
                                             {% endfor %}
                                         </tbody>
                                     </table>
                                 </div>
+                                </div>
                             </div>
                         </div>
                     </div>
+
                 </main>
                 <footer class="py-4 bg-light mt-auto">
                     <div class="container-fluid">

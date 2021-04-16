@@ -148,6 +148,7 @@ class DefaultMessMenu(models.Model):
 class MessMenu(models.Model):
     items = models.TextField(max_length=400)
     date = models.DateField()
+    occasion = models.TextField(default='-')
     meal = models.CharField(max_length=10, choices=meal_choices)
 
 

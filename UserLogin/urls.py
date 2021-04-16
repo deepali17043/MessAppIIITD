@@ -27,6 +27,7 @@ urlpatterns = [
 
     path('api/accounts/home/', views.messAttendanceAPI, name='mess-home'),
     path('api/accounts/schedule/', views.messScheduleAPI, name='mess-schedule'),
+    path('api/tmp/', views.tmp, name='mess-tmp'),
     path('api/accounts/schedule/edit/', views.editMessScheduleAPI, name='edit-mess-schedule'),
     path('api/accounts/feedback/', views.sendFeedback, name='send-feedback'),
     path('api/accounts/view-feedback/', views.viewPrevFeedbacks, name='view-prev-feedback'),
@@ -59,7 +60,7 @@ urlpatterns = [
     path('mess/edit-meal-deadline/', views.editMealDeadline, name='meal-deadline'),
     path('mess/edit-default-deadline/', views.defualtMealDeadline, name='default-deadline'),
     path('mess/list-attendance/', views.listAttendees, name='list-attendance'),
-    url(r'^mess/list-attendance/(?P<meal>\d+)/$', views.customListAttendees, name='list-attendees'),
+    url(r'^mess/list-attendance/(?P<meal>\d+)/(?P<day>\d+)/$', views.customListAttendees, name='list-attendees'),
     path('mess/view-attendance/cur-month/', views.getMarkedAttendanceCurMonth, name='mess-attendance-cur'), #both admin and vendor
     path('mess-admin/upload-attendance/', views.uploadAttendance, name='upload-attendance'),
     path('mess-admin/list-defaulters/', views.listDefaulters, name='list-defaulters'),

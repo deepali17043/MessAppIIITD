@@ -70,12 +70,16 @@ class DefaultMessMenuForm(forms.ModelForm):
     class Meta:
         model = DefaultMessMenu
         fields = ('day', 'meal', 'items')
+        widegets = {
+            'day': forms.TextInput(attrs={'disabled': True}),
+            'meal': forms.TextInput(attrs={'disabled': True}),
+        }
 
 
 class MessMenuForm(forms.ModelForm):
     class Meta:
         model = MessMenu
-        fields = ('date', 'meal', 'items')
+        fields = ('date', 'meal', 'items', 'occasion')
         widgets = {
             'date': forms.SelectDateWidget(),
         }
