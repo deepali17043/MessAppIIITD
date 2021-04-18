@@ -29,7 +29,7 @@ SECRET_KEY = '9l(7rhajws#we8@r162r@-6u7+xktlou3c*sa$nwky+=k&#_$u'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', '0.0.0.0', 'aahar-iiitd.herokuapp.com']
+ALLOWED_HOSTS = ['127.0.0.1', '0.0.0.0', 'aahar-iiitd.herokuapp.com', 'zealous-mahavira-f0e931.netlify.app']
 
 
 # Application definition
@@ -58,7 +58,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
-
 ]
 
 ROOT_URLCONF = 'Aahar.urls'
