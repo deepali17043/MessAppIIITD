@@ -69,7 +69,7 @@ class MealDeadlineForm(forms.ModelForm):
 class DefaultMessMenuForm(forms.ModelForm):
     class Meta:
         model = DefaultMessMenu
-        fields = ('day', 'meal', 'items')
+        fields = ('day', 'meal', 'items', 'category')
         widegets = {
             'day': forms.TextInput(attrs={'disabled': True}),
             'meal': forms.TextInput(attrs={'disabled': True}),
@@ -79,7 +79,7 @@ class DefaultMessMenuForm(forms.ModelForm):
 class MessMenuForm(forms.ModelForm):
     class Meta:
         model = MessMenu
-        fields = ('date', 'meal', 'items', 'occasion')
+        fields = ('date', 'meal', 'items', 'occasion', 'category')
         widgets = {
             'date': forms.SelectDateWidget(),
         }

@@ -120,34 +120,39 @@
                 <main>
                     <div class="container-fluid">
 
-                        <div class="card mb-4">
+                        <div class="card shadow-lg border-0 rounded-lg mb-4">
                             <div class="card-header">
-                                <i class="fas fa-table mr-1"></i>
-                                Upcoming Attendance
+                                <h3 class="text-center font-weight-light my-4">Marked Attendance</h3>
                             </div>
                             <div class="card-body">
                                 <div class="table-responsive">
-                                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                                    <table class="table table-bordered text-center" id="AttendanceTable" width="90%" cellspacing="0">
                                         <thead>
-                                            <tr>
-                                                <th>Date</th>
-                                                <th>Meal</th>
-                                                <th>Marked Attendance</th>
+                                            <tr class="text-white" style="background-color: #3fada8;">
+                                                <th width="20%" style="border: 1px #3fada8;">DATE</th>
+                                                <th width="19%" style="font-size:15px; border: 0.7px #3fada8;">BREAKFAST</th>
+                                                <th width="19%" style="font-size:15px; border: 0.7px #3fada8;">LUNCH</th>
+                                                <th width="19%" style="font-size:15px; border: 0.7px #3fada8;">SNACKS</th>
+                                                <th width="19%" style="font-size:15px; border: 0.7px #3fada8;">DINNER</th>
                                             </tr>
                                         </thead>
                                         <tfoot>
-                                            <tr>
-                                                <th>Date</th>
-                                                <th>Meal</th>
-                                                <th>Marked Attendance</th>
+                                            <tr class="text-white" style="background-color: #3fada8;">
+                                                <th width="24%" style="border: 1px #3fada8;">DATE</th>
+                                                <th width="19%" style="font-size:15px; border: 0.7px #3fada8;">BREAKFAST</th>
+                                                <th width="19%" style="font-size:15px; border: 0.7px #3fada8;">LUNCH</th>
+                                                <th width="19%" style="font-size:15px; border: 0.7px #3fada8;">SNACKS</th>
+                                                <th width="19%" style="font-size:15px; border: 0.7px #3fada8;">DINNER</th>
                                             </tr>
                                         </tfoot>
                                         <tbody>
                                             {% for en in response %}
                                             <tr>
-                                                <td>{{en.date}}</td>
-                                                <td>{{en.meal}}</td>
-                                                <td>{{en.count}}</td>
+                                                <td style="background-color: #c9c9ca;">{{en.Date}}</td>
+                                                <td>{{en.Breakfast}}</td>
+                                                <td>{{en.Lunch}}</td>
+                                                <td>{{en.Snacks}}</td>
+                                                <td>{{en.Dinner}}</td>
                                             </tr>
                                             {% endfor %}
                                         </tbody>

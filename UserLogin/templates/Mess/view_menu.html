@@ -13,7 +13,7 @@
         <title>Aahar</title>
         <link href="{% static 'dist/css/styles.css' %}" rel="stylesheet" />
         <link href="https://cdn.datatables.net/1.10.20/css/dataTables.bootstrap4.min.css" rel="stylesheet" crossorigin="anonymous" />
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/js/all.min.js" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js" crossorigin="anonymous"></script>
     </head>
     <body class="sb-nav-fixed">
         <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
@@ -119,8 +119,11 @@
             <div id="layoutSidenav_content">
                 <main>
                     <div class="container-fluid">
-                        <h3>Weekly Menu</h3>
-                        <div class="card mb-4">
+
+                        <div class="card shadow-lg border-0 rounded-lg mb-4">
+                            <div class="card-header">
+                                <h3 class="text-center font-weight-light my-4">Weekly Menu</h3>
+                            </div>
                             <div class="card-body">
                                 <div class="table-responsive">
                                     <table class="table table-bordered" id="dataTable0" width="100%" cellspacing="0" style="text-align:center; border: 2px solid black;">
@@ -136,10 +139,21 @@
                                         <tbody>
                                             <tr style="background-color: #CCFFCC;">
                                                 <th style="background-color: #C0C0C0; border: 2px solid black;">MONDAY</th>
-                                                {% for en, form_mon in weekly_menu.Monday %}
+                                                {% for en, form_mon, v, e, c in weekly_menu.Monday %}
 
                                                 <td>
-                                                    <button style="padding: 0;border: none;background: none;" type="button" data-toggle="modal" data-target="#Mon{{en.id}}" data-backdrop='static'>{{en.items}}</button>
+                                                    <button style="padding: 0;border: none;background: none;" type="button" data-toggle="modal" data-target="#Mon{{en.id}}" data-backdrop='static'>
+                                                        {{en.items}}
+                                                        {% if v %}
+                                                            <i class="fa fa-leaf"></i>
+                                                        {% else %}
+                                                            {% if e %}
+                                                                <i class="fas fa-egg"></i>
+                                                            {% else %}
+                                                                <i class="fas fa-drumstick-bite"></i>
+                                                            {%endif%}
+                                                        {%endif%}
+                                                    </button>
                                                     <!-- Modal -->
                                                     <div class="modal fade" id="Mon{{en.id}}" tabindex="-1" role="dialog" aria-labelledby="MonLabel{{en.id}}" aria-hidden="true">
                                                         <div class="modal-dialog" role="document">
@@ -148,15 +162,46 @@
                                                                     <h5 class="modal-title" id="MonLabel{{en.id}}">Update Menu Items</h5>
                                                                     <button class="close" type="button" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
                                                                 </div>
-                                                                <form  method="POST" enctype="multipart/form-data">
+                                                                <form method="POST" enctype="multipart/form-data">
                                                                     {% csrf_token %}
-                                                                    <div class="modal-body">
-                                                                        <label for="{{form_mon.day.id}}">Day:</label>
-                                                                        <input id="{{form_mon.day.id}}" type="text" name="day" value="{{en.day}}" readonly> <br>
-                                                                        <label for="{{form_mon.meal.id}}">Meal:</label>
-                                                                        <input id="{{form_mon.meal.id}}" type="text" name="meal" value="{{en.meal}}" readonly> <br>
-                                                                        <label for="{{form_mon.items.id}}">Items:</label>
-                                                                        <input id="{{form_mon.items.id}}" type="text" name="items" value="{{en.items}}">
+                                                                    <div class="modal-body text-left">
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4">
+                                                                                <label for="{{form_mon.day.id}}">Day: </label>
+                                                                            </div>
+                                                                            <div class="col-xl-4">
+                                                                                <input id="{{form_mon.day.id}}" type="text" name="day" value="{{en.day}}" readonly>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4">
+                                                                                <label for="{{form_mon.meal.id}}">Meal:</label>
+                                                                            </div>
+                                                                            <div class="col-xl-4">
+                                                                                <input id="{{form_mon.meal.id}}" type="text" name="meal" value="{{en.meal}}" readonly>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4">
+                                                                                <label for="{{form_mon.items.id}}">Items:</label>
+                                                                            </div>
+                                                                            <div class="col-xl-4">
+                                                                                <input id="{{form_mon.items.id}}" type="text" name="items" value="{{en.items}}">
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4">
+                                                                                <label for="{{form_mon.category.id}}">Category:</label>
+                                                                            </div>
+                                                                            <div class="col-xl-4">
+                                                                                <input id="{{form_mon.category.id}}" type="text" name="category"  list="category{{en.id}}">
+                                                                                <datalist id="category{{en.id}}">
+                                                                                  <option value="veg">
+                                                                                  <option value="egg">
+                                                                                  <option value="chicken">
+                                                                                </datalist>
+                                                                            </div>
+                                                                        </div>
                                                                     </div>
                                                                     <div class="modal-footer">
                                                                         <button class="btn btn-secondary" type="button" data-dismiss="modal">Close</button>
@@ -173,26 +218,68 @@
                                         <tbody>
                                             <tr style="background-color:#FFE5CC; ">
                                                 <th style="background-color: #C0C0C0;border: 2px solid black;">TUESDAY</th>
-                                                {% for e, form_tue in weekly_menu.Tuesday %}
+                                                {% for en, form_tue, v, e, c in weekly_menu.Tuesday %}
                                                 <td>
-                                                    <button style="padding: 0;border: none;background: none;" type="button" data-toggle="modal" data-target="#Tue{{e.id}}" data-backdrop='static'>{{e.items}}</button>
+                                                    <button style="padding: 0;border: none;background: none;" type="button" data-toggle="modal" data-target="#Tue{{en.id}}" data-backdrop='static'>
+                                                        {{en.items}}
+                                                        {% if v %}
+                                                            <i class="fa fa-leaf"></i>
+                                                        {% else %}
+                                                            {% if e %}
+                                                                <i class="fas fa-egg"></i>
+                                                            {% else %}
+                                                                <i class="fas fa-drumstick-bite"></i>
+                                                            {%endif%}
+                                                        {%endif%}
+                                                    </button>
                                                     <!-- Modal -->
-                                                    <div class="modal fade" id="Tue{{e.id}}" tabindex="-1" role="dialog" aria-labelledby="TueLabel{{e.id}}" aria-hidden="true">
+                                                    <div class="modal fade" id="Tue{{en.id}}" tabindex="-1" role="dialog" aria-labelledby="TueLabel{{en.id}}" aria-hidden="true">
                                                         <div class="modal-dialog" role="document">
                                                             <div class="modal-content">
                                                                 <div class="modal-header">
-                                                                    <h5 class="modal-title" id="TueLabel{{e.id}}">Update Menu Items</h5>
+                                                                    <h5 class="modal-title" id="TueLabel{{en.id}}">Update Menu Items</h5>
                                                                     <button class="close" type="button" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
                                                                 </div>
-                                                                <form  method="POST" enctype="multipart/form-data">
+                                                                <form method="POST" enctype="multipart/form-data">
                                                                     {% csrf_token %}
-                                                                    <div class="modal-body">
-                                                                        <label for="{{form_tue.day.id}}">Day:</label>
-                                                                        <input id="{{form_tue.day.id}}" type="text" name="day" value="{{e.day}}" readonly> <br>
-                                                                        <label for="{{form_tue.meal.id}}">Meal:</label>
-                                                                        <input id="{{form_tue.meal.id}}" type="text" name="meal" value="{{e.meal}}" readonly> <br>
-                                                                        <label for="{{form_tue.items.id}}">Items:</label>
-                                                                        <input id="{{form_tue.items.id}}" type="text" name="items" value="{{e.items}}">
+                                                                    <div class="modal-body text-left">
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4">
+                                                                                <label for="{{form_tue.day.id}}">Day: </label>
+                                                                            </div>
+                                                                            <div class="col-xl-4">
+                                                                                <input id="{{form_tue.day.id}}" type="text" name="day" value="{{en.day}}" readonly>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4">
+                                                                                <label for="{{form_tue.meal.id}}">Meal:</label>
+                                                                            </div>
+                                                                            <div class="col-xl-4">
+                                                                                <input id="{{form_tue.meal.id}}" type="text" name="meal" value="{{en.meal}}" readonly>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4">
+                                                                                <label for="{{form_tue.items.id}}">Items:</label>
+                                                                            </div>
+                                                                            <div class="col-xl-4">
+                                                                                <input id="{{form_tue.items.id}}" type="text" name="items" value="{{en.items}}">
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4">
+                                                                                <label for="{{form_tue.category.id}}">Category:</label>
+                                                                            </div>
+                                                                            <div class="col-xl-4">
+                                                                                <input id="{{form_tue.category.id}}" type="text" name="category"  list="category_tue{{en.id}}">
+                                                                                <datalist id="category_tue{{en.id}}">
+                                                                                  <option value="veg">
+                                                                                  <option value="egg">
+                                                                                  <option value="chicken">
+                                                                                </datalist>
+                                                                            </div>
+                                                                        </div>
                                                                     </div>
                                                                     <div class="modal-footer">
                                                                         <button class="btn btn-secondary" type="button" data-dismiss="modal">Close</button>
@@ -209,10 +296,21 @@
                                         <tbody>
                                             <tr style="background-color: #CCFFCC;">
                                                 <th style="background-color: #C0C0C0; border: 2px solid black;">WEDNESDAY</th>
-                                                {% for en, form_wed in weekly_menu.Wednesday %}
+                                                {% for en, form_wed, v, e, c in weekly_menu.Wednesday %}
 
                                                 <td>
-                                                    <button style="padding: 0;border: none;background: none;" type="button" data-toggle="modal" data-target="#Wed{{en.id}}" data-backdrop='static'>{{en.items}}</button>
+                                                    <button style="padding: 0;border: none;background: none;" type="button" data-toggle="modal" data-target="#Wed{{en.id}}" data-backdrop='static'>
+                                                        {{en.items}}
+                                                        {% if v %}
+                                                            <i class="fa fa-leaf"></i>
+                                                        {% else %}
+                                                            {% if e %}
+                                                                <i class="fas fa-egg"></i>
+                                                            {% else %}
+                                                                <i class="fas fa-drumstick-bite"></i>
+                                                            {%endif%}
+                                                        {%endif%}
+                                                    </button>
                                                     <!-- Modal -->
                                                     <div class="modal fade" id="Wed{{en.id}}" tabindex="-1" role="dialog" aria-labelledby="WedLabel{{en.id}}" aria-hidden="true">
                                                         <div class="modal-dialog" role="document">
@@ -223,13 +321,44 @@
                                                                 </div>
                                                                 <form method="POST" enctype="multipart/form-data">
                                                                     {% csrf_token %}
-                                                                    <div class="modal-body">
-                                                                        <label for="{{form_wed.day.id}}">Day:</label>
-                                                                        <input id="{{form_wed.day.id}}" type="text" name="day" value="{{en.day}}" readonly> <br>
-                                                                        <label for="{{form_wed.meal.id}}">Meal:</label>
-                                                                        <input id="{{form_wed.meal.id}}" type="text" name="meal" value="{{en.meal}}" readonly> <br>
-                                                                        <label for="{{form_wed.items.id}}">Items:</label>
-                                                                        <input id="{{form_wed.items.id}}" type="text" name="items" value="{{en.items}}">
+                                                                    <div class="modal-body text-left">
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4">
+                                                                                <label for="{{form_wed.day.id}}">Day: </label>
+                                                                            </div>
+                                                                            <div class="col-xl-4">
+                                                                                <input id="{{form_wed.day.id}}" type="text" name="day" value="{{en.day}}" readonly>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4">
+                                                                                <label for="{{form_wed.meal.id}}">Meal:</label>
+                                                                            </div>
+                                                                            <div class="col-xl-4">
+                                                                                <input id="{{form_wed.meal.id}}" type="text" name="meal" value="{{en.meal}}" readonly>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4">
+                                                                                <label for="{{form_wed.items.id}}">Items:</label>
+                                                                            </div>
+                                                                            <div class="col-xl-4">
+                                                                                <input id="{{form_wed.items.id}}" type="text" name="items" value="{{en.items}}">
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4">
+                                                                                <label for="{{form_wed.category.id}}">Category:</label>
+                                                                            </div>
+                                                                            <div class="col-xl-4">
+                                                                                <input id="{{form_wed.category.id}}" type="text" name="category" list="category_wed{{en.id}}">
+                                                                                <datalist id="category_wed{{en.id}}">
+                                                                                  <option value="veg">
+                                                                                  <option value="egg">
+                                                                                  <option value="chicken">
+                                                                                </datalist>
+                                                                            </div>
+                                                                        </div>
                                                                     </div>
                                                                     <div class="modal-footer">
                                                                         <button class="btn btn-secondary" type="button" data-dismiss="modal">Close</button>
@@ -246,9 +375,20 @@
                                         <tbody>
                                             <tr style="background-color:#FFE5CC;">
                                                 <th style="background-color: #C0C0C0; border: 2px solid black;">THURSDAY</th>
-                                                {% for en, form_thurs in weekly_menu.Thursday %}
+                                                {% for en, form_thurs, v, e, c in weekly_menu.Thursday %}
                                                 <td>
-                                                    <button style="padding: 0;border: none;background: none;" type="button" data-toggle="modal" data-target="#Thur{{en.id}}" data-backdrop='static'>{{en.items}}</button>
+                                                    <button style="padding: 0;border: none;background: none;" type="button" data-toggle="modal" data-target="#Thur{{en.id}}" data-backdrop='static'>
+                                                        {{en.items}}
+                                                        {% if v %}
+                                                            <i class="fa fa-leaf"></i>
+                                                        {% else %}
+                                                            {% if e %}
+                                                                <i class="fas fa-egg"></i>
+                                                            {% else %}
+                                                                <i class="fas fa-drumstick-bite"></i>
+                                                            {%endif%}
+                                                        {%endif%}
+                                                    </button>
                                                     <!-- Modal -->
                                                     <div class="modal fade" id="Thur{{en.id}}" tabindex="-1" role="dialog" aria-labelledby="ThurLabel{{en.id}}" aria-hidden="true">
                                                         <div class="modal-dialog" role="document">
@@ -259,13 +399,44 @@
                                                                 </div>
                                                                 <form method="POST" enctype="multipart/form-data">
                                                                     {% csrf_token %}
-                                                                    <div class="modal-body">
-                                                                        <label for="{{form_thurs.day.id}}">Day:</label>
-                                                                        <input id="{{form_thurs.day.id}}" type="text" name="day" value="{{en.day}}" readonly> <br>
-                                                                        <label for="{{form_thurs.meal.id}}">Meal:</label>
-                                                                        <input id="{{form_thurs.meal.id}}" type="text" name="meal" value="{{en.meal}}" readonly> <br>
-                                                                        <label for="{{form_thurs.items.id}}">Items:</label>
-                                                                        <input id="{{form_thurs.items.id}}" type="text" name="items" value="{{en.items}}">
+                                                                    <div class="modal-body text-left">
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4">
+                                                                                <label for="{{form_thurs.day.id}}">Day: </label>
+                                                                            </div>
+                                                                            <div class="col-xl-4">
+                                                                                <input id="{{form_thurs.day.id}}" type="text" name="day" value="{{en.day}}" readonly>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4">
+                                                                                <label for="{{form_thurs.meal.id}}">Meal:</label>
+                                                                            </div>
+                                                                            <div class="col-xl-4">
+                                                                                <input id="{{form_thurs.meal.id}}" type="text" name="meal" value="{{en.meal}}" readonly>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4">
+                                                                                <label for="{{form_thurs.items.id}}">Items:</label>
+                                                                            </div>
+                                                                            <div class="col-xl-4">
+                                                                                <input id="{{form_thurs.items.id}}" type="text" name="items" value="{{en.items}}">
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4">
+                                                                                <label for="{{form_thurs.category.id}}">Category:</label>
+                                                                            </div>
+                                                                            <div class="col-xl-4">
+                                                                                <input id="{{form_thurs.category.id}}" type="text" name="category"  list="category_thurs{{en.id}}">
+                                                                                <datalist id="category_thurs{{en.id}}">
+                                                                                  <option value="veg">
+                                                                                  <option value="egg">
+                                                                                  <option value="chicken">
+                                                                                </datalist>
+                                                                            </div>
+                                                                        </div>
                                                                     </div>
                                                                     <div class="modal-footer">
                                                                         <button class="btn btn-secondary" type="button" data-dismiss="modal">Close</button>
@@ -282,9 +453,20 @@
                                         <tbody>
                                             <tr style="background-color: #CCFFCC;">
                                                 <th style="background-color: #C0C0C0; border: 2px solid black;">FRIDAY</th>
-                                                {% for en, form_fri in weekly_menu.Friday %}
+                                                {% for en, form_fri, v, e, c in weekly_menu.Friday %}
                                                 <td>
-                                                    <button style="padding: 0;border: none;background: none;" type="button" data-toggle="modal" data-target="#Fri{{en.id}}" data-backdrop='static'>{{en.items}}</button>
+                                                    <button style="padding: 0;border: none;background: none;" type="button" data-toggle="modal" data-target="#Fri{{en.id}}" data-backdrop='static'>
+                                                        {{en.items}}
+                                                        {% if v %}
+                                                            <i class="fa fa-leaf"></i>
+                                                        {% else %}
+                                                            {% if e %}
+                                                                <i class="fas fa-egg"></i>
+                                                            {% else %}
+                                                                <i class="fas fa-drumstick-bite"></i>
+                                                            {%endif%}
+                                                        {%endif%}
+                                                    </button>
                                                     <!-- Modal -->
                                                     <div class="modal fade" id="Fri{{en.id}}" tabindex="-1" role="dialog" aria-labelledby="FriLabel{{en.id}}" aria-hidden="true">
                                                         <div class="modal-dialog" role="document">
@@ -295,13 +477,44 @@
                                                                 </div>
                                                                 <form method="POST" enctype="multipart/form-data">
                                                                     {% csrf_token %}
-                                                                    <div class="modal-body">
-                                                                        <label for="{{form_fri.day.id}}">Day:</label>
-                                                                        <input id="{{form_fri.day.id}}" type="text" name="day" value="{{en.day}}" readonly> <br>
-                                                                        <label for="{{form_fri.meal.id}}">Meal:</label>
-                                                                        <input id="{{form_fri.meal.id}}" type="text" name="meal" value="{{en.meal}}" readonly> <br>
-                                                                        <label for="{{form_fri.items.id}}">Items:</label>
-                                                                        <input id="{{form_fri.items.id}}" type="text" name="items" value="{{en.items}}">
+                                                                    <div class="modal-body text-left">
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4">
+                                                                                <label for="{{form_fri.day.id}}">Day: </label>
+                                                                            </div>
+                                                                            <div class="col-xl-4">
+                                                                                <input id="{{form_fri.day.id}}" type="text" name="day" value="{{en.day}}" readonly>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4">
+                                                                                <label for="{{form_fri.meal.id}}">Meal:</label>
+                                                                            </div>
+                                                                            <div class="col-xl-4">
+                                                                                <input id="{{form_fri.meal.id}}" type="text" name="meal" value="{{en.meal}}" readonly>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4">
+                                                                                <label for="{{form_fri.items.id}}">Items:</label>
+                                                                            </div>
+                                                                            <div class="col-xl-4">
+                                                                                <input id="{{form_fri.items.id}}" type="text" name="items" value="{{en.items}}">
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4">
+                                                                                <label for="{{form_fri.category.id}}">Category:</label>
+                                                                            </div>
+                                                                            <div class="col-xl-4">
+                                                                                <input id="{{form_fri.category.id}}" type="text" name="category"  list="category_fri{{en.id}}">
+                                                                                <datalist id="category_fri{{en.id}}">
+                                                                                  <option value="veg">
+                                                                                  <option value="egg">
+                                                                                  <option value="chicken">
+                                                                                </datalist>
+                                                                            </div>
+                                                                        </div>
                                                                     </div>
                                                                     <div class="modal-footer">
                                                                         <button class="btn btn-secondary" type="button" data-dismiss="modal">Close</button>
@@ -318,9 +531,20 @@
                                         <tbody>
                                             <tr style="background-color:#FFE5CC;">
                                                 <th style="background-color: #C0C0C0;border: 2px solid black;">SATURDAY</th>
-                                                {% for en, form_sat in weekly_menu.Saturday %}
+                                                {% for en, form_sat, v, e, c in weekly_menu.Saturday %}
                                                 <td>
-                                                    <button style="padding: 0;border: none;background: none;" type="button" data-toggle="modal" data-target="#Sat{{en.id}}" data-backdrop='static'>{{en.items}}</button>
+                                                    <button style="padding: 0;border: none;background: none;" type="button" data-toggle="modal" data-target="#Sat{{en.id}}" data-backdrop='static'>
+                                                        {{en.items}}
+                                                        {% if v %}
+                                                            <i class="fa fa-leaf"></i>
+                                                        {% else %}
+                                                            {% if e %}
+                                                                <i class="fas fa-egg"></i>
+                                                            {% else %}
+                                                                <i class="fas fa-drumstick-bite"></i>
+                                                            {%endif%}
+                                                        {%endif%}
+                                                    </button>
                                                     <!-- Modal -->
                                                     <div class="modal fade" id="Sat{{en.id}}" tabindex="-1" role="dialog" aria-labelledby="SatLabel{{en.id}}" aria-hidden="true">
                                                         <div class="modal-dialog" role="document">
@@ -331,13 +555,44 @@
                                                                 </div>
                                                                 <form method="POST" enctype="multipart/form-data">
                                                                     {% csrf_token %}
-                                                                    <div class="modal-body">
-                                                                        <label for="{{form_sat.day.id}}">Day:</label>
-                                                                        <input id="{{form_sat.day.id}}" type="text" name="day" value="{{en.day}}" readonly> <br>
-                                                                        <label for="{{form_sat.meal.id}}">Meal:</label>
-                                                                        <input id="{{form_sat.meal.id}}" type="text" name="meal" value="{{en.meal}}" readonly> <br>
-                                                                        <label for="{{form_sat.items.id}}">Items:</label>
-                                                                        <input id="{{form_sat.items.id}}" type="text" name="items" value="{{en.items}}">
+                                                                    <div class="modal-body text-left">
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4">
+                                                                                <label for="{{form_sat.day.id}}">Day: </label>
+                                                                            </div>
+                                                                            <div class="col-xl-4">
+                                                                                <input id="{{form_sat.day.id}}" type="text" name="day" value="{{en.day}}" readonly>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4">
+                                                                                <label for="{{form_sat.meal.id}}">Meal:</label>
+                                                                            </div>
+                                                                            <div class="col-xl-4">
+                                                                                <input id="{{form_sat.meal.id}}" type="text" name="meal" value="{{en.meal}}" readonly>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4">
+                                                                                <label for="{{form_sat.items.id}}">Items:</label>
+                                                                            </div>
+                                                                            <div class="col-xl-4">
+                                                                                <input id="{{form_sat.items.id}}" type="text" name="items" value="{{en.items}}">
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4">
+                                                                                <label for="{{form_sat.category.id}}">Category:</label>
+                                                                            </div>
+                                                                            <div class="col-xl-4">
+                                                                                <input id="{{form_sat.category.id}}" type="text" name="category"  list="category_sat{{en.id}}">
+                                                                                <datalist id="category_sat{{en.id}}">
+                                                                                  <option value="veg">
+                                                                                  <option value="egg">
+                                                                                  <option value="chicken">
+                                                                                </datalist>
+                                                                            </div>
+                                                                        </div>
                                                                     </div>
                                                                     <div class="modal-footer">
                                                                         <button class="btn btn-secondary" type="button" data-dismiss="modal">Close</button>
@@ -354,9 +609,20 @@
                                         <tbody>
                                             <tr style="background-color: #CCFFCC;">
                                                 <th style="background-color: #C0C0C0; border: 2px solid black;">SUNDAY</th>
-                                                {% for en, form_sun in weekly_menu.Sunday %}
+                                                {% for en, form_sun, v, e, c in weekly_menu.Sunday %}
                                                 <td>
-                                                    <button style="padding: 0;border: none;background: none;" type="button" data-toggle="modal" data-target="#Sun{{en.id}}" data-backdrop='static'>{{en.items}}</button>
+                                                    <button style="padding: 0;border: none;background: none;" type="button" data-toggle="modal" data-target="#Sun{{en.id}}" data-backdrop='static'>
+                                                        {{en.items}}
+                                                        {% if v %}
+                                                            <i class="fa fa-leaf"></i>
+                                                        {% else %}
+                                                            {% if e %}
+                                                                <i class="fas fa-egg"></i>
+                                                            {% else %}
+                                                                <i class="fas fa-drumstick-bite"></i>
+                                                            {%endif%}
+                                                        {%endif%}
+                                                    </button>
                                                     <!-- Modal -->
                                                     <div class="modal fade" id="Sun{{en.id}}" tabindex="-1" role="dialog" aria-labelledby="SunLabel{{en.id}}" aria-hidden="true">
                                                         <div class="modal-dialog" role="document">
@@ -367,13 +633,45 @@
                                                                 </div>
                                                                 <form method="POST" enctype="multipart/form-data">
                                                                     {% csrf_token %}
-                                                                    <div class="modal-body">
-                                                                        <label for="{{form_sun.day.id}}">Day:</label>
-                                                                        <input id="{{form_sun.day.id}}" type="text" name="day" value="{{en.day}}" readonly> <br>
-                                                                        <label for="{{form_sun.meal.id}}">Meal:</label>
-                                                                        <input id="{{form_sun.meal.id}}" type="text" name="meal" value="{{en.meal}}" readonly> <br>
-                                                                        <label for="{{form_sun.items.id}}">Items:</label>
-                                                                        <input id="{{form_sun.items.id}}" type="text" name="items" value="{{en.items}}">
+                                                                    <div class="modal-body text-left">
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4">
+                                                                                <label for="{{form_sun.day.id}}">Day: </label>
+                                                                            </div>
+                                                                            <div class="col-xl-4">
+                                                                                <input id="{{form_sun.day.id}}" type="text" name="day" value="{{en.day}}" readonly>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4">
+                                                                                <label for="{{form_sun.meal.id}}">Meal:</label>
+                                                                            </div>
+                                                                            <div class="col-xl-4">
+                                                                                <input id="{{form_sun.meal.id}}" type="text" name="meal" value="{{en.meal}}" readonly>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4">
+                                                                                <label for="{{form_sun.items.id}}">Items:</label>
+                                                                            </div>
+                                                                            <div class="col-xl-4">
+                                                                                <input id="{{form_sun.items.id}}" type="text" name="items" value="{{en.items}}">
+                                                                            </div>
+                                                                        </div>
+
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4">
+                                                                                <label for="{{form_sun.category.id}}">Category:</label>
+                                                                            </div>
+                                                                            <div class="col-xl-4">
+                                                                                <input id="{{form_sun.category.id}}" type="text" name="category"  list="category_sun{{en.id}}">
+                                                                                <datalist id="category_sun{{en.id}}">
+                                                                                  <option value="veg">
+                                                                                  <option value="egg">
+                                                                                  <option value="chicken">
+                                                                                </datalist>
+                                                                            </div>
+                                                                        </div>
                                                                     </div>
                                                                     <div class="modal-footer">
                                                                         <button class="btn btn-secondary" type="button" data-dismiss="modal">Close</button>
@@ -391,55 +689,96 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col-xl-4">
-                                <div class="card mb-4 shadow-lg border-0 rounded-lg">
-                                    <div class="card-header"><h3 class="text-center font-weight-light my-4">Update Mess Menu By Date</h3></div>
-                                    <div class="card-body text-center">
-                                        <form  method="POST" enctype="multipart/form-data">
-                                            {% csrf_token %}
-                                                <label for="{{form2.date.id}}">Day:</label>
-                                                <input id="{{form2.date.id}}" type="text" name="day" value="{{en.day}}" > <br>
-                                                <label for="{{form2.meal.id}}">Meal:</label>
-                                                <input id="{{form2.meal.id}}" type="text" name="meal" value="{{en.meal}}" > <br>
-                                                <label for="{{form2.occasion.id}}">Occasion:</label>
-                                                <input id="{{form2.occasion.id}}" type="text" name="items" value="{{en.items}}"> <br>
-                                                <label for="{{form2.items.id}}">Items:</label>
-                                                <input id="{{form2.items.id}}" type="text" name="items" value="{{en.items}}"> <br>
-                                                <button class="btn btn-primary" type="submit">Save</button>
-
-                                        </form>
+                        <div class="card shadow-lg border-0 rounded-lg mb-4" style="width:100%;">
+                            <div class="card-header">
+                                <h3 class="text-center font-weight-light my-4">Special Mess Menu</h3>
+                                <button class="btn btn-primary" type="button" data-toggle="modal" data-target="#AddEntryModal" data-backdrop='static'  style="float: right;">
+                                    <i class="fa fa-plus" aria-hidden="true"></i> Add Entry
+                                </button>
+                                <!-- Modal -->
+                                <div class="modal fade" id="AddEntryModal" tabindex="-1" role="dialog" aria-labelledby="AddEntryLabel" aria-hidden="true">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="AddEntryLabel">Add New Special Menu</h5>
+                                                <button class="close" type="button" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                                            </div>
+                                            <form  method="POST" enctype="multipart/form-data">
+                                                {% csrf_token %}
+                                                <div class="modal-body text-left">
+                                                    <div class="row">
+                                                        <div class="col-xl-4">
+                                                            <label for="{{form2.date.id}}">Date:</label>
+                                                        </div>
+                                                        <div class="col-xl-4">
+                                                            <input id="{{form2.date.id}}" type="date" name="date" >
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-xl-4">
+                                                            <label for="{{form2.meal.id}}">Meal:</label>
+                                                        </div>
+                                                        <div class="col-xl-4">
+                                                            <input id="{{form2.meal.id}}" type="select" name="meal" list="meal">
+                                                            <datalist id="meal">
+                                                              <option value="Breakfast">
+                                                              <option value="Lunch">
+                                                              <option value="Snacks">
+                                                              <option value="Dinner">
+                                                            </datalist>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-xl-4">
+                                                            <label for="{{form2.occasion.id}}">Occasion:</label>
+                                                        </div>
+                                                        <div class="col-xl-4">
+                                                            <input id="{{form2.occasion.id}}" type="text" name="occasion">
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-xl-4">
+                                                            <label for="{{form2.items.id}}">Items:</label>
+                                                        </div>
+                                                        <div class="col-xl-4">
+                                                            <input id="{{form2.items.id}}" type="text" name="items">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Close</button>
+                                                    <button class="btn btn-primary" type="submit">Save changes</button>
+                                                </div>
+                                            </form>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-xl-8">
-                                <div class="card shadow-lg border-0 rounded-lg">
-                                    <div class="card-header"><h3 class="text-center font-weight-light my-4" style="align:right;">Special Mess Menu</h3></div>
-                                    <div class="card-body text-center">
-                                        <div class="table-responsive">
-                                        <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
-                                            <thead>
-                                                <tr>
-                                                    <th>Date</th>
-                                                    <th>Meal</th>
-                                                    <th>Occasion</th>
-                                                    <th>Items</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {% for en in list %}
-                                                <tr>
-                                                    <td>{{en.date}}</td>
-                                                    <td>{{en.meal}}</td>
-                                                    <td>{{en.occasion}}</td>
-                                                    <td>{{en.items}}</td>
-                                                </tr>
-                                                {% endfor %}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                    </div>
-                                </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0" style="text-align:center;">
+                                    <thead data-orderable="false">
+                                        <tr style="background-color: #C0C0C0;">
+                                            <th data-orderable="false" style="border: 1px solid black;">DATE</th>
+                                            <th data-orderable="false" style="border: 1px solid black;">MEAL</th>
+                                            <th data-orderable="false" style="border: 1px solid black;">OCCASION</th>
+                                            <th data-orderable="false" style="border: 1px solid black;">ITEMS</th>
+                                            <td data-orderable="false" style="border: 1px solid black;"></td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for en in list %}
+                                        <tr>
+                                            <td>{{en.date}}</td>
+                                            <td>{{en.meal}}</td>
+                                            <td>{{en.occasion}}</td>
+                                            <td>{{en.items}} </td>
+                                            <td><a href="{% url 'del-mess-menu' itemid=en.id%}"><i class="far fa-trash-alt"></i></a></td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
                             </div>
                         </div>
                     </div>
