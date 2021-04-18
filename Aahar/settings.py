@@ -201,3 +201,8 @@ CELERYBEAT_SCHEDULE = {
     }
 }
 # django_heroku.settings(locals())
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:8000",
+    "https://zealous-mahavira-f0e931.netlify.app/#/"
+]
