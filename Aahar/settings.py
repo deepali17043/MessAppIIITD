@@ -218,7 +218,7 @@ CORS_ALLOW_HEADERS = list(default_headers) + [
 CORS_EXPOSE_HEADERS = list(default_headers) + [
     'attendance',
     'meal',
-    'date',
+    'date1',
     'feedback',
     'response',
 ]
