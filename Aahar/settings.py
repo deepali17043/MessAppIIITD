@@ -14,7 +14,7 @@ import os
 # import django_heroku
 from .db_data import db_host
 from celery.schedules import crontab
-
+from corsheaders.defaults import default_headers
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -205,4 +205,12 @@ CELERYBEAT_SCHEDULE = {
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8000",
     "https://zealous-mahavira-f0e931.netlify.app/#/"
+]
+
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    'attendance',
+    'meal',
+    'date',
+    'feedback',
+    'response',
 ]
