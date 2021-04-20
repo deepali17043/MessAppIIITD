@@ -586,18 +586,20 @@ def sendFeedback(request):
     checkCustomer(request)
     user = request.user
     serializer = FeedbackSerializer(data=request.headers)
-    print(request.headers)
+    # print(request.headers)
     return_data = {}
     if serializer.is_valid():
         user_feedback = serializer.validated_data
+        # print(user_feedback)
+        # print(request.headers['ForDate'])
         return_data['response'] = 'successful submission'
         return_data['feedback'] = user_feedback['feedback']
-        return_data['date'] = user_feedback['date']
+        return_data['ForDate'] = request.headers['ForDate']
         return_data['meal'] = user_feedback['meal']
         Feedback.objects.update_or_create(
             user=user,
             meal=user_feedback['meal'],
-            date=user_feedback['date'],
+            date=request.headers['ForDate'],
             feedback=user_feedback['feedback']
         )
     else:
@@ -623,7 +625,7 @@ def viewPrevFeedbacks(request):
 def getDateBasedMessMenu(request):
     checkCustomer(request)
     days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-    date_str = request.headers['date']
+    date_str = request.headers['for_date']
     year = int(date_str[:4])
     month = int(date_str[5:7])
     day = int(date_str[8:])

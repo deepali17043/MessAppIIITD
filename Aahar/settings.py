@@ -204,13 +204,13 @@ CELERYBEAT_SCHEDULE = {
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8000",
-    "https://zealous-mahavira-f0e931.netlify.app/#/"
+    "https://zealous-mahavira-f0e931.netlify.app"
 ]
 
 CORS_ALLOW_HEADERS = list(default_headers) + [
     'attendance',
     'meal',
-    'date',
+    'ForDate',
     'feedback',
     'response',
 ]
@@ -218,7 +218,7 @@ CORS_ALLOW_HEADERS = list(default_headers) + [
 CORS_EXPOSE_HEADERS = list(default_headers) + [
     'attendance',
     'meal',
-    'date1',
+    'ForDate',
     'feedback',
     'response',
 ]
