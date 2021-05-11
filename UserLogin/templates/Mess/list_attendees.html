@@ -53,7 +53,7 @@
                                         <div class="sb-nav-link-icon"><i class="fas fa-upload"></i></div>
                                         Upload attendance
                                     </a>
-                                    <a class="nav-link active" href="{% url 'list-attendance' %}">
+                                    <a class="nav-link  active" href="{% url 'list-attendance' %}">
                                         <div class="sb-nav-link-icon"><i class="fas fa-check-circle"></i></div>
                                         List of Students Attending
                                     </a>
@@ -64,28 +64,17 @@
                                 Menu & Timings
                                 <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
                             </a>
-                            <div id="collapsePages" aria-labelledby="headingTwo" data-parent="#sidenavAccordion">
+                            <div class="collapse" id="collapsePages" aria-labelledby="headingTwo" data-parent="#sidenavAccordion">
                                 <nav class="sb-sidenav-menu-nested nav" id="sidenavAccordionPages">
                                     <a class="nav-link " href="{% url 'admin-view-mess-menu' %}">
                                         <div class="sb-nav-link-icon"><i class="fas fa-book"></i></div>
                                         View Menu
                                     </a>
-                                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#pagesCollapseError" aria-expanded="false" aria-controls="pagesCollapseError">
+                                    <a class="nav-link" href="{% url 'meal-deadline' %}">
+                                        <div class="sb-nav-link-icon"><i class="far fa-clock"></i></div>
                                         Meal Deadlines
-                                        <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
                                     </a>
-                                    <div class="collapse" id="pagesCollapseError" aria-labelledby="headingOne" data-parent="#sidenavAccordionPages">
-                                        <nav class="sb-sidenav-menu-nested nav">
-                                            <a class="nav-link" href="{% url 'default-deadline' %}">
-                                                <div class="sb-nav-link-icon"><i class="fas fa-magic"></i></div>
-                                                Edit Default Meal Deadline
-                                            </a>
-                                            <a class="nav-link" href="{% url 'meal-deadline' %}">
-                                                <div class="sb-nav-link-icon"><i class="fas fa-edit"></i></div>
-                                                Set/Edit Meal Deadline
-                                            </a>
-                                        </nav>
-                                    </div>
+                                    
                                 </nav>
                             </div>
                             <a class="nav-link" href="{% url 'list-defaulters' %}">
@@ -96,7 +85,6 @@
                                 <div class="sb-nav-link-icon"><i class="fas fa-chart-area"></i></div>
                                 Feedback
                             </a>
-
                             <a class="nav-link" href="{% url 'app-feedback' %}">
                                 <div class="sb-nav-link-icon"><i class="fas fa-tablet"></i></div>
                                 App Feedback
@@ -120,43 +108,94 @@
             <div id="layoutSidenav_content">
                 <main>
                     <div class="container-fluid">
-                        <div class="card shadow-lg border-0 rounded-lg mt-5">
-                            <div class="card-header"><h3 class="text-center font-weight-light my-4">Attendees List For</h3></div>
-                            <div class="card-body text-center">
-                                <form  method="POST" enctype="multipart/form-data">
-                                    {% csrf_token %}
-                                    {{ form|crispy }}
-                                    <button type="submit">Submit</button>
-                                </form>
+                        <div class="row justify-content-center">
+                            <div class="card shadow-lg border-0 rounded-lg mb-4 mt-5">
+                                <!-- Button trigger modal -->
+                                <button class="btn btn-primary" type="button" data-toggle="modal" data-target="#staticBackdrop{{en.id}}"><i class="fa fa-search-plus" aria-hidden="true"></i>Generate New List</button>
 
+                                <!-- Modal -->
+                                <div class="modal fade" id="staticBackdrop{{en.id}}" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel{{en.id}}" aria-hidden="true">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="staticBackdropLabel{{en.id}}">Get List of Attendees</h5>
+                                                <button class="close" type="button" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                                            </div>
+                                            <form method="POST" enctype="multipart/form-data">
+                                                {% csrf_token %}
+                                                <div class="modal-body text-left">
+                                                    <div class="row">
+                                                        <div class="col-xl-4">
+                                                            <label for="{{form.date.id}}">Day: </label>
+                                                        </div>
+                                                        <div class="col-xl-4">
+                                                            <input id="{{form.date.id}}" type="date" name="date">
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-xl-4">
+                                                            <label for="{{form.meal.id}}">Meal:</label>
+                                                        </div>
+                                                        <div class="col-xl-4">
+                                                            <input id="{{form2.meal.id}}" type="select" name="meal" list="meal">
+                                                            <datalist id="meal">
+                                                              <option value="Breakfast">
+                                                              <option value="Lunch">
+                                                              <option value="Snacks">
+                                                              <option value="Dinner">
+                                                            </datalist>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Close</button>
+                                                    <button class="btn btn-primary" type="submit">Go</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div class="card mb-4">
+                        <div class="card shadow-lg border-0 rounded-lg mb-4">
                             <div class="card-header">
-                                <i class="fas fa-table mr-1"></i>
-                                Attendees List
+                                <h3 class="text-center my-4">List of Attendees</h3>
+                                <button class="btn btn-primary" type="button" data-toggle="modal" data-target="#AttendancePieChart"  style="float: right;">
+                                    <i class="fa fa-search" aria-hidden="true"></i> Analyse
+                                </button>
+                                <!-- Modal -->
+                                <div class="modal fade" id="AttendancePieChart" tabindex="-1" role="dialog" aria-labelledby="PieChartLabel" aria-hidden="true">
+                                    <div class="modal-dialog modal-lg" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="PieChartLabel">Attendance</h5>
+                                                <button class="close" type="button" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <canvas id="myPieChart" width="100%" height="30"></canvas>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button class="btn btn-secondary" type="button" data-dismiss="modal">Close</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                             <div class="card-body">
+                                <h5 class="text-center my-4">Date: {{form_date}} &emsp;&emsp;&emsp; Meal: {{form_meal}}</h5>
                                 <div class="table-responsive">
-                                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                                    <table class="table table-bordered text-center" id="AttendeesTable" width="90%" cellspacing="0">
                                         <thead>
-                                            <tr>
-                                                <th>Username</th>
-                                                <th>Name</th>
-                                                <th>Email ID</th>
+                                            <tr class="text-white" style="background-color: #3fada8;">
+                                                <th width="" style="border: 1px #3fada8;">SERIAL NUMBER</th>
+                                                <th width="40%" style="font-size:15px; border: 0.7px #3fada8;">NAME</th>
+                                                <th width="40%" style="font-size:15px; border: 0.7px #3fada8;">EMAIL ID</th>
                                             </tr>
                                         </thead>
-                                        <tfoot>
-                                            <tr>
-                                                <th>Username</th>
-                                                <th>Name</th>
-                                                <th>Email ID</th>
-                                            </tr>
-                                        </tfoot>
                                         <tbody>
                                             {% for en in list_attendees %}
                                             <tr>
-                                                <td>{{en.username}}</td>
+                                                <td style="background-color: #c9c9ca;">{{en.id}}</td>
                                                 <td>{{en.name}}</td>
                                                 <td>{{en.email}}</td>
                                             </tr>
@@ -189,5 +228,23 @@
         <script src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js" crossorigin="anonymous"></script>
         <script src="https://cdn.datatables.net/1.10.20/js/dataTables.bootstrap4.min.js" crossorigin="anonymous"></script>
         <script src="{% static 'dist/assets/demo/datatables-demo.js' %}"></script>
+        <script>
+            var config = {
+                type: 'pie',
+                data: {
+                    datasets: [{
+                        data: {{attendees_cnt}},
+                        backgroundColor: ["rgba(0,123,255, 1)", "rgba(220, 53, 69, 1)"]
+                    }],
+                    labels: ["Attending", "Not Attending"]
+                }
+            };
+
+            window.onload = function() {
+                var ctx = document.getElementById('myPieChart').getContext('2d');
+                window.myPieChart = new Chart(ctx, config);
+            };
+
+        </script>
     </body>
 </html>

@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'crispy_forms',
     'corsheaders',
+    'background_task',
 ]
 
 MIDDLEWARE = [
@@ -185,21 +186,21 @@ LOGGING = {
 }
 
 # Celery Configuration Options
-BROKER_URL = 'redis://localhost:6379'
-CELERY_RESULT_BACKEND = 'redis://localhost:6379'
-CELERY_TASK_SERIALIZER = 'json'
-CELERY_RESULT_SERIALIZER = 'json'
-CELERY_ACCEPT_CONTENT = ['application/json']
-CELERY_TIMEZONE = 'Asia/Kolkata'
-CELERY_TASK_TRACK_STARTED = True
-CELERY_TASK_TIME_LIMIT = 30 * 60
-
-CELERYBEAT_SCHEDULE = {
-    'context': {
-        'task': 'UserLogin.tasks.daily_create_mess_objects',
-        'schedule': crontab(hour=8, minute=5),
-    }
-}
+# BROKER_URL = 'redis://localhost:6379'
+# CELERY_RESULT_BACKEND = 'redis://localhost:6379'
+# CELERY_TASK_SERIALIZER = 'json'
+# CELERY_RESULT_SERIALIZER = 'json'
+# CELERY_ACCEPT_CONTENT = ['application/json']
+# CELERY_TIMEZONE = 'Asia/Kolkata'
+# CELERY_TASK_TRACK_STARTED = True
+# CELERY_TASK_TIME_LIMIT = 30 * 60
+#
+# CELERYBEAT_SCHEDULE = {
+#     'context': {
+#         'task': 'UserLogin.tasks.daily_create_mess_objects',
+#         'schedule': crontab(hour=8, minute=5),
+#     }
+# }
 # django_heroku.settings(locals())
 
 CORS_ALLOWED_ORIGINS = [

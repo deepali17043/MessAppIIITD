@@ -30,139 +30,76 @@
             </ul>
         </nav>
         <div id="layoutSidenav">
-            <div id="layoutSidenav_nav">
-                <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
-                    <div class="sb-sidenav-menu">
-                        <div class="nav">
-                            <a class="nav-link" href="{% url 'mess-home'%}">
-                                <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
-                                Dashboard
-                            </a>
-                            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseLayouts" aria-expanded="false" aria-controls="collapseLayouts">
-                                <div class="sb-nav-link-icon"><i class="fas fa-columns"></i></div>
-                                Attendance
-                                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-                            </a>
-                            <div class="collapse" id="collapseLayouts" aria-labelledby="headingOne" data-parent="#sidenavAccordion">
-                                <nav class="sb-sidenav-menu-nested nav">
-                                    <a class="nav-link" href="{% url 'mess-attendance-cur' %}">
-                                        <div class="sb-nav-link-icon"><i class="fas fa-check-square"></i></div>
-                                        Marked by users(current month)
-                                    </a>
-                                    <a class="nav-link" href="{% url 'upload-attendance' %}">
-                                        <div class="sb-nav-link-icon"><i class="fas fa-upload"></i></div>
-                                        Upload attendance
-                                    </a>
-                                    <a class="nav-link" href="{% url 'list-attendance' %}">
-                                        <div class="sb-nav-link-icon"><i class="fas fa-check-circle"></i></div>
-                                        List of Students Attending
-                                    </a>
-                                </nav>
-                            </div>
-                            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsePages" aria-expanded="false" aria-controls="collapsePages">
-                                <div class="sb-nav-link-icon"><i class="fas fa-book-open"></i></div>
-                                Menu & Timings
-                                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-                            </a>
-                            <div id="collapsePages" aria-labelledby="headingTwo" data-parent="#sidenavAccordion">
-                                <nav class="sb-sidenav-menu-nested nav" id="sidenavAccordionPages">
-                                    <a class="nav-link " href="{% url 'admin-view-mess-menu' %}">
-                                        <div class="sb-nav-link-icon"><i class="fas fa-book"></i></div>
-                                        View Menu
-                                    </a>
-                                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#pagesCollapseError" aria-expanded="false" aria-controls="pagesCollapseError">
-                                        Meal Deadlines
-                                        <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-                                    </a>
-                                    <div class="collapse" id="pagesCollapseError" aria-labelledby="headingOne" data-parent="#sidenavAccordionPages">
-                                        <nav class="sb-sidenav-menu-nested nav">
-                                            <a class="nav-link" href="{% url 'default-deadline' %}">
-                                                <div class="sb-nav-link-icon"><i class="fas fa-magic"></i></div>
-                                                Edit Default Meal Deadline
-                                            </a>
-                                            <a class="nav-link" href="{% url 'meal-deadline' %}">
-                                                <div class="sb-nav-link-icon"><i class="fas fa-edit"></i></div>
-                                                Set/Edit Meal Deadline
-                                            </a>
-                                        </nav>
-                                    </div>
-                                </nav>
-                            </div>
-                            <a class="nav-link" href="{% url 'list-defaulters' %}">
-                                <div class="sb-nav-link-icon"><i class="fas fa-list-ul"></i></div>
-                                Defaulters
-                            </a>
-                            <a class="nav-link" href="{% url 'mess-feedback' %}">
-                                <div class="sb-nav-link-icon"><i class="fas fa-chart-area"></i></div>
-                                Feedback
-                            </a>
-                            <a class="nav-link" href="{% url 'app-feedback' %}">
-                                <div class="sb-nav-link-icon"><i class="fas fa-tablet"></i></div>
-                                App Feedback
-                            </a>
-                            <a class="nav-link" href="{% url 'view-users' %}">
-                                <div class="sb-nav-link-icon"><i class="fas fa-list-ol"></i></div>
-                                View Users
-                            </a>
-                            <a class="nav-link" href="{% url 'web-logout' %}">
-                                <div class="sb-nav-link-icon"><i class="fas fa-user"></i></div>
-                                Logout
-                            </a>
-                        </div>
-                    </div>
-                    <div class="sb-sidenav-footer">
-                        <div class="small">Logged in as:</div>
-                        {{user.name}}
-                    </div>
-                </nav>
-            </div>
+            
             <div id="layoutSidenav_content">
                 <main>
                     <div class="container-fluid">
-                        <div class="card shadow-lg border-0 rounded-lg mt-5">
-                            <div class="card-header"><h3 class="text-center font-weight-light my-4">Change Default Deadline</h3></div>
-                            <div class="card-body text-center">
-                                <form  method="POST" enctype="multipart/form-data">
-                                    {% csrf_token %}
-                                    {{ form|crispy }}
-                                    <div class="upload_button">
-                                        <button type="submit">Save</button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="container-fluid">
+                        <div class="row justify-content-center">
+                            <div class="card shadow-lg col-xl-6 mt-5">
+                                <div class="card-header">
+                                    <h3 class="text-center font-weight-light my-4"> Default Deadlines </h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered text-center" id="DefaultDeadlinesTable" width="100%" cellspacing="0">
+                                            <thead>
+                                                <tr class="text-white" style="background-color: #3fada8;">
+                                                    <th width="40%" style="border: 1px #3fada8;">MEAL</th>
+                                                    <th width="40%" style="font-size:15px; border: 0.7px #3fada8;">HOURS</th>
+                                                    <th width="20%" style="font-size:15px; border: 0.7px #3fada8;">EDIT</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for en, form_default in deadlines %}
+                                                <tr>
+                                                    <td style="background-color: #c9c9ca;">{{en.meal}}</td>
+                                                    <td>{{en.hours}} hrs</td>
+                                                    <td>
+                                                        <!-- Button trigger modal -->
+                                                        <button class="btn" type="button" data-toggle="modal" data-target="#{{en.meal}}DefaultDeadline"><i class="fas fa-pencil-alt"></i></button>
 
-                        <div class="card mb-4">
-                            <div class="card-header">
-                                <i class="fas fa-table mr-1"></i>
-                                All Deadlines
-                            </div>
-                            <div class="card-body">
-                                <div class="table-responsive">
-                                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
-                                        <thead>
-                                            <tr>
-                                                <th>Meal</th>
-                                                <th>Hours</th>
-                                            </tr>
-                                        </thead>
-                                        <tfoot>
-                                            <tr>
-                                                <th>Meal</th>
-                                                <th>Hours</th>
-                                            </tr>
-                                        </tfoot>
-                                        <tbody>
-                                            {% for en in deadlines %}
-                                            <tr>
-                                                <td>{{en.meal}}</td>
-                                                <td>{{en.hours}}</td>
-                                            </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
+                                                        <!-- Modal -->
+                                                        <div class="modal fade" id="{{en.meal}}DefaultDeadline" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="{{en.meal}}DefaultDeadlineLabel" aria-hidden="true">
+                                                            <div class="modal-dialog" role="document">
+                                                                <div class="modal-content">
+                                                                    <div class="modal-header">
+                                                                        <h5 class="modal-title" id="{{en.meal}}DefaultDeadlineLabel">Edit Default Deadline</h5>
+                                                                        <button class="close" type="button" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                                                                    </div>
+                                                                    <form  method="POST" enctype="multipart/form-data">
+                                                                        {% csrf_token %}
+                                                                        <div class="modal-body text-left">
+                                                                            <div class="row">
+                                                                                <div class="col-xl-4">
+                                                                                    <label for="{{form_default.meal.id}}">Meal:</label>
+                                                                                </div>
+                                                                                <div class="col-xl-4">
+                                                                                    <input id="{{form_default.meal.id}}" type="text" name="meal" value="{{en.meal}}" readonly>
+                                                                                </div>
+                                                                            </div>
+                                                                            <div class="row">
+                                                                                <div class="col-xl-4">
+                                                                                    <label for="{{form_default.hours.id}}">Hours:</label>
+                                                                                </div>
+                                                                                <div class="col-xl-4">
+                                                                                    <input id="{{form_default.hours.id}}" type="number" name="hours">
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="modal-footer">
+                                                                            <button class="btn btn-secondary" type="button" data-dismiss="modal">Close</button>
+                                                                            <button class="btn btn-primary" type="submit">Save changes</button>
+                                                                        </div>
+                                                                    </form>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
                         </div>

@@ -1,46 +1,45 @@
-import redis
-from celery import shared_task
+from background_task import background
 from .models import *
-from .views import IST
-import logging
 from random import randint
+import datetime, pytz
 
-@shared_task
-def update_number():
-    r = redis.StrictRedis()
-    v = randint(0, 9)
-    print(v)
-    r.set('my_number', v)
-    print("something")
 
-@shared_task
+@background(queue='my-queue')
 def daily_create_mess_objects():
-    # r = redis.StrictRedis()
-    # numdays = 22
-    # today = datetime.datetime.now(IST).date()
-    print("hi")
-    logging.display("somethinggggggg")
-    date_create = datetime.datetime(year=2021, month=5, day=1)
-    logging.info('date_created')
-    attendance_qset = MessAttendance.objects.filter(date=date_create)
+    print("start")
+    IST = pytz.timezone('Asia/Kolkata')
+    now = datetime.datetime.now(IST)
+    date_start = datetime.datetime(year=now.year, month=now.month, day=now.day)
+    date_end = date_start + datetime.timedelta(days=31)
+    date_to_del = date_start - datetime.timedelta(days=31)
 
-    users = User.objects.filter(username='2017043')
+    attendance_qset = MessAttendance.objects.filter(date__range=[date_start, date_end])
+    meals = ['Breakfast', 'Lunch', 'Snacks', 'Dinner']
+
+    # Creation of MessAttendance Objects
+    users = User.objects.filter(type='customer')
     for user in users:
         try:
             mess_user = MessUser.objects.get(user=user)
         except:
             MessUser.objects.update_or_create(user=user)
             mess_user = MessUser.objects.get(user=user)
-        tmpattendance = attendance_qset.filter(user=mess_user).count()
-        if tmpattendance < 4:
-            for meal in meal_choices:
-                MessAttendance.objects.update_or_create(
-                    user=mess_user,
-                    date=date_create,
-                    meal=meal
-                )
-                print("done", meal)
-            print("tmp<4")
-        print(user.name)
-    print("okay, done")
-    return
+        attendance_qset = attendance_qset.filter(user=mess_user)
+
+        dates = [date_start + datetime.timedelta(days=i) for i in range(33)]
+        for dt in dates:
+            for meal in meals:
+                try:
+                    attendance_qset.get(meal=meal, date=dt)
+                except:
+                    MessAttendance.objects.update_or_create(
+                        user=mess_user,
+                        meal=meal,
+                        date=dt
+                    )
+
+    # Deletion of objects from 31 days ago
+    del_qset = MessAttendance.objects.filter(date=date_to_del)
+    for q in del_qset:
+        q.delete()
+    print("finished")

@@ -1,5 +1,7 @@
 import csv, io
 import pytz, ast
+from .tasks import daily_create_mess_objects
+from background_task.models import Task
 from django.http import Http404
 from django.shortcuts import render, redirect
 from django.views.generic import CreateView
@@ -48,6 +50,12 @@ class SignUp(CreateView):
 
 def homePage(request):
     # create account or login to existing.
+    tasks = Task.objects.filter(verbose_name='CreatingMessObjs')
+    if len(tasks) == 0:
+        daily_create_mess_objects(repeat=60*60*24, verbose_name='CreatingMessObjs')
+    else:
+        pass
+        # print("something")
     return redirect('web-login')
 
 
@@ -447,25 +455,25 @@ def messAttendanceAPI(request):
 @permission_classes([IsAuthenticated, ])
 def messScheduleAPI(request):
     checkCustomer(request)
-    print(request.user.username)
+    # print(request.user.username)
     mess_user = MessUser.objects.get(user=request.user)
     now = datetime.datetime.now(IST)
     attendance = []
-    numdays = 7  # returning the data for seven days.
-    date_start = now.date()
-    date_end = (now + datetime.timedelta(days=numdays-1)).date()
-    print(date_end)
+    # numdays = 7  # returning the data for seven days.
+    # date_start = now.date()
+    # date_end = (now + datetime.timedelta(days=numdays-1)).date()
+    # print(date_end)
 
-    # numdays = calendar.monthrange(now.year, now.month)[1]
-    # date_start = datetime.date(year=now.year, month=now.month, day=1)
-    # date_end = datetime.date(year=now.year, month=now.month, day=numdays)
+    numdays = calendar.monthrange(now.year, now.month)[1]
+    date_start = datetime.date(year=now.year, month=now.month, day=now.day)
+    date_end = date_start + datetime.timedelta(days=numdays)
 
     attendance_qset = MessAttendance.objects.filter(user=mess_user).filter(date__range=[date_start, date_end]).order_by('date')
-    cnt = numdays * 4
-    if attendance_qset.count() < cnt:
-        create_mess_objects(request.user, numdays)
-        attendance_qset = MessAttendance.objects.filter(user=mess_user).filter(date__range=[date_start, date_end]).order_by('date')
-        print(attendance_qset.count())
+    # cnt = numdays * 4
+    # if attendance_qset.count() < cnt:
+    #     create_mess_objects(request.user, numdays)
+    #     attendance_qset = MessAttendance.objects.filter(user=mess_user).filter(date__range=[date_start, date_end]).order_by('date')
+    #     print(attendance_qset.count())
     prev = False
     for q in attendance_qset:
         if not q.editable:
@@ -476,6 +484,7 @@ def messScheduleAPI(request):
             q.save()
             prev = q.editable
         attendance.append(q)
+        # print(q.date, 'jkhsdbkjhdfbdfs')
     serializer = MessAttendanceSerializer(attendance, many=True)
     response_data = {'attendance': serializer.data, }
     return Response(response_data)
@@ -666,15 +675,15 @@ def getDefaultMessMenu(request):
 def sendAppFeedback(request):
     checkCustomer(request)
     user = request.user
-    print(request.headers)
+    # print(request.headers)
     serializer = AppFeedbackSerializer(data=request.headers)
     return_data = {}
     if serializer.is_valid():
         user_feedback = serializer.validated_data
-        print(serializer.data)
+        # print(serializer.data)
         return_data['status'] = status.HTTP_200_OK
         now = datetime.datetime.now(IST)
-        print(user_feedback.keys())
+        # print(user_feedback.keys())
         resp = user_feedback['feedback']
         AppFeedback.objects.update_or_create(
             user=user,
@@ -789,11 +798,146 @@ def messHome(request):
             if q.attending:
                 attendance_entry += 1
         second[meals[j]] = attendance_entry
-    response_data = {'user': user, 'first': first, 'active': activef, 'second': second, 'today_date': today,
-                     'tom_date': tomorrow}
+
+    # Chart Data
+    # num_days = calendar.monthrange(now.year, now.month)[1]
+    date_start = now.date()
+    date_end = date_start + datetime.timedelta(days=7)
+    attendance_qset = MessAttendance.objects.filter(date__range=[date_start, date_end]).order_by('date')
+
+    chart_data_breakfast = dict()
+    chart_data_lunch = dict()
+    chart_data_snacks = dict()
+    chart_data_dinner = dict()
+    labels = list() #To preserve the order of dates (increasing order) and not have to sort data again
+    for q in attendance_qset:
+        dt = q.date.strftime('%d-%m-%Y')
+        # print(dt)
+        if q.meal == 'Breakfast':
+            if dt in chart_data_breakfast:
+                chart_data_breakfast[dt] += int(q.attending)
+            else:
+                chart_data_breakfast[dt] = int(q.attending)
+                labels.append(dt)
+        elif q.meal == 'Lunch':
+            if dt in chart_data_lunch:
+                chart_data_lunch[dt] += int(q.attending)
+            else:
+                chart_data_lunch[dt] = int(q.attending)
+        elif q.meal == 'Snacks':
+            if dt in chart_data_snacks:
+                chart_data_snacks[dt] += int(q.attending)
+            else:
+                chart_data_snacks[dt] = int(q.attending)
+        else: #q.meal = 'Dinner'
+            if dt in chart_data_dinner:
+                chart_data_dinner[dt] += int(q.attending)
+            else:
+                chart_data_dinner[dt] = int(q.attending)
+    data_points_breakfast = [chart_data_breakfast[k] for k in labels]
+    data_points_lunch = [chart_data_lunch[k] for k in labels]
+    data_points_snacks = [chart_data_snacks[k] for k in labels]
+    data_points_dinner = [chart_data_dinner[k] for k in labels]
+    # print(labels)
+
+    response_data = {
+        'user': user,
+        'first': first,
+        'active': activef,
+        'second': second,
+        'today_date': today,
+        'tom_date': tomorrow,
+        'labels': labels,
+        'breakfast_data': data_points_breakfast,
+        'lunch_data': data_points_lunch,
+        'snacks_data': data_points_snacks,
+        'dinner_data': data_points_dinner
+    }
     if user.type == 'admin':
         return render(request, 'Mess/home.html', response_data)
     return render(request, 'MessVendor/home.html', response_data)
+
+
+def MealDeadlinePage(request):
+    try:
+        user = User.objects.get(username=request.user)
+    except:
+        raise Http404('Not authorized')
+    if not (user.type == 'admin'):
+        raise Http404('Not authorized')
+    if request.method == 'POST':
+        data = request.POST
+        if ('meal' in data) and ('hours' in data):
+            if 'date' in data:
+                # Special Deadline Form
+                specialDeadlineForm = MealDeadlineForm(data=data)
+                item = specialDeadlineForm.save(commit=False)
+                try:
+                    deadline = MealDeadline.objects.get(
+                        date=item.date, meal=item.meal)
+                    deadline.hours = item.hours
+                    deadline.save()
+                except:
+                    MealDeadline.objects.update_or_create(
+                        date=item.date,
+                        meal=item.meal,
+                        hours=item.hours
+                    )
+                return redirect('meal-deadline')
+            else:
+                # Default Deadline Form
+                default_deadline_form = DefaultDeadlineForm(data=data)
+                item = {
+                    'meal': default_deadline_form.data['meal'],
+                    'hours': default_deadline_form.data['hours']
+                }
+                # If the entry already exists, update, otherwise add to DB
+                defDeadlineQSet = DefaultDeadline.objects.filter(meal=item['meal'])
+                if defDeadlineQSet.count() > 0:
+                    # Entry already exists.
+                    entry = DefaultDeadline.objects.get(meal=item['meal'])
+                    entry.hours = item['hours']
+                    entry.save()
+                else:
+                    # Entry does not exist
+                    DefaultDeadline.objects.update_or_create(
+                        meal=item['meal'],
+                        hours=item['hours']
+                    )
+            return redirect('meal-deadline')
+    else:
+        # Form has not been submitted
+        default_deadlines = DefaultDeadline.objects.all()
+        defaultDeadlinesForms = list()
+        for d in default_deadlines:
+            tmpForm = DefaultDeadlineForm()
+            tmp = (d, tmpForm)
+            defaultDeadlinesForms.append(tmp)
+
+        splDeadlineForm = MealDeadlineForm()
+        splDeadlines = MealDeadline.objects.all()
+    # for meal in splDeadlines:
+    #     print(meal.occasion)
+    # print("dfvd jhv d", splDeadlines)
+    args = {
+        'user': user,
+        'splDeadlineForm': splDeadlineForm,
+        'deadlines': defaultDeadlinesForms,
+        'splDeadlines': splDeadlines
+    }
+    return render(request, 'Mess/view_deadlines.html', args)
+
+
+def deleteMealDeadline(request, deadlineID):
+    try:
+        user = User.objects.get(username=request.user)
+    except:
+        raise Http404('Not authorized')
+    if not (user.type == 'admin'):
+        raise Http404('Not authorized')
+    deadline = MealDeadline.objects.get(id=deadlineID)
+    deadline.delete()
+    return redirect('meal-deadline')
 
 
 def editMealDeadline(request):
@@ -803,6 +947,7 @@ def editMealDeadline(request):
         raise Http404('Not authorized')
     if not (user.type == 'admin'):
         raise Http404('Not authorized')
+    # print("ummmm")
     if request.method == 'POST':
         form = MealDeadlineForm(request.POST)
         item = form.save(commit=False)
@@ -835,10 +980,13 @@ def defualtMealDeadline(request):
         raise Http404('Not authorized')
     if request.method == 'POST':
         form = DefaultDeadlineForm(request.POST)
+        # print(form.data)
         item = {
             'meal': form.data['meal'],
             'hours': form.data['hours']
         }
+        # print('kjfvkdfns', request.POST)
+        # print(request.POST['meal'])
         try:
             deadline = DefaultDeadline.objects.get(meal=item['meal'])
             deadline.hours = item['hours']
@@ -853,8 +1001,13 @@ def defualtMealDeadline(request):
         form = DefaultDeadlineForm()
     # Show all past/upcoming deadlines
     deadlines = DefaultDeadline.objects.all()
-    arg = {'form': form, 'deadlines': deadlines, 'user': user}
-    return render(request, 'Mess/default_deadline.html', arg)
+    deadlineForms = list()
+    for d in deadlines:
+        tmpForm = DefaultDeadlineForm()
+        tmp = (d, tmpForm)
+        deadlineForms.append(tmp)
+    arg = {'form': form, 'deadlines': deadlineForms, 'user': user}
+    return render(request, 'Mess/view_deadlines.html', arg)
 
 
 def listAttendees(request):
@@ -864,30 +1017,39 @@ def listAttendees(request):
         raise Http404('Not authorized')
     if not user.type == 'admin':
         raise Http404('Not authorized')
+    form_data = dict()
     if request.method == 'GET':
         form = AttendeesForm()
         qset = list()
+        form_data = {
+            'date': '',
+            'meal': ''
+        }
     else:
         form = AttendeesForm(data=request.POST)
         if form.is_valid():
-            date = form.cleaned_data['date']
+            form_data['date'] = form.cleaned_data['date']
             # print(type(date), 'type dateeeeeeeeeeee')
-            meal = form.cleaned_data['meal']
-            qset = MessAttendance.objects.filter(date=date)
+            form_data['meal'] = form.cleaned_data['meal']
+            qset = MessAttendance.objects.filter(date=form_data['date'] )
             # print(qset)
-            qset = qset.filter(meal=meal)
+            qset = qset.filter(meal=form_data['meal'])
             # print(qset)
         else:
             raise Http404('bad data')
     list_attendees = []
     # try:
         # print("qsert:", qset)
+    i = 0
+    cnt = 0
     for q in qset:
-        print(q.user.user.username, q.attending)
+        # print(q.user.user.username, q.attending)
+        cnt += 1
         if q.attending:
             # print('q', q)
             tmp = dict()
-            tmp['username'] = q.user.user.username
+            i+=1
+            tmp['id'] = i
             tmp['name'] = q.user.user.name
             tmp['email'] = q.user.user.email
             list_attendees.append(tmp)
@@ -896,8 +1058,16 @@ def listAttendees(request):
     #     e = sys.exc_info()[0]
     #     print(e)
     #     pass
-    args = {'form': form, 'list_attendees': list_attendees, 'user': user}
-    print('list_ttendess', list_attendees)
+    pie_chart_data = [i, cnt]
+    args = {
+        'form': form,
+        'list_attendees': list_attendees,
+        'user': user,
+        'attendees_cnt': pie_chart_data,
+        'form_date': form_data['date'],
+        'form_meal': form_data['meal'],
+    }
+    # print('list_ttendess', list_attendees)
     return render(request, 'Mess/list_attendees.html', args)
 
 
@@ -919,31 +1089,41 @@ def customListAttendees(request, meal, day):
     else:
         raise Http404('Incorrect URL')
     date = datetime.datetime.now(IST).date()
-    if day == '0' or day==0:
-        print('why')
+    if day == '0' or day == 0:
+        # print('why')
         pass
-    if day == '1':
+    elif day == '1':
         date = date + datetime.timedelta(days=1)
     else:
         raise Http404('Incorrect URL')
     qset = MessAttendance.objects.filter(date=date, meal=meal)
     list_attendees = []
+    i = 0
+    cnt = 0
     try:
-        print("qsert:", qset)
+        # print("qsert:", qset)
         for q in qset:
             if q.attending:
-                print('q', q)
+                # print('q', q)
                 tmp = dict()
-                tmp['username'] = q.user.user.username
+                i += 1
+                tmp['id'] = i
                 tmp['name'] = q.user.user.name
                 tmp['email'] = q.user.user.email
                 list_attendees.append(tmp)
+            cnt += 1
     except:
-        print('asdfghjk')
         e = sys.exc_info()[0]
-        print(e)
+        # print(e)
         pass
-    args = {'list_attendees': list_attendees, 'user': user, 'meal': meal, 'date_today': date}
+    pie_chart_vars = [i, cnt]
+    args = {
+        'list_attendees': list_attendees,
+        'user': user,
+        'meal': meal,
+        'date_today': date,
+        'attendees_cnt': pie_chart_vars
+    }
     return render(request, 'Mess/custom_list_attendees.html', args)
 
 
@@ -1112,6 +1292,21 @@ def appFeedback(request):
     return render(request, 'Mess/app_feedback.html', response_data)
 
 
+def resolvedAppFeedback(request, feedback_id):
+    try:
+        user = User.objects.get(username=request.user)
+    except:
+        raise Http404('Not authorized')
+    if not user.type == 'admin':
+        raise Http404('Not authorized')
+
+    feedback = AppFeedback(id=feedback_id)
+    feedback.status = 'Resolved'
+    feedback.save()
+    return redirect('app-feedback')
+
+
+
 def viewFeedback(request):
     try:
         user = User.objects.get(username=request.user)
@@ -1190,7 +1385,7 @@ def viewUsers(request):
         raise Http404('Not authorized')
     if not user.type == 'admin':
         raise Http404('Not authorized')
-    Users = User.objects.filter(type='customer')
+    Users = User.objects.all()
     return render(request, 'Mess/view_users.html', {'users': Users, 'user': user})
 
 
@@ -1296,9 +1491,9 @@ def setDefaultMessMenu(request):
         item = form.save(commit=False)
         try:
             item_entry = DefaultMessMenu.objects.get(day=item.day, meal=item.meal)
-            print(item_entry, 'itemmmmm entryyyy')
+            # print(item_entry, 'itemmmmm entryyyy')
             item_entry.items = item.items
-            print(item_entry.items)
+            # print(item_entry.items)
             item_entry.save()
         except:
             DefaultMessMenu.objects.update_or_create(
@@ -1321,7 +1516,7 @@ def adminViewMessMenu(request):
     if not user.type == 'admin':
         raise Http404('Not authorized')
     args = dict()
-    meals = {'Breakfast':0, 'Lunch':1, 'Snacks':2, 'Dinner':3}
+    meals = {'Breakfast': 0, 'Lunch': 1, 'Snacks': 2, 'Dinner': 3}
     # Default Menu - i.e. weekly
     weekly_menu = DefaultMessMenu.objects.all()
     weekly_menu_table = {}
@@ -1332,11 +1527,11 @@ def adminViewMessMenu(request):
     for it in weekly_menu:
         tmp = meals[it.meal]
         form = DefaultMessMenuForm()
-        cat_veg = it.category == 'veg'
-        cat_egg = it.category == 'egg'
-        cat_chi = it.category == 'chicken'
+        spl_menu = it.special_menu
+        egg = it.contains_egg
+        chi = it.contains_chicken
         # print(it.day, it.meal, it.category, cat_veg, cat_egg, cat_chi)
-        weekly_menu_table[it.day][tmp] = (it, form, cat_veg, cat_egg, cat_chi)
+        weekly_menu_table[it.day][tmp] = (it, form, spl_menu, egg, chi)
 
     # Search for Custom Menu - i.e. date wise
     if request.method == 'POST':
@@ -1344,9 +1539,12 @@ def adminViewMessMenu(request):
         # print(form.data)
         if form.is_valid():
             data = form.cleaned_data
+            # print(data)
             entry = DefaultMessMenu.objects.get(day=data['day'], meal=data['meal'])
             entry.items = data['items']
-            entry.category = data['category']
+            entry.special_menu = data['special_menu']
+            entry.contains_egg = data['contains_egg']
+            entry.contains_chicken = data['contains_chicken']
             entry.save()
             # print("something")
             return redirect('admin-view-mess-menu')
@@ -1360,8 +1558,7 @@ def adminViewMessMenu(request):
                     date=data['date'],
                     meal=data['meal'],
                     occasion=data['occasion'],
-                    items=data['items'],
-                    category=data['category']
+                    items=data['items']
                 )
                 return redirect('admin-view-mess-menu')
     else:
@@ -1430,17 +1627,19 @@ def renew(request):
     cntr = 0
     for user in users:
         if user.type == 'customer':
-            print(user.username, '*************')
+            # print(user.username, '*************')
             try:
                 mess_user = MessUser.objects.get(user=user)
                 cnt = MessAttendance.objects.filter(user=mess_user).count()
-                print(cnt)
+                # print(cnt)
                 cntr += 1
             except:
-                print('!!!!!!!!!!!!!!!!!!!!!!', user.username)
+                pass
+                # print('!!!!!!!!!!!!!!!!!!!!!!', user.username)
         else:
-            print(user.username, 'hjcvjhdvd', user.type)
-    print('total_customers', cntr)
+            pass
+            # print(user.username, 'hjcvjhdvd', user.type)
+    # print('total_customers', cntr)
     return redirect('default-deadline')
 
 

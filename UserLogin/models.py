@@ -143,11 +143,9 @@ class DefaultMessMenu(models.Model):
     meal = models.CharField(max_length=10, choices=meal_choices)
     day = models.TextField(max_length=15, choices=day_choices)
     items = models.TextField(max_length=400)
-    category = models.TextField(max_length=15, choices=(
-        ('veg', 'veg'),
-        ('egg', 'egg'),
-        ('chicken', 'chicken')
-    ), default='veg')
+    special_menu = models.BooleanField(default=False)
+    contains_egg = models.BooleanField(default=False)
+    contains_chicken = models.BooleanField(default=False)
 
 
 class MessMenu(models.Model):
@@ -155,11 +153,6 @@ class MessMenu(models.Model):
     date = models.DateField()
     occasion = models.TextField(default='-')
     meal = models.CharField(max_length=10, choices=meal_choices)
-    category = models.TextField(max_length=15, choices=(
-        ('veg', 'Vegetarian'),
-        ('egg', 'Has Egg'),
-        ('chicken', 'Has Chicken')
-    ), default='veg')
 
 
 class AppFeedback(models.Model):

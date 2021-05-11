@@ -57,8 +57,10 @@ urlpatterns = [
 
     # Mess Admin
     path('mess/home/', views.messHome, name='mess-home'), #both admin and vendor
-    path('mess/edit-meal-deadline/', views.editMealDeadline, name='meal-deadline'),
-    path('mess/edit-default-deadline/', views.defualtMealDeadline, name='default-deadline'),
+    path('mess/meal-deadline/', views.MealDeadlinePage, name='meal-deadline'),
+    url(r'^mess-admin/delete-deadline/(?P<deadlineID>\d+)/$', views.deleteMealDeadline, name='del-deadline'),
+    # path('mess/edit-meal-deadline/', views.editMealDeadline, name='meal-deadline'),
+    # path('mess/edit-default-deadline/', views.defualtMealDeadline, name='default-deadline'),
     path('mess/list-attendance/', views.listAttendees, name='list-attendance'),
     url(r'^mess/list-attendance/(?P<meal>\d+)/(?P<day>\d+)/$', views.customListAttendees, name='list-attendees'),
     path('mess/view-attendance/cur-month/', views.getMarkedAttendanceCurMonth, name='mess-attendance-cur'), #both admin and vendor
@@ -70,6 +72,7 @@ urlpatterns = [
     url(r'^mess-admin/give-user-admin-rights/(?P<user_id>\d+)/$', views.giveAdminRights, name='admin-rights-give'),
     url(r'^mess-admin/remove-user-admin-rights/(?P<user_id>\d+)/$', views.removeAdminRights, name='admin-rights-remove'),
     path('mess-admin/app-feedback/', views.appFeedback, name='app-feedback'),
+    url(r'^mess-admin/app-feedback/(?P<feedback_id>\d+)/$', views.resolvedAppFeedback, name='read-app-feeback'),
     path('mess-admin/view-feedback/', views.viewFeedback, name='mess-feedback'),
     # url(r'^mess-admin/view-feedback/penalise/(?P<feedbackid>\d+)/$', views.penalise, name='mess-feedback-penalise'),
     url(r'^mess-admin/view-feedback/approve/(?P<feedbackid>\d+)/$', views.approve, name='mess-feedback-approve'),

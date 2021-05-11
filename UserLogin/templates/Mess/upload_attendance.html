@@ -49,7 +49,7 @@
                                         <div class="sb-nav-link-icon"><i class="fas fa-check-square"></i></div>
                                         Marked by users(current month)
                                     </a>
-                                    <a class="nav-link active" href="{% url 'upload-attendance' %}">
+                                    <a class="nav-link  active" href="{% url 'upload-attendance' %}">
                                         <div class="sb-nav-link-icon"><i class="fas fa-upload"></i></div>
                                         Upload attendance
                                     </a>
@@ -64,28 +64,17 @@
                                 Menu & Timings
                                 <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
                             </a>
-                            <div id="collapsePages" aria-labelledby="headingTwo" data-parent="#sidenavAccordion">
+                            <div class="collapse" id="collapsePages" aria-labelledby="headingTwo" data-parent="#sidenavAccordion">
                                 <nav class="sb-sidenav-menu-nested nav" id="sidenavAccordionPages">
                                     <a class="nav-link " href="{% url 'admin-view-mess-menu' %}">
                                         <div class="sb-nav-link-icon"><i class="fas fa-book"></i></div>
                                         View Menu
                                     </a>
-                                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#pagesCollapseError" aria-expanded="false" aria-controls="pagesCollapseError">
+                                    <a class="nav-link" href="{% url 'meal-deadline' %}">
+                                        <div class="sb-nav-link-icon"><i class="far fa-clock"></i></div>
                                         Meal Deadlines
-                                        <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
                                     </a>
-                                    <div class="collapse" id="pagesCollapseError" aria-labelledby="headingOne" data-parent="#sidenavAccordionPages">
-                                        <nav class="sb-sidenav-menu-nested nav">
-                                            <a class="nav-link" href="{% url 'default-deadline' %}">
-                                                <div class="sb-nav-link-icon"><i class="fas fa-magic"></i></div>
-                                                Edit Default Meal Deadline
-                                            </a>
-                                            <a class="nav-link" href="{% url 'meal-deadline' %}">
-                                                <div class="sb-nav-link-icon"><i class="fas fa-edit"></i></div>
-                                                Set/Edit Meal Deadline
-                                            </a>
-                                        </nav>
-                                    </div>
+                                    
                                 </nav>
                             </div>
                             <a class="nav-link" href="{% url 'list-defaulters' %}">

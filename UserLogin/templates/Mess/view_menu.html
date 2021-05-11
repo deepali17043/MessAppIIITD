@@ -38,7 +38,7 @@
                                 <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
                                 Dashboard
                             </a>
-                             <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseLayouts" aria-expanded="false" aria-controls="collapseLayouts">
+                            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseLayouts" aria-expanded="false" aria-controls="collapseLayouts">
                                 <div class="sb-nav-link-icon"><i class="fas fa-columns"></i></div>
                                 Attendance
                                 <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
@@ -70,22 +70,11 @@
                                         <div class="sb-nav-link-icon"><i class="fas fa-book"></i></div>
                                         View Menu
                                     </a>
-                                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#pagesCollapseError" aria-expanded="false" aria-controls="pagesCollapseError">
+                                    <a class="nav-link" href="{% url 'meal-deadline' %}">
+                                        <div class="sb-nav-link-icon"><i class="far fa-clock"></i></div>
                                         Meal Deadlines
-                                        <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
                                     </a>
-                                    <div class="collapse" id="pagesCollapseError" aria-labelledby="headingOne" data-parent="#sidenavAccordionPages">
-                                        <nav class="sb-sidenav-menu-nested nav">
-                                            <a class="nav-link" href="{% url 'default-deadline' %}">
-                                                <div class="sb-nav-link-icon"><i class="fas fa-magic"></i></div>
-                                                Edit Default Meal Deadline
-                                            </a>
-                                            <a class="nav-link" href="{% url 'meal-deadline' %}">
-                                                <div class="sb-nav-link-icon"><i class="fas fa-edit"></i></div>
-                                                Set/Edit Meal Deadline
-                                            </a>
-                                        </nav>
-                                    </div>
+                                    
                                 </nav>
                             </div>
                             <a class="nav-link" href="{% url 'list-defaulters' %}">
@@ -120,11 +109,13 @@
                 <main>
                     <div class="container-fluid">
 
-                        <div class="card shadow-lg border-0 rounded-lg mb-4">
+                        <div class="card shadow-lg border-0 rounded-lg mb-4 mt-5">
                             <div class="card-header">
                                 <h3 class="text-center font-weight-light my-4">Weekly Menu</h3>
                             </div>
                             <div class="card-body">
+                                Please Note: &emsp;&emsp;&emsp;
+                                <i class="fa fa-leaf"></i> stands for <b>Special Menu Items</b> &emsp;&emsp;&emsp;<i class="fas fa-egg"></i> stands for <b>Contains Egg</b> &emsp;&emsp;&emsp;<i class="fas fa-drumstick-bite"></i> stands for <b>Contains Chicken</b>
                                 <div class="table-responsive">
                                     <table class="table table-bordered" id="dataTable0" width="100%" cellspacing="0" style="text-align:center; border: 2px solid black;">
                                         <thead>
@@ -146,12 +137,12 @@
                                                         {{en.items}}
                                                         {% if v %}
                                                             <i class="fa fa-leaf"></i>
-                                                        {% else %}
-                                                            {% if e %}
-                                                                <i class="fas fa-egg"></i>
-                                                            {% else %}
-                                                                <i class="fas fa-drumstick-bite"></i>
-                                                            {%endif%}
+                                                        {%endif%}
+                                                        {% if e %}
+                                                            <i class="fas fa-egg"></i>
+                                                        {%endif%}
+                                                        {% if c %}
+                                                            <i class="fas fa-drumstick-bite"></i>
                                                         {%endif%}
                                                     </button>
                                                     <!-- Modal -->
@@ -190,16 +181,42 @@
                                                                             </div>
                                                                         </div>
                                                                         <div class="row">
-                                                                            <div class="col-xl-4">
-                                                                                <label for="{{form_mon.category.id}}">Category:</label>
+                                                                            <div class="col-xl-8"><label>Check the ones that apply:</label></div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4 text-right">
+                                                                                {% if v %}
+                                                                                <input id="{{form_mon.special_menu.id}}" type="checkbox" name="special_menu" checked>
+                                                                                {% else %}
+                                                                                <input id="{{form_mon.special_menu.id}}" type="checkbox" name="special_menu">
+                                                                                {% endif %}
                                                                             </div>
-                                                                            <div class="col-xl-4">
-                                                                                <input id="{{form_mon.category.id}}" type="text" name="category"  list="category{{en.id}}">
-                                                                                <datalist id="category{{en.id}}">
-                                                                                  <option value="veg">
-                                                                                  <option value="egg">
-                                                                                  <option value="chicken">
-                                                                                </datalist>
+                                                                            <div class="col-xl-8">
+                                                                                <label for="{{form_mon.special_menu.id}}"><i class="fa fa-leaf"></i> &emsp; Special Menu Items</label>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4 text-right">
+                                                                                {% if e %}
+                                                                                <input id="{{form_mon.contains_egg.id}}" type="checkbox" name="contains_egg" checked>
+                                                                                {% else %}
+                                                                                <input id="{{form_mon.contains_egg.id}}" type="checkbox" name="contains_egg">
+                                                                                {% endif %}
+                                                                            </div>
+                                                                            <div class="col-xl-8">
+                                                                                <label for="{{form_mon.contains_egg.id}}"><i class="fas fa-egg"></i> &emsp; Contains Egg</label>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4 text-right">
+                                                                                {% if c %}
+                                                                                <input id="{{form_mon.contains_chicken.id}}" type="checkbox" name="contains_chicken" checked>
+                                                                                {% else %}
+                                                                                <input id="{{form_mon.contains_chicken.id}}" type="checkbox" name="contains_chicken">
+                                                                                {% endif %}
+                                                                            </div>
+                                                                            <div class="col-xl-8">
+                                                                                <label for="{{form_mon.contains_chicken.id}}"><i class="fas fa-drumstick-bite"></i> &emsp; Contains Chicken</label>
                                                                             </div>
                                                                         </div>
                                                                     </div>
@@ -224,12 +241,12 @@
                                                         {{en.items}}
                                                         {% if v %}
                                                             <i class="fa fa-leaf"></i>
-                                                        {% else %}
-                                                            {% if e %}
-                                                                <i class="fas fa-egg"></i>
-                                                            {% else %}
-                                                                <i class="fas fa-drumstick-bite"></i>
-                                                            {%endif%}
+                                                        {%endif%}
+                                                        {% if e %}
+                                                            <i class="fas fa-egg"></i>
+                                                        {%endif%}
+                                                        {% if c %}
+                                                            <i class="fas fa-drumstick-bite"></i>
                                                         {%endif%}
                                                     </button>
                                                     <!-- Modal -->
@@ -268,16 +285,42 @@
                                                                             </div>
                                                                         </div>
                                                                         <div class="row">
-                                                                            <div class="col-xl-4">
-                                                                                <label for="{{form_tue.category.id}}">Category:</label>
+                                                                            <div class="col-xl-8"><label>Check the ones that apply:</label></div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4 text-right">
+                                                                                {% if v %}
+                                                                                <input id="{{form_tue.special_menu.id}}" type="checkbox" name="special_menu" checked>
+                                                                                {% else %}
+                                                                                <input id="{{form_tue.special_menu.id}}" type="checkbox" name="special_menu">
+                                                                                {% endif %}
                                                                             </div>
-                                                                            <div class="col-xl-4">
-                                                                                <input id="{{form_tue.category.id}}" type="text" name="category"  list="category_tue{{en.id}}">
-                                                                                <datalist id="category_tue{{en.id}}">
-                                                                                  <option value="veg">
-                                                                                  <option value="egg">
-                                                                                  <option value="chicken">
-                                                                                </datalist>
+                                                                            <div class="col-xl-8">
+                                                                                <label for="{{form_tue.special_menu.id}}"><i class="fa fa-leaf"></i> &emsp; Special Menu Items</label>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4 text-right">
+                                                                                {% if e %}
+                                                                                <input id="{{form_tue.contains_egg.id}}" type="checkbox" name="contains_egg" checked>
+                                                                                {% else %}
+                                                                                <input id="{{form_tue.contains_egg.id}}" type="checkbox" name="contains_egg">
+                                                                                {% endif %}
+                                                                            </div>
+                                                                            <div class="col-xl-8">
+                                                                                <label for="{{form_tue.contains_egg.id}}"><i class="fas fa-egg"></i> &emsp; Contains Egg</label>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4 text-right">
+                                                                                {% if c %}
+                                                                                <input id="{{form_tue.contains_chicken.id}}" type="checkbox" name="contains_chicken" checked>
+                                                                                {% else %}
+                                                                                <input id="{{form_tue.contains_chicken.id}}" type="checkbox" name="contains_chicken">
+                                                                                {% endif %}
+                                                                            </div>
+                                                                            <div class="col-xl-8">
+                                                                                <label for="{{form_tue.contains_chicken.id}}"><i class="fas fa-drumstick-bite"></i> &emsp; Contains Chicken</label>
                                                                             </div>
                                                                         </div>
                                                                     </div>
@@ -303,12 +346,12 @@
                                                         {{en.items}}
                                                         {% if v %}
                                                             <i class="fa fa-leaf"></i>
-                                                        {% else %}
-                                                            {% if e %}
-                                                                <i class="fas fa-egg"></i>
-                                                            {% else %}
-                                                                <i class="fas fa-drumstick-bite"></i>
-                                                            {%endif%}
+                                                        {%endif%}
+                                                        {% if e %}
+                                                            <i class="fas fa-egg"></i>
+                                                        {%endif%}
+                                                        {% if c %}
+                                                            <i class="fas fa-drumstick-bite"></i>
                                                         {%endif%}
                                                     </button>
                                                     <!-- Modal -->
@@ -347,16 +390,42 @@
                                                                             </div>
                                                                         </div>
                                                                         <div class="row">
-                                                                            <div class="col-xl-4">
-                                                                                <label for="{{form_wed.category.id}}">Category:</label>
+                                                                            <div class="col-xl-8"><label>Check the ones that apply:</label></div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4 text-right">
+                                                                                {% if v %}
+                                                                                <input id="{{form_wed.special_menu.id}}" type="checkbox" name="special_menu" checked>
+                                                                                {% else %}
+                                                                                <input id="{{form_wed.special_menu.id}}" type="checkbox" name="special_menu">
+                                                                                {% endif %}
                                                                             </div>
-                                                                            <div class="col-xl-4">
-                                                                                <input id="{{form_wed.category.id}}" type="text" name="category" list="category_wed{{en.id}}">
-                                                                                <datalist id="category_wed{{en.id}}">
-                                                                                  <option value="veg">
-                                                                                  <option value="egg">
-                                                                                  <option value="chicken">
-                                                                                </datalist>
+                                                                            <div class="col-xl-8">
+                                                                                <label for="{{form_wed.special_menu.id}}"><i class="fa fa-leaf"></i> &emsp; Special Menu Items</label>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4 text-right">
+                                                                                {% if e %}
+                                                                                <input id="{{form_wed.contains_egg.id}}" type="checkbox" name="contains_egg" checked>
+                                                                                {% else %}
+                                                                                <input id="{{form_wed.contains_egg.id}}" type="checkbox" name="contains_egg">
+                                                                                {% endif %}
+                                                                            </div>
+                                                                            <div class="col-xl-8">
+                                                                                <label for="{{form_wed.contains_egg.id}}"><i class="fas fa-egg"></i> &emsp; Contains Egg</label>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4 text-right">
+                                                                                {% if c %}
+                                                                                <input id="{{form_wed.contains_chicken.id}}" type="checkbox" name="contains_chicken" checked>
+                                                                                {% else %}
+                                                                                <input id="{{form_wed.contains_chicken.id}}" type="checkbox" name="contains_chicken">
+                                                                                {% endif %}
+                                                                            </div>
+                                                                            <div class="col-xl-8">
+                                                                                <label for="{{form_wed.contains_chicken.id}}"><i class="fas fa-drumstick-bite"></i> &emsp; Contains Chicken</label>
                                                                             </div>
                                                                         </div>
                                                                     </div>
@@ -381,12 +450,12 @@
                                                         {{en.items}}
                                                         {% if v %}
                                                             <i class="fa fa-leaf"></i>
-                                                        {% else %}
-                                                            {% if e %}
-                                                                <i class="fas fa-egg"></i>
-                                                            {% else %}
-                                                                <i class="fas fa-drumstick-bite"></i>
-                                                            {%endif%}
+                                                        {%endif%}
+                                                        {% if e %}
+                                                            <i class="fas fa-egg"></i>
+                                                        {%endif%}
+                                                        {% if c %}
+                                                            <i class="fas fa-drumstick-bite"></i>
                                                         {%endif%}
                                                     </button>
                                                     <!-- Modal -->
@@ -425,16 +494,42 @@
                                                                             </div>
                                                                         </div>
                                                                         <div class="row">
-                                                                            <div class="col-xl-4">
-                                                                                <label for="{{form_thurs.category.id}}">Category:</label>
+                                                                            <div class="col-xl-8"><label>Check the ones that apply:</label></div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4 text-right">
+                                                                                {% if v %}
+                                                                                <input id="{{form_thurs.special_menu.id}}" type="checkbox" name="special_menu" checked>
+                                                                                {% else %}
+                                                                                <input id="{{form_thurs.special_menu.id}}" type="checkbox" name="special_menu">
+                                                                                {% endif %}
                                                                             </div>
-                                                                            <div class="col-xl-4">
-                                                                                <input id="{{form_thurs.category.id}}" type="text" name="category"  list="category_thurs{{en.id}}">
-                                                                                <datalist id="category_thurs{{en.id}}">
-                                                                                  <option value="veg">
-                                                                                  <option value="egg">
-                                                                                  <option value="chicken">
-                                                                                </datalist>
+                                                                            <div class="col-xl-8">
+                                                                                <label for="{{form_thurs.special_menu.id}}"><i class="fa fa-leaf"></i> &emsp; Special Menu Items</label>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4 text-right">
+                                                                                {% if e %}
+                                                                                <input id="{{form_thurs.contains_egg.id}}" type="checkbox" name="contains_egg" checked>
+                                                                                {% else %}
+                                                                                <input id="{{form_thurs.contains_egg.id}}" type="checkbox" name="contains_egg">
+                                                                                {% endif %}
+                                                                            </div>
+                                                                            <div class="col-xl-8">
+                                                                                <label for="{{form_thurs.contains_egg.id}}"><i class="fas fa-egg"></i> &emsp; Contains Egg</label>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4 text-right">
+                                                                                {% if c %}
+                                                                                <input id="{{form_thurs.contains_chicken.id}}" type="checkbox" name="contains_chicken" checked>
+                                                                                {% else %}
+                                                                                <input id="{{form_thurs.contains_chicken.id}}" type="checkbox" name="contains_chicken">
+                                                                                {% endif %}
+                                                                            </div>
+                                                                            <div class="col-xl-8">
+                                                                                <label for="{{form_thurs.contains_chicken.id}}"><i class="fas fa-drumstick-bite"></i> &emsp; Contains Chicken</label>
                                                                             </div>
                                                                         </div>
                                                                     </div>
@@ -459,12 +554,12 @@
                                                         {{en.items}}
                                                         {% if v %}
                                                             <i class="fa fa-leaf"></i>
-                                                        {% else %}
-                                                            {% if e %}
-                                                                <i class="fas fa-egg"></i>
-                                                            {% else %}
-                                                                <i class="fas fa-drumstick-bite"></i>
-                                                            {%endif%}
+                                                        {%endif%}
+                                                        {% if e %}
+                                                            <i class="fas fa-egg"></i>
+                                                        {%endif%}
+                                                        {% if c %}
+                                                            <i class="fas fa-drumstick-bite"></i>
                                                         {%endif%}
                                                     </button>
                                                     <!-- Modal -->
@@ -503,16 +598,42 @@
                                                                             </div>
                                                                         </div>
                                                                         <div class="row">
-                                                                            <div class="col-xl-4">
-                                                                                <label for="{{form_fri.category.id}}">Category:</label>
+                                                                            <div class="col-xl-8"><label>Check the ones that apply:</label></div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4 text-right">
+                                                                                {% if v %}
+                                                                                <input id="{{form_fri.special_menu.id}}" type="checkbox" name="special_menu" checked>
+                                                                                {% else %}
+                                                                                <input id="{{form_fri.special_menu.id}}" type="checkbox" name="special_menu">
+                                                                                {% endif %}
                                                                             </div>
-                                                                            <div class="col-xl-4">
-                                                                                <input id="{{form_fri.category.id}}" type="text" name="category"  list="category_fri{{en.id}}">
-                                                                                <datalist id="category_fri{{en.id}}">
-                                                                                  <option value="veg">
-                                                                                  <option value="egg">
-                                                                                  <option value="chicken">
-                                                                                </datalist>
+                                                                            <div class="col-xl-8">
+                                                                                <label for="{{form_fri.special_menu.id}}"><i class="fa fa-leaf"></i> &emsp; Special Menu Items</label>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4 text-right">
+                                                                                {% if e %}
+                                                                                <input id="{{form_fri.contains_egg.id}}" type="checkbox" name="contains_egg" checked>
+                                                                                {% else %}
+                                                                                <input id="{{form_fri.contains_egg.id}}" type="checkbox" name="contains_egg">
+                                                                                {% endif %}
+                                                                            </div>
+                                                                            <div class="col-xl-8">
+                                                                                <label for="{{form_fri.contains_egg.id}}"><i class="fas fa-egg"></i> &emsp; Contains Egg</label>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4 text-right">
+                                                                                {% if c %}
+                                                                                <input id="{{form_fri.contains_chicken.id}}" type="checkbox" name="contains_chicken" checked>
+                                                                                {% else %}
+                                                                                <input id="{{form_fri.contains_chicken.id}}" type="checkbox" name="contains_chicken">
+                                                                                {% endif %}
+                                                                            </div>
+                                                                            <div class="col-xl-8">
+                                                                                <label for="{{form_fri.contains_chicken.id}}"><i class="fas fa-drumstick-bite"></i> &emsp; Contains Chicken</label>
                                                                             </div>
                                                                         </div>
                                                                     </div>
@@ -537,12 +658,12 @@
                                                         {{en.items}}
                                                         {% if v %}
                                                             <i class="fa fa-leaf"></i>
-                                                        {% else %}
-                                                            {% if e %}
-                                                                <i class="fas fa-egg"></i>
-                                                            {% else %}
-                                                                <i class="fas fa-drumstick-bite"></i>
-                                                            {%endif%}
+                                                        {%endif%}
+                                                        {% if e %}
+                                                            <i class="fas fa-egg"></i>
+                                                        {%endif%}
+                                                        {% if c %}
+                                                            <i class="fas fa-drumstick-bite"></i>
                                                         {%endif%}
                                                     </button>
                                                     <!-- Modal -->
@@ -581,16 +702,42 @@
                                                                             </div>
                                                                         </div>
                                                                         <div class="row">
-                                                                            <div class="col-xl-4">
-                                                                                <label for="{{form_sat.category.id}}">Category:</label>
+                                                                            <div class="col-xl-8"><label>Check the ones that apply:</label></div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4 text-right">
+                                                                                {% if v %}
+                                                                                <input id="{{form_sat.special_menu.id}}" type="checkbox" name="special_menu" checked>
+                                                                                {% else %}
+                                                                                <input id="{{form_sat.special_menu.id}}" type="checkbox" name="special_menu">
+                                                                                {% endif %}
                                                                             </div>
-                                                                            <div class="col-xl-4">
-                                                                                <input id="{{form_sat.category.id}}" type="text" name="category"  list="category_sat{{en.id}}">
-                                                                                <datalist id="category_sat{{en.id}}">
-                                                                                  <option value="veg">
-                                                                                  <option value="egg">
-                                                                                  <option value="chicken">
-                                                                                </datalist>
+                                                                            <div class="col-xl-8">
+                                                                                <label for="{{form_sat.special_menu.id}}"><i class="fa fa-leaf"></i> &emsp; Special Menu Items</label>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4 text-right">
+                                                                                {% if e %}
+                                                                                <input id="{{form_sat.contains_egg.id}}" type="checkbox" name="contains_egg" checked>
+                                                                                {% else %}
+                                                                                <input id="{{form_sat.contains_egg.id}}" type="checkbox" name="contains_egg">
+                                                                                {% endif %}
+                                                                            </div>
+                                                                            <div class="col-xl-8">
+                                                                                <label for="{{form_sat.contains_egg.id}}"><i class="fas fa-egg"></i> &emsp; Contains Egg</label>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4 text-right">
+                                                                                {% if c %}
+                                                                                <input id="{{form_sat.contains_chicken.id}}" type="checkbox" name="contains_chicken" checked>
+                                                                                {% else %}
+                                                                                <input id="{{form_sat.contains_chicken.id}}" type="checkbox" name="contains_chicken">
+                                                                                {% endif %}
+                                                                            </div>
+                                                                            <div class="col-xl-8">
+                                                                                <label for="{{form_sat.contains_chicken.id}}"><i class="fas fa-drumstick-bite"></i> &emsp; Contains Chicken</label>
                                                                             </div>
                                                                         </div>
                                                                     </div>
@@ -615,12 +762,12 @@
                                                         {{en.items}}
                                                         {% if v %}
                                                             <i class="fa fa-leaf"></i>
-                                                        {% else %}
-                                                            {% if e %}
-                                                                <i class="fas fa-egg"></i>
-                                                            {% else %}
-                                                                <i class="fas fa-drumstick-bite"></i>
-                                                            {%endif%}
+                                                        {%endif%}
+                                                        {% if e %}
+                                                            <i class="fas fa-egg"></i>
+                                                        {%endif%}
+                                                        {% if c %}
+                                                            <i class="fas fa-drumstick-bite"></i>
                                                         {%endif%}
                                                     </button>
                                                     <!-- Modal -->
@@ -660,16 +807,42 @@
                                                                         </div>
 
                                                                         <div class="row">
-                                                                            <div class="col-xl-4">
-                                                                                <label for="{{form_sun.category.id}}">Category:</label>
+                                                                            <div class="col-xl-8"><label>Check the ones that apply:</label></div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4 text-right">
+                                                                                {% if v %}
+                                                                                <input id="{{form_sun.special_menu.id}}" type="checkbox" name="special_menu" checked>
+                                                                                {% else %}
+                                                                                <input id="{{form_sun.special_menu.id}}" type="checkbox" name="special_menu">
+                                                                                {% endif %}
                                                                             </div>
-                                                                            <div class="col-xl-4">
-                                                                                <input id="{{form_sun.category.id}}" type="text" name="category"  list="category_sun{{en.id}}">
-                                                                                <datalist id="category_sun{{en.id}}">
-                                                                                  <option value="veg">
-                                                                                  <option value="egg">
-                                                                                  <option value="chicken">
-                                                                                </datalist>
+                                                                            <div class="col-xl-8">
+                                                                                <label for="{{form_sun.special_menu.id}}"><i class="fa fa-leaf"></i> &emsp; Special Menu Items</label>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4 text-right">
+                                                                                {% if e %}
+                                                                                <input id="{{form_sun.contains_egg.id}}" type="checkbox" name="contains_egg" checked>
+                                                                                {% else %}
+                                                                                <input id="{{form_sun.contains_egg.id}}" type="checkbox" name="contains_egg">
+                                                                                {% endif %}
+                                                                            </div>
+                                                                            <div class="col-xl-8">
+                                                                                <label for="{{form_sun.contains_egg.id}}"><i class="fas fa-egg"></i> &emsp; Contains Egg</label>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4 text-right">
+                                                                                {% if c %}
+                                                                                <input id="{{form_sun.contains_chicken.id}}" type="checkbox" name="contains_chicken" checked>
+                                                                                {% else %}
+                                                                                <input id="{{form_sun.contains_chicken.id}}" type="checkbox" name="contains_chicken">
+                                                                                {% endif %}
+                                                                            </div>
+                                                                            <div class="col-xl-8">
+                                                                                <label for="{{form_sun.contains_chicken.id}}"><i class="fas fa-drumstick-bite"></i> &emsp; Contains Chicken</label>
                                                                             </div>
                                                                         </div>
                                                                     </div>
@@ -700,7 +873,7 @@
                                     <div class="modal-dialog" role="document">
                                         <div class="modal-content">
                                             <div class="modal-header">
-                                                <h5 class="modal-title" id="AddEntryLabel">Add New Special Menu</h5>
+                                                <h5 class="modal-title" id="AddEntryLabel">Add New Special Menu Items Entry</h5>
                                                 <button class="close" type="button" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
                                             </div>
                                             <form  method="POST" enctype="multipart/form-data">
