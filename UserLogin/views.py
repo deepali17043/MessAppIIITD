@@ -1,93 +1,32 @@
-import csv, io
-import pytz, ast
-from .tasks import daily_create_mess_objects
+import calendar
+import csv
+import io
+import sys
+
+import ast
+import pytz
 from background_task.models import Task
+from django.contrib.auth import login, logout
+from django.contrib.auth.forms import AuthenticationForm
 from django.http import Http404
 from django.shortcuts import render, redirect
 from django.views.generic import CreateView
+from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.exceptions import ParseError
-from rest_framework.parsers import FileUploadParser
-from rest_framework.renderers import TemplateHTMLRenderer
-from rest_framework.authtoken import views
-from celery.schedules import crontab
-
-from celery import shared_task
-from .forms import *
-from .models import *
-from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth import login, logout
-from django.urls import resolve
-import datetime, calendar
-from .serializers import *
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status, generics
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
+from .forms import *
 from .meal_timings import *
+from .serializers import *
+from .tasks import daily_create_mess_objects
 
-import urllib
-import json
-import sys
 
-# from celery.schedules import crontab
-# from celery.task import periodic_task
-
-# _________________________________________________________________________________________________
+# Global timezone variable for easy access.
 IST = pytz.timezone('Asia/Kolkata')
 
 
-class SignUp(CreateView):
-    form_class = CustomUserCreationForm
-    success_url = '/login/'
-
-    def __init__(self):
-        self.template_name = 'signup.html'
-
-
-# _________________________________________________________________________________________________
-
-
-def homePage(request):
-    # create account or login to existing.
-    tasks = Task.objects.filter(verbose_name='CreatingMessObjs')
-    if len(tasks) == 0:
-        daily_create_mess_objects(repeat=60*60*24, verbose_name='CreatingMessObjs')
-    else:
-        pass
-        # print("something")
-    return redirect('web-login')
-
-
-@api_view(['POST', ])
-@permission_classes([IsAuthenticated, ])
-def logoutuser(request):
-    try:
-        request.user.auth_token.delete()
-    except:
-        pass
-    return Response(status=status.HTTP_200_OK)
-
-
-@api_view(['POST', ])
-def signup(request):
-    serializer = RegistrationSerializer(data=request.data)
-    # print(request.data)
-    return_data = {}
-    if serializer.is_valid():
-        user_account = serializer.save()
-        return_data['response'] = 'successful registration'
-        return_data['username'] = user_account.username
-        return_data['email'] = user_account.email
-        return_data['type'] = user_account.type
-
-        # Remove when coupon system resumes:
-        create_mess_objects(user_account, numdays=31)
-    else:
-        return_data = serializer.errors
-    return Response(return_data)
-
-
+# Functions used by several view functions
 def create_mess_objects(user_account, numdays=7):
     user = User.objects.get(username=user_account.username)
     mess_user_qset = MessUser.objects.filter(user=user)
@@ -116,9 +55,103 @@ def create_mess_objects(user_account, numdays=7):
     return
 
 
+def editable_meal(meal, now, date_cur):
+    """
+    Function to check if a meal is editable
+    :param meal: meal name from Breakfast/Lunch/Snacks/Dinner
+    :param now: datetime object corresponding to the date and time at the present moment.
+    :param date_cur: check the if a meal on date specified by this parameter is editable.
+    :return: True for editable, False for not.
+    """
+    if now.date() > date_cur:
+        return False
+    try:
+        deadline = MealDeadline.objects.get(date=date_cur, meal=meal)
+        hrs = deadline.hours
+    except:
+        default_deadline = DefaultDeadline.objects.get(meal=meal)
+        hrs = default_deadline.hours
+    meal_deadline = now + datetime.timedelta(hours=hrs)
+    if meal_deadline.date() < date_cur:
+        return True
+    elif meal_deadline.date() > date_cur:
+        return False
+    if meal == 'Breakfast':
+        return meal_deadline.hour < breakfast_time
+    elif meal == 'Lunch':
+        return meal_deadline.hour < lunch_time
+    elif meal == 'Snacks':
+        return meal_deadline.hour < snacks_time
+    else:
+        return meal_deadline.hour < dinner_time
+
+
+# _____________________________________ View Functions _____________________________________
+def homePage(request):
+    """
+    Corresponding to the landing page of the website.
+    Starts the parallel task if it isn't already running
+    Redirects to a login page.
+    :param request: Django Request Object
+    :return: redirection to Login Page
+    """
+    tasks = Task.objects.filter(verbose_name='CreatingMessObjs')
+    if len(tasks) == 0:
+        daily_create_mess_objects(repeat=60*60*24, verbose_name='CreatingMessObjs')
+    else:
+        pass
+    return redirect('web-login')
+
+
+# _____________________________________ Basic API Functions _____________________________________
+@api_view(['POST', ])
+@permission_classes([IsAuthenticated, ])
+def logoutuser(request):
+    """
+    Logout from Mobile App, delete the Authentication Token for the user (log out of all devices)
+    :param request: Django Rest Framework Request Object
+        :headers Authorization Token
+    :return: HTTP 200 Status
+    """
+    try:
+        request.user.auth_token.delete()
+    except:
+        pass
+    return Response(status=status.HTTP_200_OK)
+
+
+@api_view(['POST', ])
+def signup(request):
+    """
+    API signup for a new user.
+    :param request: Django Rest Framework Sign Up
+        :headers username, email, type, name, password, validate_password.
+    :return: serialised registered user object, if registration was successful
+        otherwise, serialiser errors.
+    """
+    serializer = RegistrationSerializer(data=request.data)
+    return_data = {}
+    if serializer.is_valid():
+        user_account = serializer.save()
+        return_data['response'] = 'successful registration'
+        return_data['username'] = user_account.username
+        return_data['email'] = user_account.email
+        return_data['type'] = user_account.type
+        create_mess_objects(user_account, numdays=31)
+    else:
+        return_data = serializer.errors
+    return Response(return_data)
+
+
 @api_view(['POST', ])
 @permission_classes([IsAuthenticated, ])
 def dashboardAPI(request):
+    """
+    For customer screen corresponding to vendor list.
+    :param request: Django Rest Framework (DRF) request object
+            :headers Authorization Token
+    :return: serialised list of vendors.
+    """
     user = request.user
     if user.type == 'vendor':
         raise Http404('please use web app')
@@ -129,23 +162,39 @@ def dashboardAPI(request):
     raise Http404('invalid user type')
 
 
-# ============================================Vendor===============================================
+# ============================================ Vendor ===============================================
+# The following functions are for Canteen Vendors, etc
+def checkVendor(request):
+    """
+    Function to check if user sending the request is a vendor or not
+    Raises 404 error if the user is not a vendor
+    :param request: Django Request object.
+    :return: None
+    """
+    user = User.objects.get(username=request.user.username)
+    if not user.type == 'vendor':
+        raise Http404('Invalid URL')
 
 
 def vendorDashboard(request):
+    """
+    Rendors Vendor Dashboard containing all orders that are placed and have not been prepared.
+    :param request: Django Request object
+    :return: HTML render
+    """
+    checkVendor(request)
     orders = Cart.objects.filter(item__vendor=request.user, orderPlaced=1).exclude(status='Prepared') \
         .order_by('orderTime')
     args = {'orders': orders, }
     return render(request, 'Vendor/Home.html', args)
 
 
-def checkVendor(request):
-    user = User.objects.get(username=request.user.username)
-    if user.type == 'customer':
-        raise Http404('Invalid URL')
-
-
 def vendorMenu(request):
+    """
+    Function that renders the Menu screen for a vendor
+    :param request: Django request object
+    :return: rendered HTML
+    """
     checkVendor(request)
     menu = MenuItems.objects.filter(vendor=request.user, hidden=False)
     args = {'menu': menu, }
@@ -153,6 +202,12 @@ def vendorMenu(request):
 
 
 def addItem(request):
+    """
+    Renders screen for adding a menu item.
+    Asks vendor to add details of the item through a form.
+    :param request: Django Request object
+    :return: rendered HTML
+    """
     checkVendor(request)
     if request.method == 'POST':
         form = AddMenuItem(request.POST)
@@ -170,16 +225,20 @@ def addItem(request):
 
 
 def addItems(request):
+    """
+    Renders screen for adding menu items read from an uploaded csv file.
+    Asks vendor to upload the file using the form.
+    :param request: Django Request object
+    :return: rendered HTML
+    """
     if request.method == 'GET':
         return render(request, 'Vendor/AddMenuItems.html')
-
     csv_file = request.FILES['file']
     if not csv_file.name.endswith('.csv'):
         raise Http404('THIS IS NOT A CSV FILE')
     data_set = csv_file.read().decode('UTF-8')
     io_string = io.StringIO(data_set)
     for row in csv.reader(io_string, delimiter=',', quotechar="|"):
-        # print(row)
         if len(row) <= 1:
             break
         MenuItems.objects.update_or_create(
@@ -191,6 +250,11 @@ def addItems(request):
 
 
 def removeItems(request):
+    """
+    Renders the HTML for displaying the list of menu items and providing the options to remove them
+    :param request: Django Request object
+    :return: rendered HTML
+    """
     checkVendor(request)
     menu = MenuItems.objects.filter(vendor=request.user)
     args = {'menu': menu}
@@ -198,6 +262,12 @@ def removeItems(request):
 
 
 def removeMenuItem(request, id):
+    """
+    Processes the removal request for a menu item
+    :param request: Django Request Object
+    :param id: id of the item to be removed
+    :return: redirection to vendor/menu/removeitem/
+    """
     checkVendor(request)
     instance = MenuItems.objects.get(id=id)
     instance.delete()
@@ -205,6 +275,11 @@ def removeMenuItem(request, id):
 
 
 def hideItems(request):
+    """
+    Renders the list of items to an HTML that can be hidden
+    :param request: Django Request object
+    :return: rendered HTML
+    """
     checkVendor(request)
     menu = MenuItems.objects.filter(vendor=request.user, hidden=False)
     args = {'menu': menu}
@@ -212,6 +287,12 @@ def hideItems(request):
 
 
 def hideMenuItem(request, id):
+    """
+    Processes the request for hiding a menu item
+    :param request: Django Request Object
+    :param id: id of the item to be hidden
+    :return: redirection to vendor/menu/hideitem/
+    """
     checkVendor(request)
     instance = MenuItems.objects.get(id=id)
     instance.hidden = True
@@ -220,6 +301,11 @@ def hideMenuItem(request, id):
 
 
 def unHideItems(request):
+    """
+    Renders the list of items to an HTML that can be un-hidden
+    :param request: Django Request object
+    :return: rendered HTML
+    """
     checkVendor(request)
     menu = MenuItems.objects.filter(vendor=request.user, hidden=True)
     args = {'menu': menu}
@@ -227,6 +313,12 @@ def unHideItems(request):
 
 
 def unHideMenuItem(request, id):
+    """
+    Processes request to show a hidden item on menu
+    :param request: Django Request object
+    :param id: id of the hidden object
+    :return: redirection to 'Unhide Items list'
+    """
     checkVendor(request)
     instance = MenuItems.objects.get(id=id)
     instance.hidden = False
@@ -235,6 +327,13 @@ def unHideMenuItem(request, id):
 
 
 def updateOrderStatus(request, cartItemId):
+    """
+    When the vendor views orders they can update the status of the order to 'Being prepared' and then 'Prepared'
+    This function caters to these updates
+    :param request: Django request object
+    :param cartItemId: Id of the item that has to be updated
+    :return: redirection to order list view
+    """
     checkVendor(request)
     vendor = request.user
     cartItem = Cart.objects.get(id=cartItemId)
@@ -250,10 +349,16 @@ def updateOrderStatus(request, cartItemId):
     return redirect('personalised-dashboard')
 
 
-# ===========================================Customer==============================================
+# ======================================== Customer (Interactions with Vendor) ========================================
 def checkCustomer(request):
+    """
+    Function to check if the current user is a customer
+    Raises HTTP404 error in case the user is not a customer
+    :param request: Django Request Object
+    :return: None
+    """
     user = request.user
-    if user.type == 'vendor' or user.type == 'mess-vendor':
+    if not user.type == 'customer':
         raise Http404('invalid Url')
     return
 
@@ -261,6 +366,12 @@ def checkCustomer(request):
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated, ])
 def viewVendorMenuAPI(request):
+    """
+    API request pertaining to Viewing a vendor's menu
+    :param request: DRF request object
+        headers: Auth Token, vendor (username)
+    :return: serialised data containing menu, ordered items, cart items.
+    """
     checkCustomer(request)
     vendor = User.objects.get(username=request.headers['vendor'])
     menu = MenuItems.objects.all().filter(vendor=vendor, hidden=False)
@@ -287,13 +398,23 @@ def viewVendorMenuAPI(request):
 @api_view(['POST', ])
 @permission_classes([IsAuthenticated, ])
 def addToCartAPI(request):
+    """
+    Processes API request to add a menu item to cart.
+    :param request: Django Rest Framework request object
+        headers:    itemID - ID of the item to be added to cart
+                    vendorID - Id of the vendor providing the item
+                    Authorization Token
+    :return: serialised cart object
+    """
     checkCustomer(request)
     item = MenuItems.objects.get(id=request.headers['itemID'])
     vendor = User.objects.get(id=request.headers['vendorID'])
     if item.vendor != vendor:
+        # The item should be provided by the vendor
         raise Http404('Error in the URL you entered.')
     it = Cart.objects.all().filter(customer=request.user, item=item, status='Added to Cart')
     if len(it) == 0:
+        # If the user hasn't already added this item to the cart
         Cart.objects.update_or_create(
             item=item,
             customer=request.user,
@@ -302,6 +423,7 @@ def addToCartAPI(request):
             qty=1,
         )
     else:
+        # If the user has already added the item to cart.
         for i in it:
             i.qty += 1
             i.save()
@@ -314,7 +436,14 @@ def addToCartAPI(request):
 @api_view(['POST', ])
 @permission_classes([IsAuthenticated, ])
 def reduceQtyAPI(request):
-    checkCustomer(request)
+    """
+    Processes API request to reduce the quantity of a menu item in cart.
+    :param request: Django Rest Framework request object
+        headers:    itemID - ID of the item to be added to cart
+                    vendorID - Id of the vendor providing the item
+                    Authorization Token
+    :return: successful update response
+    """
     itemID = request.headers['itemID']
     vendorID = request.headers['vendorID']
     item = Cart.objects.get(id=itemID)
@@ -326,8 +455,10 @@ def reduceQtyAPI(request):
         raise Http404('The URL has some error')
     item.qty -= 1
     if item.qty == 0:
+        # Delete the item from cart if the quantity was previously one
         item.delete()
     else:
+        # Save changes to the item entry if the quantity was > 1
         item.save()
     response_data = {
         'response': 'successfully updated'
@@ -338,6 +469,14 @@ def reduceQtyAPI(request):
 @api_view(['POST', ])
 @permission_classes([IsAuthenticated, ])
 def increaseQtyAPI(request):
+    """
+    Increase the Quantity of a given item in the cart.
+    :param request: Django Rest Framework request object
+        headers:    itemID - ID of the item to be added to cart
+                    vendorID - Id of the vendor providing the item
+                    Authorization Token
+    :return: successful update response
+    """
     checkCustomer(request)
     itemID = request.headers['itemID']
     vendorID = request.headers['vendorID']
@@ -360,6 +499,12 @@ def increaseQtyAPI(request):
 @api_view(['POST', ])
 @permission_classes([IsAuthenticated, ])
 def viewCartAPI(request):
+    """
+    API request to view a user's cart.
+    :param request: Django Rest Framework request object
+        headers: Authorization Token
+    :return: Dictionary containing total price of the items in cart and cart items list.
+    """
     checkCustomer(request)
     user = request.user
     items = Cart.objects.all().filter(customer=user, orderPlaced=0)
@@ -376,6 +521,12 @@ def viewCartAPI(request):
 @api_view(['POST', ])
 @permission_classes([IsAuthenticated, ])
 def placeOrderAPI(request):
+    """
+    API Request to place order of items present in cart
+    :param request: Django Rest Framework request object
+        headers: Authorization Token
+    :return: succesful update response
+    """
     checkCustomer(request)
     user = request.user
     items = Cart.objects.all().filter(customer=user, orderPlaced=0)
@@ -394,6 +545,12 @@ def placeOrderAPI(request):
 @api_view(['POST', ])
 @permission_classes([IsAuthenticated, ])
 def orderDetailsAPI(request):
+    """
+    API request to view order details
+    :param request: Django Rest Framework request object
+        headers: Authorization Token
+    :return: serialised data containing bill.
+    """
     checkCustomer(request)
     user = request.user
     items = Cart.objects.all().filter(customer=user, orderPlaced=1)
@@ -405,7 +562,6 @@ def orderDetailsAPI(request):
         k = i.status == 'Prepared'
         serialized_i = CartSerializer(i)
         cart.append({'item': serialized_i, 'price*qty': tmp, 'prepared': k})
-    # print(cart)
     args = {'cart': cart, 'total': total}
     return Response(args)
 
@@ -413,6 +569,13 @@ def orderDetailsAPI(request):
 @api_view(['POST', ])
 @permission_classes([IsAuthenticated, ])
 def collectedOrderAPI(request):
+    """
+    API request to update status of an order that has been collected from the vendor stall
+    :param request: Django Rest Framework request object
+        headers:     Authorization Token
+                    orders: list of orderIDs
+    :return: successful update response
+    """
     checkCustomer(request)
     orders = request.headers['orders']
     for orderId in orders:
@@ -426,9 +589,17 @@ def collectedOrderAPI(request):
     return Response(response_data)
 
 
+# ======================================== Customer (Interactions with Mess) ========================================
 @api_view(['POST', ])
 @permission_classes([IsAuthenticated, ])
 def messAttendanceAPI(request):
+    """
+    API request to get data for the home screen of Mess Attendance Interface Dashboard. (Present Dashboard)
+    [TESTED + INTEGRATED]
+    :param request: Django Rest Framework request object
+        headers: Authorization Token
+    :return: serialised data containing corresponding MessUser object details and their attendance for upcoming 3 days.
+    """
     checkCustomer(request)
     user = request.user
     mess_user = MessUser.objects.get(user=user)
@@ -454,8 +625,15 @@ def messAttendanceAPI(request):
 @api_view(['POST', ])
 @permission_classes([IsAuthenticated, ])
 def messScheduleAPI(request):
+    """
+    API request corresponding to calendar schedule page. Returns the attendance objects for 31 days
+    (starting from "today" - for the user)
+    [TESTED + INTEGRATED]
+    :param request: Django Rest Framework request object
+        headers: Authorization Token
+    :return: serialised attendance objects for 31 days.
+    """
     checkCustomer(request)
-    # print(request.user.username)
     mess_user = MessUser.objects.get(user=request.user)
     now = datetime.datetime.now(IST)
     attendance = []
@@ -468,54 +646,22 @@ def messScheduleAPI(request):
     date_start = datetime.date(year=now.year, month=now.month, day=now.day)
     date_end = date_start + datetime.timedelta(days=numdays)
 
-    attendance_qset = MessAttendance.objects.filter(user=mess_user).filter(date__range=[date_start, date_end]).order_by('date')
-    # cnt = numdays * 4
-    # if attendance_qset.count() < cnt:
-    #     create_mess_objects(request.user, numdays)
-    #     attendance_qset = MessAttendance.objects.filter(user=mess_user).filter(date__range=[date_start, date_end]).order_by('date')
-    #     print(attendance_qset.count())
+    attendance_qset = MessAttendance.objects.filter(user=mess_user).filter(date__range=[date_start, date_end])\
+        .order_by('date')
+    # Check to see if the objects exist - they would because of the parallel task that runs along with the server
+    cnt = numdays * 4
+    if attendance_qset.count() < cnt:
+        create_mess_objects(request.user, numdays)
+        attendance_qset = MessAttendance.objects.filter(user=mess_user).filter(date__range=[date_start, date_end])\
+            .order_by('date')
+        print(attendance_qset.count())
     prev = False
     for q in attendance_qset:
         if not q.editable:
             attendance.append(q)
             continue
         if not prev:
-            q.editable = editable_meal(q.meal, now, q.date)
-            q.save()
-            prev = q.editable
-        attendance.append(q)
-        # print(q.date, 'jkhsdbkjhdfbdfs')
-    serializer = MessAttendanceSerializer(attendance, many=True)
-    response_data = {'attendance': serializer.data, }
-    return Response(response_data)
-
-
-@api_view(['POST', ])
-@permission_classes([IsAuthenticated, ])
-def tmp(request):
-    # print(crontab(hour='15', minute='44'))
-    checkCustomer(request)
-    mess_user = MessUser.objects.get(user=request.user)
-    now = datetime.datetime.now(IST)
-    attendance = []
-    # numdays = 7  # returning the data for seven days.
-    # date_start = now.date()
-    # date_end = (now + datetime.timedelta(days=numdays-1)).date()
-
-    numdays = calendar.monthrange(now.year, now.month)[1]
-    # date_start = datetime.date(year=now.year, month=now.month+1, day=1)
-    date_end = datetime.date(year=now.year, month=now.month, day=1)
-
-    attendance_qset = MessAttendance.objects.filter(user=mess_user).filter(date__gt=date_end).order_by('date')
-    # if attendance_qset.count() < cnt:
-    #     create_mess_objects(request.user, numdays)
-    #     attendance_qset = MessAttendance.objects.filter(user=mess_user).filter(date__range=[date_start, date_end]).order_by('date')
-    prev = False
-    for q in attendance_qset:
-        if not q.editable:
-            attendance.append(q)
-            continue
-        if not prev:
+            # check if a meal is editable only if the previous meal was not editable, i.e. deadline had passed.
             q.editable = editable_meal(q.meal, now, q.date)
             q.save()
             prev = q.editable
@@ -523,56 +669,35 @@ def tmp(request):
     serializer = MessAttendanceSerializer(attendance, many=True)
     response_data = {'attendance': serializer.data, }
     return Response(response_data)
-
-
-def editable_meal(meal, now, date_cur):
-    if now.date() > date_cur:
-        return False
-    try:
-        deadline = MealDeadline.objects.get(date=date_cur, meal=meal)
-        hrs = deadline.hours
-    except:
-        default_deadline = DefaultDeadline.objects.get(meal=meal)
-        hrs = default_deadline.hours
-    meal_deadline = now + datetime.timedelta(hours=hrs)
-    if meal_deadline.date() < date_cur:
-        return True
-    elif meal_deadline.date() > date_cur:
-        return False
-    if meal == 'Breakfast':
-        return meal_deadline.hour < breakfast_time
-    elif meal == 'Lunch':
-        return meal_deadline.hour < lunch_time
-    elif meal == 'Snacks':
-        return meal_deadline.hour < snacks_time
-    else:
-        return meal_deadline.hour < dinner_time
 
 
 @api_view(['POST', ])
 @permission_classes([IsAuthenticated, ])
 def editMessScheduleAPI(request):
+    """
+    API request corresponding to editing the marked attendance for meals on dates specified by the user.
+    [TESTED + INTEGRATED]
+    :param request: Django Rest Framework request object
+        headers: Authorization Token
+                attendance: list of dictionaries with each dictionary containing: date, meals (list of meals)
+                            example: [{'date': '2021-05-10', 'meals': ['Breakfast', 'Lunch']}, ..]
+    :return: HTTP 200 Ok response, with any dates that were uneditable.
+    """
     checkCustomer(request)
     user = request.user
     mess_user = MessUser.objects.get(user=user)
-    edit_attendance = ast.literal_eval(request.headers['attendance'])
-    """ attendance (list of dictionaries) - date, meals(list of meals) """
+    edit_attendance = ast.literal_eval(request.headers['attendance'])  # convert the data into a JSON object
     attendance_qset = MessAttendance.objects.all().filter(user=mess_user)
-    # print(attendance_qset)
     response_data = {}
     now = datetime.datetime.now(IST)
-    date_today = datetime.date(now.year, now.month, now.day)
     uneditable = list()
     for day in edit_attendance:
         year = int(day['date'][0:4])
         month = int(day['date'][5:7])
         d = int(day['date'][8:])
         date_cur = datetime.date(year, month, d)
-        # print('date_cur', date_cur)
         qset = attendance_qset.filter(date=date_cur)
-        # print(qset)
         for meal in day['meals']:
-            # print(meal)
             try:
                 tmp = qset.get(meal=meal)
             except:
@@ -592,15 +717,19 @@ def editMessScheduleAPI(request):
 @api_view(['POST', ])
 @permission_classes([IsAuthenticated, ])
 def sendFeedback(request):
+    """
+    API request corresponding to sending feedback for the mess.
+    [TESTED + INTEGRATED]
+    :param request: Django Rest Framework request object
+        headers: Authorization Token, meal, ForDate, feedback
+    :return: any serialisation errors.
+    """
     checkCustomer(request)
     user = request.user
     serializer = FeedbackSerializer(data=request.headers)
-    # print(request.headers)
     return_data = {}
     if serializer.is_valid():
         user_feedback = serializer.validated_data
-        # print(user_feedback)
-        # print(request.headers['ForDate'])
         return_data['response'] = 'successful submission'
         return_data['feedback'] = user_feedback['feedback']
         return_data['ForDate'] = request.headers['ForDate']
@@ -619,7 +748,13 @@ def sendFeedback(request):
 @api_view(['POST', ])
 @permission_classes([IsAuthenticated, ])
 def viewPrevFeedbacks(request):
-    # checkCustomer(request)
+    """
+    API request corresponding to viewing a user's own feedback status for the mess.
+    [TESTED + INTEGRATED]
+    :param request: Django Rest Framework request object
+        headers: Authorization Token
+    :return: serialised response of list of feedback objects
+    """
     user = request.user
     if user.type == 'customer' or user.type == 'admin':
         Feedbacks = Feedback.objects.filter(user=user).order_by('-date')
@@ -632,9 +767,16 @@ def viewPrevFeedbacks(request):
 @api_view(['POST', ])
 @permission_classes([IsAuthenticated, ])
 def getDateBasedMessMenu(request):
+    """
+    API request corresponding to viewing Special (Occasional) Mess Menu .
+    [TESTED + INTEGRATED]
+    :param request: Django Rest Framework request object
+        headers: Authorization Token, ForDate
+    :return: serialised menu for specified date
+    """
     checkCustomer(request)
     days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-    date_str = request.headers['for_date']
+    date_str = request.headers['ForDate']
     year = int(date_str[:4])
     month = int(date_str[5:7])
     day = int(date_str[8:])
@@ -663,6 +805,13 @@ def getDateBasedMessMenu(request):
 @api_view(['POST', ])
 @permission_classes([IsAuthenticated, ])
 def getDefaultMessMenu(request):
+    """
+    API request corresponding to viewing Weekly Mess Menu .
+    [TESTED + INTEGRATED]
+    :param request: Django Rest Framework request object
+        headers: Authorization Token
+    :return: Serialised Weekly Menu
+    """
     checkCustomer(request)
     weekly_menu = DefaultMessMenu.objects.all()
     serializer = DefaultMessMenuSerializer(weekly_menu, many=True)
@@ -673,17 +822,21 @@ def getDefaultMessMenu(request):
 @api_view(['POST', ])
 @permission_classes([IsAuthenticated, ])
 def sendAppFeedback(request):
+    """
+    API request corresponding to sending feedback for app.
+    [TESTED + INTEGRATED]
+    :param request: Django Rest Framework request object
+        headers: Authorization Token, feedback
+    :return: any serialiser errors, if not Okay response.
+    """
     checkCustomer(request)
     user = request.user
-    # print(request.headers)
     serializer = AppFeedbackSerializer(data=request.headers)
     return_data = {}
     if serializer.is_valid():
         user_feedback = serializer.validated_data
-        # print(serializer.data)
         return_data['status'] = status.HTTP_200_OK
         now = datetime.datetime.now(IST)
-        # print(user_feedback.keys())
         resp = user_feedback['feedback']
         AppFeedback.objects.update_or_create(
             user=user,
@@ -695,9 +848,16 @@ def sendAppFeedback(request):
     return Response(return_data)
 
 
-# ___________________________________Web____________________________________
+# ======================================== Mess Admin and Mess Vendors ========================================
+# All have been tested.
 def web_signup(request):
+    """
+    Sign up page on web App
+    :param request: Django request object
+    :return: rendered HTML
+    """
     try:
+        # If the request object has details of an authorised user, redirect them to their dashboard.
         User.objects.get(username=request.user)
         return redirect('web-home')
     except:
@@ -717,7 +877,13 @@ def web_signup(request):
 
 
 def web_login(request):
+    """
+    Login page on web App
+    :param request: Django request object
+    :return: rendered HTML
+    """
     try:
+        # If the request object has details of an authorised user, redirect them to their dashboard.
         User.objects.get(username=request.user)
         return redirect('web-home')
     except:
@@ -743,12 +909,18 @@ def web_login(request):
 
 
 def web_logout(request):
+    """
+    Web App processes logout request.
+    :param request: Django request object
+    :return: redirection to login page.
+    """
     try:
         user = User.objects.get(username=request.user)
     except:
         raise Http404('Not authorized')
     if user.type == 'customer':
         raise Http404('Not authorized')
+    # Library function called
     logout(request)
     return redirect('web-login')
 
@@ -766,19 +938,26 @@ def home(request):
 
 
 def messHome(request):
+    """
+    Processing data to be presented on Admin/Vendor's home page.
+    :param request: Django Request object
+    :return: rendered HTML
+    """
+    # Check if the user is an admin
     try:
         user = User.objects.get(username=request.user)
     except:
         raise Http404('Not authorized')
     if not (user.type == 'admin' or user.type == 'mess-vendor'):
         raise Http404('Not authorized')
+
+    # Get Attendance for today and tomorrow.
     now = datetime.datetime.now(IST)
     meals = ['Breakfast', 'Lunch', 'Snacks', 'Dinner']
     attendance_qset = MessAttendance.objects.all()
-    response_data = []
-    first = {}
-    activef = {}
-    second = {}
+    first = {}  # Today's attendance
+    activef = {}  # Today's meals boolean values to tell if the meal has finished
+    second = {}  # Tomorrow's attendance
     today = now.date()
     tomorrow = today + datetime.timedelta(days=1)
     qset = attendance_qset.filter(date=today)
@@ -800,7 +979,6 @@ def messHome(request):
         second[meals[j]] = attendance_entry
 
     # Chart Data
-    # num_days = calendar.monthrange(now.year, now.month)[1]
     date_start = now.date()
     date_end = date_start + datetime.timedelta(days=7)
     attendance_qset = MessAttendance.objects.filter(date__range=[date_start, date_end]).order_by('date')
@@ -809,10 +987,9 @@ def messHome(request):
     chart_data_lunch = dict()
     chart_data_snacks = dict()
     chart_data_dinner = dict()
-    labels = list() #To preserve the order of dates (increasing order) and not have to sort data again
+    labels = list()  # To preserve the order of dates (increasing order) and not have to sort data again
     for q in attendance_qset:
         dt = q.date.strftime('%d-%m-%Y')
-        # print(dt)
         if q.meal == 'Breakfast':
             if dt in chart_data_breakfast:
                 chart_data_breakfast[dt] += int(q.attending)
@@ -829,7 +1006,7 @@ def messHome(request):
                 chart_data_snacks[dt] += int(q.attending)
             else:
                 chart_data_snacks[dt] = int(q.attending)
-        else: #q.meal = 'Dinner'
+        else:  # q.meal = 'Dinner'
             if dt in chart_data_dinner:
                 chart_data_dinner[dt] += int(q.attending)
             else:
@@ -838,7 +1015,6 @@ def messHome(request):
     data_points_lunch = [chart_data_lunch[k] for k in labels]
     data_points_snacks = [chart_data_snacks[k] for k in labels]
     data_points_dinner = [chart_data_dinner[k] for k in labels]
-    # print(labels)
 
     response_data = {
         'user': user,
@@ -859,6 +1035,11 @@ def messHome(request):
 
 
 def MealDeadlinePage(request):
+    """
+    Function to handle the Meal Deadlines page.
+    :param request: Django Request object
+    :return: rendered HTML
+    """
     try:
         user = User.objects.get(username=request.user)
     except:
@@ -916,9 +1097,6 @@ def MealDeadlinePage(request):
 
         splDeadlineForm = MealDeadlineForm()
         splDeadlines = MealDeadline.objects.all()
-    # for meal in splDeadlines:
-    #     print(meal.occasion)
-    # print("dfvd jhv d", splDeadlines)
     args = {
         'user': user,
         'splDeadlineForm': splDeadlineForm,
@@ -929,6 +1107,12 @@ def MealDeadlinePage(request):
 
 
 def deleteMealDeadline(request, deadlineID):
+    """
+    Delete a special meal deadline entry/object
+    :param request: Django request object
+    :param deadlineID: remove deadline with this ID
+    :return: redirection to meal deadline page.
+    """
     try:
         user = User.objects.get(username=request.user)
     except:
@@ -941,13 +1125,17 @@ def deleteMealDeadline(request, deadlineID):
 
 
 def editMealDeadline(request):
+    """
+    [No longer in use] Special page for editing meal deadlines.
+    :param request:
+    :return:
+    """
     try:
         user = User.objects.get(username=request.user)
     except:
         raise Http404('Not authorized')
     if not (user.type == 'admin'):
         raise Http404('Not authorized')
-    # print("ummmm")
     if request.method == 'POST':
         form = MealDeadlineForm(request.POST)
         item = form.save(commit=False)
@@ -972,6 +1160,11 @@ def editMealDeadline(request):
 
 
 def defualtMealDeadline(request):
+    """
+    [No longer in use] Special page for editing default meal deadlines.
+    :param request:
+    :return:
+    """
     try:
         user = User.objects.get(username=request.user)
     except:
@@ -980,13 +1173,10 @@ def defualtMealDeadline(request):
         raise Http404('Not authorized')
     if request.method == 'POST':
         form = DefaultDeadlineForm(request.POST)
-        # print(form.data)
         item = {
             'meal': form.data['meal'],
             'hours': form.data['hours']
         }
-        # print('kjfvkdfns', request.POST)
-        # print(request.POST['meal'])
         try:
             deadline = DefaultDeadline.objects.get(meal=item['meal'])
             deadline.hours = item['hours']
@@ -1011,6 +1201,11 @@ def defualtMealDeadline(request):
 
 
 def listAttendees(request):
+    """
+    Generate and return the list of attendees for a date and meal specified in the form (on submission)
+    :param request: Django request.
+    :return: rendered HTML
+    """
     try:
         user = User.objects.get(username=request.user)
     except:
@@ -1029,35 +1224,23 @@ def listAttendees(request):
         form = AttendeesForm(data=request.POST)
         if form.is_valid():
             form_data['date'] = form.cleaned_data['date']
-            # print(type(date), 'type dateeeeeeeeeeee')
             form_data['meal'] = form.cleaned_data['meal']
-            qset = MessAttendance.objects.filter(date=form_data['date'] )
-            # print(qset)
+            qset = MessAttendance.objects.filter(date=form_data['date'])
             qset = qset.filter(meal=form_data['meal'])
-            # print(qset)
         else:
             raise Http404('bad data')
     list_attendees = []
-    # try:
-        # print("qsert:", qset)
     i = 0
     cnt = 0
     for q in qset:
-        # print(q.user.user.username, q.attending)
         cnt += 1
         if q.attending:
-            # print('q', q)
             tmp = dict()
-            i+=1
+            i += 1
             tmp['id'] = i
             tmp['name'] = q.user.user.name
             tmp['email'] = q.user.user.email
             list_attendees.append(tmp)
-    # except:
-    #     print('asdfghjk')
-    #     e = sys.exc_info()[0]
-    #     print(e)
-    #     pass
     pie_chart_data = [i, cnt]
     args = {
         'form': form,
@@ -1067,11 +1250,17 @@ def listAttendees(request):
         'form_date': form_data['date'],
         'form_meal': form_data['meal'],
     }
-    # print('list_ttendess', list_attendees)
     return render(request, 'Mess/list_attendees.html', args)
 
 
 def customListAttendees(request, meal, day):
+    """
+    Generate and show a list of attendees for the meal and day passed as parameters
+    :param request: Django request obj
+    :param meal: (int) 0 - Breakfast, 1 - Lunch, 2 - Snacks and 3 for Dinner.
+    :param day: (int) 0 for today, 1 for tomorrow.
+    :return: rendered HTML
+    """
     try:
         user = User.objects.get(username=request.user)
     except:
@@ -1090,7 +1279,6 @@ def customListAttendees(request, meal, day):
         raise Http404('Incorrect URL')
     date = datetime.datetime.now(IST).date()
     if day == '0' or day == 0:
-        # print('why')
         pass
     elif day == '1':
         date = date + datetime.timedelta(days=1)
@@ -1101,10 +1289,8 @@ def customListAttendees(request, meal, day):
     i = 0
     cnt = 0
     try:
-        # print("qsert:", qset)
         for q in qset:
             if q.attending:
-                # print('q', q)
                 tmp = dict()
                 i += 1
                 tmp['id'] = i
@@ -1113,8 +1299,6 @@ def customListAttendees(request, meal, day):
                 list_attendees.append(tmp)
             cnt += 1
     except:
-        e = sys.exc_info()[0]
-        # print(e)
         pass
     pie_chart_vars = [i, cnt]
     args = {
@@ -1128,6 +1312,11 @@ def customListAttendees(request, meal, day):
 
 
 def getMarkedAttendanceCurMonth(request):
+    """
+    Renders the webpage that shows number of attendees for each meal in the current month
+    :param request: Django request obj
+    :return: rendered HTML
+    """
     try:
         user = User.objects.get(username=request.user)
     except:
@@ -1138,22 +1327,29 @@ def getMarkedAttendanceCurMonth(request):
     response_data = dict()
     num_days = calendar.monthrange(now.year, now.month)[1]
     date_start = datetime.date(year=now.year, month=now.month, day=1)
-    date_end = date_start + datetime.timedelta(days=num_days)
+    date_end = date_start + datetime.timedelta(days=num_days-1)
     attendance_qset = MessAttendance.objects.filter(date__range=[date_start, date_end]).order_by('date')
     for q in attendance_qset:
         if q.date in response_data:
             response_data[q.date][q.meal] += int(q.attending)
-            # print(q.date, q.meal, q.user.user.username)
         else:
             response_data[q.date] = {'Date': q.date, 'Breakfast': 0, 'Lunch': 0, 'Snacks': 0, 'Dinner': 0}
             response_data[q.date][q.meal] += int(q.attending)
     response_data = {'response': response_data.values(), 'user': user}
+    # Rendered HTML is given the number of attendees as a list of dictionaries
+    # containing attendance counts for each meal for a given date.
     if user.type == 'admin':
         return render(request, 'Mess/attendance.html', response_data)
     return render(request, 'MessVendor/view_attendance.html', response_data)
 
 
 def getMarkedAttendancePrevMonth(request):
+    """
+    [DOES NOT HAVE CORRESPONDING WEBPAGE|No longer in use]
+    Renders the webpage that shows number of attendees for each meal in the coming month
+    :param request: Django request obj
+    :return: rendered HTML
+    """
     try:
         user = User.objects.get(username=request.user)
     except:
@@ -1181,6 +1377,11 @@ def getMarkedAttendancePrevMonth(request):
 
 
 def uploadAttendance(request):
+    """
+    Upload a csv containing today's attendance for a particular meal
+    :param request:
+    :return:
+    """
     try:
         user = User.objects.get(username=request.user)
     except:
@@ -1230,6 +1431,11 @@ def uploadAttendance(request):
 
 
 def listDefaulters(request):
+    """
+    Get the list of users whose marked attendance was incongruent with their physical attendance
+    :param request:
+    :return:
+    """
     try:
         user = User.objects.get(username=request.user)
     except:
@@ -1278,6 +1484,11 @@ def listDefaulters(request):
 
 
 def appFeedback(request):
+    """
+    Process App Feedbacks to be presented on the App Feedback page.
+    :param request: Django Request Object
+    :return: rendered HTML
+    """
     try:
         user = User.objects.get(username=request.user)
     except:
@@ -1293,6 +1504,12 @@ def appFeedback(request):
 
 
 def resolvedAppFeedback(request, feedback_id):
+    """
+    update the app feedback status to 'Resolved' for the specified feedback
+    :param request: Django request object
+    :param feedback_id: ID that has to be updated
+    :return: redirection to App Feedback webpage.
+    """
     try:
         user = User.objects.get(username=request.user)
     except:
@@ -1306,8 +1523,12 @@ def resolvedAppFeedback(request, feedback_id):
     return redirect('app-feedback')
 
 
-
 def viewFeedback(request):
+    """
+    View Mess Feedback.
+    :param request: Django Request Object.
+    :return: rendered HTML
+    """
     try:
         user = User.objects.get(username=request.user)
     except:
@@ -1323,6 +1544,12 @@ def viewFeedback(request):
 
 
 def penalise(request, feedbackid):
+    """
+    [No longer in use]
+    :param request:
+    :param feedbackid:
+    :return:
+    """
     try:
         user = User.objects.get(username=request.user)
     except:
@@ -1353,6 +1580,12 @@ def penalise(request, feedbackid):
 
 
 def approve(request, feedbackid):
+    """
+    Change status of a mess feedback object to 'Approved'
+    :param request: Django request obj
+    :param feedbackid: feedback id for which the status has to be updated
+    :return: redirection to Mess Feedback webpage.
+    """
     try:
         user = User.objects.get(username=request.user)
     except:
@@ -1366,6 +1599,12 @@ def approve(request, feedbackid):
 
 
 def maybe(request, feedbackid):
+    """
+    Let the person providing the feedback know that further communcation will be taken up via email.
+    :param request: Django request obj
+    :param feedbackid: feedback id for which the status has to be updated
+    :return: redirection to Mess Feedback webpage.
+    """
     try:
         user = User.objects.get(username=request.user)
     except:
@@ -1379,6 +1618,11 @@ def maybe(request, feedbackid):
 
 
 def viewUsers(request):
+    """
+    View all the users registered on the app.
+    :param request: Django Request Obj
+    :return: rendered HTML
+    """
     try:
         user = User.objects.get(username=request.user)
     except:
@@ -1390,6 +1634,13 @@ def viewUsers(request):
 
 
 def addData(request, user_id):
+    """
+    [CURRENTLY NOT IN USE]
+    for renewal of coupons to 20 coupons a month for a given user.
+    :param request: django request object
+    :param user_id: The user's id, requesting for renewal
+    :return: redirection to View Users page.
+    """
     user = User.objects.get(id=user_id)
     mess_user_qset = MessUser.objects.filter(user=user)
     if len(mess_user_qset) <= 0:
@@ -1401,8 +1652,6 @@ def addData(request, user_id):
         mess_user.lunch_coupons = 20
         mess_user.snacks_coupons = 20
         mess_user.dinner_coupons = 20
-    # print(user)
-    # print(mess_user.id)
     now = datetime.datetime.now(IST)
     date_today = datetime.date(now.year, now.month, now.day)
     num_days = calendar.monthrange(date_today.year, date_today.month)[1]
@@ -1419,6 +1668,12 @@ def addData(request, user_id):
 
 
 def deleteUser(request, user_id):
+    """
+    Delete the data for the specified user.
+    :param request: django request object
+    :param user_id: ID of the user whose data is to be deleted.
+    :return: redirection to View Users page.
+    """
     try:
         user = User.objects.get(username=request.user)
     except:
@@ -1430,6 +1685,12 @@ def deleteUser(request, user_id):
 
 
 def giveAdminRights(request, user_id):
+    """
+    Make the specified user an admin
+    :param request: django request object
+    :param user_id: ID of the user who is to be made admin
+    :return: redirection to View Users page.
+    """
     try:
         user = User.objects.get(username=request.user)
     except:
@@ -1443,6 +1704,12 @@ def giveAdminRights(request, user_id):
 
 
 def removeAdminRights(request, user_id):
+    """
+    Take away admin rights of a user
+    :param request: django request object
+    :param user_id: ID of the user who is to be removed as an admin
+    :return: redirection to View Users page.
+    """
     try:
         user = User.objects.get(username=request.user)
     except:
@@ -1456,6 +1723,12 @@ def removeAdminRights(request, user_id):
 
 
 def setMessMenu(request):
+    """
+    [No longer in use]
+    Webpage for uploading special (occasional) mess menu
+    :param request:
+    :return:
+    """
     try:
         user = User.objects.get(username=request.user)
     except:
@@ -1479,6 +1752,12 @@ def setMessMenu(request):
 
 
 def setDefaultMessMenu(request):
+    """
+    [No longer in use]
+    Webpage for uploading weekly mess menu
+    :param request:
+    :return:
+    """
     try:
         user = User.objects.get(username=request.user)
     except:
@@ -1491,9 +1770,7 @@ def setDefaultMessMenu(request):
         item = form.save(commit=False)
         try:
             item_entry = DefaultMessMenu.objects.get(day=item.day, meal=item.meal)
-            # print(item_entry, 'itemmmmm entryyyy')
             item_entry.items = item.items
-            # print(item_entry.items)
             item_entry.save()
         except:
             DefaultMessMenu.objects.update_or_create(
@@ -1509,6 +1786,11 @@ def setDefaultMessMenu(request):
 
 
 def adminViewMessMenu(request):
+    """
+    Processing data for View Menu Webpage
+    :param request: django request object
+    :return: rendered HTML
+    """
     try:
         user = User.objects.get(username=request.user)
     except:
@@ -1530,29 +1812,23 @@ def adminViewMessMenu(request):
         spl_menu = it.special_menu
         egg = it.contains_egg
         chi = it.contains_chicken
-        # print(it.day, it.meal, it.category, cat_veg, cat_egg, cat_chi)
         weekly_menu_table[it.day][tmp] = (it, form, spl_menu, egg, chi)
 
     # Search for Custom Menu - i.e. date wise
     if request.method == 'POST':
         form = DefaultMessMenuForm(data=request.POST)
-        # print(form.data)
         if form.is_valid():
             data = form.cleaned_data
-            # print(data)
             entry = DefaultMessMenu.objects.get(day=data['day'], meal=data['meal'])
             entry.items = data['items']
             entry.special_menu = data['special_menu']
             entry.contains_egg = data['contains_egg']
             entry.contains_chicken = data['contains_chicken']
             entry.save()
-            # print("something")
             return redirect('admin-view-mess-menu')
         else:
-            # print(form.errors)
             form2 = MessMenuForm(data=request.POST)
             if form2.is_valid():
-                # print("entered valid")
                 data = form2.cleaned_data
                 MessMenu.objects.update_or_create(
                     date=data['date'],
@@ -1571,19 +1847,13 @@ def adminViewMessMenu(request):
     return render(request, 'Mess/view_menu.html', args)
 
 
-def deleteDefaultMessMenuItem(request, itemid):
-    try:
-        user = User.objects.get(username=request.user)
-    except:
-        raise Http404('Not authorized')
-    if not user.type == 'admin':
-        raise Http404('Not authorized')
-    default_menu_entry = DefaultMessMenu.objects.get(id=itemid)
-    default_menu_entry.delete()
-    return redirect('admin-view-mess-menu')
-
-
 def deleteMessMenuItem(request, itemid):
+    """
+    Delete Mess Menu entry for a special Mess Menu
+    :param request: django request obj
+    :param itemid: id of the item to be deleted.
+    :return: redirection to view mess menu page.
+    """
     try:
         user = User.objects.get(username=request.user)
     except:
@@ -1595,7 +1865,7 @@ def deleteMessMenuItem(request, itemid):
     return redirect('admin-view-mess-menu')
 
 
-# _____________________________________Extra_______________________________
+# _____________________________________Extra - Random Functions_______________________________
 def renew(request):
     # users = User.objects.all()
     # for user in users:

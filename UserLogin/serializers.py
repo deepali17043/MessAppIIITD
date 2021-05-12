@@ -1,8 +1,6 @@
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import update_last_login
 from rest_framework import serializers
-from rest_framework.settings import api_settings
-from rest_framework.validators import UniqueTogetherValidator
 from .models import *
 
 
@@ -40,10 +38,20 @@ class UserSerializer(serializers.Serializer):
 
 
 class SignInSerializer(serializers.Serializer):
+    """
+    Serializer for sign in using Rest API
+    currently not in use
+    """
     username = serializers.CharField(max_length=255)
     password = serializers.CharField(style={'input_type': 'password'}, write_only=True)
 
     def validate(self, data):
+        """
+        validate if the data sent is correct or not.
+        :param data: request data containing username and password
+        :return: ValidationError if the data is not accurate,
+            dictionary containing the username and password otherwise.
+        """
         username = data.get("username", None)
 
         password = data.get("password", None)
@@ -71,6 +79,9 @@ class SignInSerializer(serializers.Serializer):
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
+    """
+    Serializer to register a new user using REST API
+    """
     validate_password = serializers.CharField(style={'input_type': 'password'}, write_only=True)
 
     class Meta:
@@ -81,6 +92,10 @@ class RegistrationSerializer(serializers.ModelSerializer):
         }
 
     def save(self):
+        """
+        Saves an instance of the validated data in the User Collection/Table
+        :return: saved User object
+        """
         user_account = User(
             username=self.validated_data['username'],
             name=self.validated_data['name'],
@@ -103,6 +118,9 @@ class MenuItemsSerializer(serializers.ModelSerializer):
         fields = ('vendor', 'price', 'itemName', 'hidden')
 
     def save(self):
+        """
+        :return: saved instance of MenuItems
+        """
         menu_item = MenuItems(
             vendor=self.validated_data['vendor'],
             price=self.validated_data['price'],
@@ -119,48 +137,74 @@ class CartSerializer(serializers.ModelSerializer):
 
 
 class MessUserSerializer(serializers.ModelSerializer):
+    """
+    Serialiser for MessUser
+    Send a serialised copy of the data using REST framework
+    to the mobile front end by using this serialiser
+    """
     class Meta:
         model = MessUser
         fields = ('breakfast_coupons', 'lunch_coupons', 'snacks_coupons', 'dinner_coupons')
 
 
 class MessAttendanceSerializer(serializers.ModelSerializer):
+    """
+    Used to return MessAttendance objects as response for API calls
+    """
     class Meta:
         model = MessAttendance
         fields = ('meal', 'date', 'attending', 'editable')
 
 
 class FeedbackSerializer(serializers.ModelSerializer):
+    """
+    Used to return Feedback objects (without the status field) as response for API calls
+    """
     class Meta:
         model = Feedback
         fields = ('meal', 'date', 'feedback')
 
 
 class FeedbackStatusSerializer(serializers.ModelSerializer):
+    """
+    Used to return Feedback objects (with status field) as response for API calls
+    """
     class Meta:
         model = Feedback
         fields = ('meal', 'date', 'feedback', 'status')
 
 
 class DateDefaultMessMenuSerializer(serializers.ModelSerializer):
+    """
+    Used to return DefaultMessMenu (without day) objects as response for API calls
+    """
     class Meta:
         model = DefaultMessMenu
         fields = ('meal', 'item')
 
 
 class DateMessMenuSerializer(serializers.ModelSerializer):
+    """
+    Used to return MessMenu objects as response for API calls
+    """
     class Meta:
         model = MessMenu
         fields = ('meal', 'items')
 
 
 class DefaultMessMenuSerializer(serializers.ModelSerializer):
+    """
+    Used to return DefaultMessMenu (with day) objects as response for API calls
+    """
     class Meta:
         model = DefaultMessMenu
         fields = ('day', 'meal', 'items')
 
 
 class AppFeedbackSerializer(serializers.ModelSerializer):
+    """
+    Used to return AppFeedback objects as response for API calls
+    """
     class Meta:
         model = AppFeedback
         fields = ('feedback', )
