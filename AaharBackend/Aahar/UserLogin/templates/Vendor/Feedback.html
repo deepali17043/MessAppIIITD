@@ -1,0 +1,52 @@
+{% load static %}
+<html>
+<head>
+    <title>Aahar | Order Feedback</title>
+    <link  rel= "stylesheet" type = "text/css" href = "{% static 'css/customer/cart_order_style.css' %}">
+</head>
+<body>
+    <div class="bar">
+        <div class="bar_content">
+            <img src="{% static 'img/Aahar.png' %}" class="logo">
+            <a href="{% url 'logout' %}">Logout</a>
+        </div>
+    </div>
+    <div class="back"><a href="{% url 'personalised-dashboard' %}">Back</a> </div>
+    <div class="main_box">
+        <div class="heading_post_order">
+            <h4>  </h4>
+        </div>
+        <div class="space"> </div>
+        <div class="row">
+            <div class="column">
+                <h2>Food item</h2>
+            </div>
+            <div class="column">
+                <h2>specification</h2>
+            </div>
+            <div class="column">
+                <h2>details</h2>
+            </div>
+            <div class="column">
+                <h2>by user</h2>
+            </div>
+        </div>
+        {% for i in feedback %}
+        <div class="row">
+            <div class ="column">
+                <p>{{i.order.item.itemName}}</p>
+            </div>
+            <div class="column">
+                <p>{{i.specification}}</p>
+            </div>
+            <div class="column">
+               <p>{{i.details}}</p>
+            </div>
+            <div class="column">
+                <p>{{i.user}}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html>

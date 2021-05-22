@@ -1,0 +1,41 @@
+{% load static %}
+<html>
+<head>
+    <title>Upload Menu</title>
+    <link  rel= "stylesheet" type = "text/css" href = "{% static 'css/vendor/add_item_style.css' %}">
+</head>
+<body>
+    <div class="bar">
+        <div class="bar_content">
+            <img src="{% static 'img/Aahar.png' %}" class="logo">
+            <a href="{% url 'logout' %}">Logout</a>
+        </div>
+    </div>
+    <div class="back">
+        <a href="{% url 'vendor-menu' %}">Back</a>
+    </div>
+    <div class="main_box_list">
+        <div class="remove_item_op"> <h4> Add Menu items </h4>
+        </div>
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <label for="file1"> <h5>Upload a file</h5></label>
+            <input type="file" id="file1" name="file"> <br>
+            <small>Only accepts CSV files</small>
+            <div class="upload_button">
+                <button type="submit">Upload</button>
+            </div>
+        </form>
+        <div class="instructions">
+            <h4>
+                Order of the (.csv) should be 'itemName', 'price'. <br>
+                All entries will be displayed by default.
+            </h4>
+        </div>
+
+    </div>
+
+    <div class = "item_name"> </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+
+{% load static %}
+{% load crispy_forms_tags %}
+
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta name="description" content="" />
+        <meta name="author" content="" />
+        <title>Aahar</title>
+        <link href="{% static 'dist/css/styles.css' %}" rel="stylesheet" />
+        <link href="https://cdn.datatables.net/1.10.20/css/dataTables.bootstrap4.min.css" rel="stylesheet" crossorigin="anonymous" />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js" crossorigin="anonymous"></script>
+    </head>
+    <body class="sb-nav-fixed">
+        <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
+            <button class="btn btn-link btn-sm order-1 order-lg-0" id="sidebarToggle" href="#"><i class="fas fa-bars"></i></button>
+
+            <!-- Navbar-->
+            <ul class="navbar-nav ml-auto ml-auto mr-0 mr-md-3 my-2 my-md-0">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" id="userDropdown" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-user fa-fw"></i></a>
+                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
+                        <a class="dropdown-item" href="{% url 'web-logout' %}">Logout</a>
+                    </div>
+                </li>
+            </ul>
+        </nav>
+        <div id="layoutSidenav">
+            <div id="layoutSidenav_nav">
+                <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
+                    <div class="sb-sidenav-menu">
+                        <div class="nav">
+                            <a class="nav-link" href="{% url 'mess-home'%}">
+                                <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
+                                Dashboard
+                            </a>
+                            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseLayouts" aria-expanded="false" aria-controls="collapseLayouts">
+                                <div class="sb-nav-link-icon"><i class="fas fa-columns"></i></div>
+                                Attendance
+                                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                            </a>
+                            <div class="collapse" id="collapseLayouts" aria-labelledby="headingOne" data-parent="#sidenavAccordion">
+                                <nav class="sb-sidenav-menu-nested nav">
+                                    <a class="nav-link" href="{% url 'mess-attendance-cur' %}">
+                                        <div class="sb-nav-link-icon"><i class="fas fa-check-square"></i></div>
+                                        Marked by users(current month)
+                                    </a>
+                                    <a class="nav-link" href="{% url 'upload-attendance' %}">
+                                        <div class="sb-nav-link-icon"><i class="fas fa-upload"></i></div>
+                                        Upload attendance
+                                    </a>
+                                    <a class="nav-link" href="{% url 'list-attendance' %}">
+                                        <div class="sb-nav-link-icon"><i class="fas fa-check-circle"></i></div>
+                                        List of Students Attending
+                                    </a>
+                                </nav>
+                            </div>
+                            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsePages" aria-expanded="false" aria-controls="collapsePages">
+                                <div class="sb-nav-link-icon"><i class="fas fa-book-open"></i></div>
+                                Menu & Timings
+                                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                            </a>
+                            <div id="collapsePages" aria-labelledby="headingTwo" data-parent="#sidenavAccordion">
+                                <nav class="sb-sidenav-menu-nested nav" id="sidenavAccordionPages">
+                                    <a class="nav-link active" href="{% url 'admin-view-mess-menu' %}">
+                                        <div class="sb-nav-link-icon"><i class="fas fa-book"></i></div>
+                                        View Menu
+                                    </a>
+                                    <a class="nav-link" href="{% url 'meal-deadline' %}">
+                                        <div class="sb-nav-link-icon"><i class="far fa-clock"></i></div>
+                                        Meal Deadlines
+                                    </a>
+                                    
+                                </nav>
+                            </div>
+                            <a class="nav-link" href="{% url 'list-defaulters' %}">
+                                <div class="sb-nav-link-icon"><i class="fas fa-list-ul"></i></div>
+                                Defaulters
+                            </a>
+                            <a class="nav-link" href="{% url 'mess-feedback' %}">
+                                <div class="sb-nav-link-icon"><i class="fas fa-chart-area"></i></div>
+                                Feedback
+                            </a>
+                            <a class="nav-link" href="{% url 'app-feedback' %}">
+                                <div class="sb-nav-link-icon"><i class="fas fa-tablet"></i></div>
+                                App Feedback
+                            </a>
+                            <a class="nav-link" href="{% url 'view-users' %}">
+                                <div class="sb-nav-link-icon"><i class="fas fa-list-ol"></i></div>
+                                View Users
+                            </a>
+                            <a class="nav-link" href="{% url 'web-logout' %}">
+                                <div class="sb-nav-link-icon"><i class="fas fa-user"></i></div>
+                                Logout
+                            </a>
+                        </div>
+                    </div>
+                    <div class="sb-sidenav-footer">
+                        <div class="small">Logged in as:</div>
+                        {{user.name}}
+                    </div>
+                </nav>
+            </div>
+            <div id="layoutSidenav_content">
+                <main>
+                    <div class="container-fluid">
+
+                        <div class="card shadow-lg border-0 rounded-lg mb-4 mt-5">
+                            <div class="card-header">
+                                <h3 class="text-center font-weight-light my-4">Weekly Menu</h3>
+                            </div>
+                            <div class="card-body">
+                                Please Note: &emsp;&emsp;&emsp;
+                                <i class="fa fa-leaf"></i> stands for <b>Special Menu Items</b> &emsp;&emsp;&emsp;<i class="fas fa-egg"></i> stands for <b>Contains Egg</b> &emsp;&emsp;&emsp;<i class="fas fa-drumstick-bite"></i> stands for <b>Contains Chicken</b>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered" id="dataTable0" width="100%" cellspacing="0" style="text-align:center; border: 2px solid black;">
+                                        <thead>
+                                            <tr style="background-color: #C0C0C0;">
+                                                <th width="10%" style="border: 2px solid black;">DAY</th>
+                                                <th width="25%" style="border: 2px solid black;">BREAKFAST</th>
+                                                <th width="25%" style="border: 2px solid black;">LUNCH</th>
+                                                <th width="15%" style="border: 2px solid black;">SNACKS</th>
+                                                <th width="25%" style="border: 2px solid black;">DINNER</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr style="background-color: #CCFFCC;">
+                                                <th style="background-color: #C0C0C0; border: 2px solid black;">MONDAY</th>
+                                                {% for en, form_mon, v, e, c in weekly_menu.Monday %}
+
+                                                <td>
+                                                    <button style="padding: 0;border: none;background: none;" type="button" data-toggle="modal" data-target="#Mon{{en.id}}" data-backdrop='static'>
+                                                        {{en.items}}
+                                                        {% if v %}
+                                                            <i class="fa fa-leaf"></i>
+                                                        {%endif%}
+                                                        {% if e %}
+                                                            <i class="fas fa-egg"></i>
+                                                        {%endif%}
+                                                        {% if c %}
+                                                            <i class="fas fa-drumstick-bite"></i>
+                                                        {%endif%}
+                                                    </button>
+                                                    <!-- Modal -->
+                                                    <div class="modal fade" id="Mon{{en.id}}" tabindex="-1" role="dialog" aria-labelledby="MonLabel{{en.id}}" aria-hidden="true">
+                                                        <div class="modal-dialog" role="document">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title" id="MonLabel{{en.id}}">Update Menu Items</h5>
+                                                                    <button class="close" type="button" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                                                                </div>
+                                                                <form method="POST" enctype="multipart/form-data">
+                                                                    {% csrf_token %}
+                                                                    <div class="modal-body text-left">
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4">
+                                                                                <label for="{{form_mon.day.id}}">Day: </label>
+                                                                            </div>
+                                                                            <div class="col-xl-4">
+                                                                                <input id="{{form_mon.day.id}}" type="text" name="day" value="{{en.day}}" readonly>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4">
+                                                                                <label for="{{form_mon.meal.id}}">Meal:</label>
+                                                                            </div>
+                                                                            <div class="col-xl-4">
+                                                                                <input id="{{form_mon.meal.id}}" type="text" name="meal" value="{{en.meal}}" readonly>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4">
+                                                                                <label for="{{form_mon.items.id}}">Items:</label>
+                                                                            </div>
+                                                                            <div class="col-xl-4">
+                                                                                <input id="{{form_mon.items.id}}" type="text" name="items" value="{{en.items}}">
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-8"><label>Check the ones that apply:</label></div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4 text-right">
+                                                                                {% if v %}
+                                                                                <input id="{{form_mon.special_menu.id}}" type="checkbox" name="special_menu" checked>
+                                                                                {% else %}
+                                                                                <input id="{{form_mon.special_menu.id}}" type="checkbox" name="special_menu">
+                                                                                {% endif %}
+                                                                            </div>
+                                                                            <div class="col-xl-8">
+                                                                                <label for="{{form_mon.special_menu.id}}"><i class="fa fa-leaf"></i> &emsp; Special Menu Items</label>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4 text-right">
+                                                                                {% if e %}
+                                                                                <input id="{{form_mon.contains_egg.id}}" type="checkbox" name="contains_egg" checked>
+                                                                                {% else %}
+                                                                                <input id="{{form_mon.contains_egg.id}}" type="checkbox" name="contains_egg">
+                                                                                {% endif %}
+                                                                            </div>
+                                                                            <div class="col-xl-8">
+                                                                                <label for="{{form_mon.contains_egg.id}}"><i class="fas fa-egg"></i> &emsp; Contains Egg</label>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4 text-right">
+                                                                                {% if c %}
+                                                                                <input id="{{form_mon.contains_chicken.id}}" type="checkbox" name="contains_chicken" checked>
+                                                                                {% else %}
+                                                                                <input id="{{form_mon.contains_chicken.id}}" type="checkbox" name="contains_chicken">
+                                                                                {% endif %}
+                                                                            </div>
+                                                                            <div class="col-xl-8">
+                                                                                <label for="{{form_mon.contains_chicken.id}}"><i class="fas fa-drumstick-bite"></i> &emsp; Contains Chicken</label>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="modal-footer">
+                                                                        <button class="btn btn-secondary" type="button" data-dismiss="modal">Close</button>
+                                                                        <button class="btn btn-primary" type="submit">Save changes</button>
+                                                                    </div>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                {% endfor %}
+                                            </tr>
+                                        </tbody>
+                                        <tbody>
+                                            <tr style="background-color:#FFE5CC; ">
+                                                <th style="background-color: #C0C0C0;border: 2px solid black;">TUESDAY</th>
+                                                {% for en, form_tue, v, e, c in weekly_menu.Tuesday %}
+                                                <td>
+                                                    <button style="padding: 0;border: none;background: none;" type="button" data-toggle="modal" data-target="#Tue{{en.id}}" data-backdrop='static'>
+                                                        {{en.items}}
+                                                        {% if v %}
+                                                            <i class="fa fa-leaf"></i>
+                                                        {%endif%}
+                                                        {% if e %}
+                                                            <i class="fas fa-egg"></i>
+                                                        {%endif%}
+                                                        {% if c %}
+                                                            <i class="fas fa-drumstick-bite"></i>
+                                                        {%endif%}
+                                                    </button>
+                                                    <!-- Modal -->
+                                                    <div class="modal fade" id="Tue{{en.id}}" tabindex="-1" role="dialog" aria-labelledby="TueLabel{{en.id}}" aria-hidden="true">
+                                                        <div class="modal-dialog" role="document">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title" id="TueLabel{{en.id}}">Update Menu Items</h5>
+                                                                    <button class="close" type="button" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                                                                </div>
+                                                                <form method="POST" enctype="multipart/form-data">
+                                                                    {% csrf_token %}
+                                                                    <div class="modal-body text-left">
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4">
+                                                                                <label for="{{form_tue.day.id}}">Day: </label>
+                                                                            </div>
+                                                                            <div class="col-xl-4">
+                                                                                <input id="{{form_tue.day.id}}" type="text" name="day" value="{{en.day}}" readonly>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4">
+                                                                                <label for="{{form_tue.meal.id}}">Meal:</label>
+                                                                            </div>
+                                                                            <div class="col-xl-4">
+                                                                                <input id="{{form_tue.meal.id}}" type="text" name="meal" value="{{en.meal}}" readonly>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4">
+                                                                                <label for="{{form_tue.items.id}}">Items:</label>
+                                                                            </div>
+                                                                            <div class="col-xl-4">
+                                                                                <input id="{{form_tue.items.id}}" type="text" name="items" value="{{en.items}}">
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-8"><label>Check the ones that apply:</label></div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4 text-right">
+                                                                                {% if v %}
+                                                                                <input id="{{form_tue.special_menu.id}}" type="checkbox" name="special_menu" checked>
+                                                                                {% else %}
+                                                                                <input id="{{form_tue.special_menu.id}}" type="checkbox" name="special_menu">
+                                                                                {% endif %}
+                                                                            </div>
+                                                                            <div class="col-xl-8">
+                                                                                <label for="{{form_tue.special_menu.id}}"><i class="fa fa-leaf"></i> &emsp; Special Menu Items</label>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4 text-right">
+                                                                                {% if e %}
+                                                                                <input id="{{form_tue.contains_egg.id}}" type="checkbox" name="contains_egg" checked>
+                                                                                {% else %}
+                                                                                <input id="{{form_tue.contains_egg.id}}" type="checkbox" name="contains_egg">
+                                                                                {% endif %}
+                                                                            </div>
+                                                                            <div class="col-xl-8">
+                                                                                <label for="{{form_tue.contains_egg.id}}"><i class="fas fa-egg"></i> &emsp; Contains Egg</label>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4 text-right">
+                                                                                {% if c %}
+                                                                                <input id="{{form_tue.contains_chicken.id}}" type="checkbox" name="contains_chicken" checked>
+                                                                                {% else %}
+                                                                                <input id="{{form_tue.contains_chicken.id}}" type="checkbox" name="contains_chicken">
+                                                                                {% endif %}
+                                                                            </div>
+                                                                            <div class="col-xl-8">
+                                                                                <label for="{{form_tue.contains_chicken.id}}"><i class="fas fa-drumstick-bite"></i> &emsp; Contains Chicken</label>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="modal-footer">
+                                                                        <button class="btn btn-secondary" type="button" data-dismiss="modal">Close</button>
+                                                                        <button class="btn btn-primary" type="submit">Save changes</button>
+                                                                    </div>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                {% endfor %}
+                                            </tr>
+                                        </tbody>
+                                        <tbody>
+                                            <tr style="background-color: #CCFFCC;">
+                                                <th style="background-color: #C0C0C0; border: 2px solid black;">WEDNESDAY</th>
+                                                {% for en, form_wed, v, e, c in weekly_menu.Wednesday %}
+
+                                                <td>
+                                                    <button style="padding: 0;border: none;background: none;" type="button" data-toggle="modal" data-target="#Wed{{en.id}}" data-backdrop='static'>
+                                                        {{en.items}}
+                                                        {% if v %}
+                                                            <i class="fa fa-leaf"></i>
+                                                        {%endif%}
+                                                        {% if e %}
+                                                            <i class="fas fa-egg"></i>
+                                                        {%endif%}
+                                                        {% if c %}
+                                                            <i class="fas fa-drumstick-bite"></i>
+                                                        {%endif%}
+                                                    </button>
+                                                    <!-- Modal -->
+                                                    <div class="modal fade" id="Wed{{en.id}}" tabindex="-1" role="dialog" aria-labelledby="WedLabel{{en.id}}" aria-hidden="true">
+                                                        <div class="modal-dialog" role="document">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title" id="WedLabel{{en.id}}">Update Menu Items</h5>
+                                                                    <button class="close" type="button" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                                                                </div>
+                                                                <form method="POST" enctype="multipart/form-data">
+                                                                    {% csrf_token %}
+                                                                    <div class="modal-body text-left">
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4">
+                                                                                <label for="{{form_wed.day.id}}">Day: </label>
+                                                                            </div>
+                                                                            <div class="col-xl-4">
+                                                                                <input id="{{form_wed.day.id}}" type="text" name="day" value="{{en.day}}" readonly>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4">
+                                                                                <label for="{{form_wed.meal.id}}">Meal:</label>
+                                                                            </div>
+                                                                            <div class="col-xl-4">
+                                                                                <input id="{{form_wed.meal.id}}" type="text" name="meal" value="{{en.meal}}" readonly>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4">
+                                                                                <label for="{{form_wed.items.id}}">Items:</label>
+                                                                            </div>
+                                                                            <div class="col-xl-4">
+                                                                                <input id="{{form_wed.items.id}}" type="text" name="items" value="{{en.items}}">
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-8"><label>Check the ones that apply:</label></div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4 text-right">
+                                                                                {% if v %}
+                                                                                <input id="{{form_wed.special_menu.id}}" type="checkbox" name="special_menu" checked>
+                                                                                {% else %}
+                                                                                <input id="{{form_wed.special_menu.id}}" type="checkbox" name="special_menu">
+                                                                                {% endif %}
+                                                                            </div>
+                                                                            <div class="col-xl-8">
+                                                                                <label for="{{form_wed.special_menu.id}}"><i class="fa fa-leaf"></i> &emsp; Special Menu Items</label>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4 text-right">
+                                                                                {% if e %}
+                                                                                <input id="{{form_wed.contains_egg.id}}" type="checkbox" name="contains_egg" checked>
+                                                                                {% else %}
+                                                                                <input id="{{form_wed.contains_egg.id}}" type="checkbox" name="contains_egg">
+                                                                                {% endif %}
+                                                                            </div>
+                                                                            <div class="col-xl-8">
+                                                                                <label for="{{form_wed.contains_egg.id}}"><i class="fas fa-egg"></i> &emsp; Contains Egg</label>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4 text-right">
+                                                                                {% if c %}
+                                                                                <input id="{{form_wed.contains_chicken.id}}" type="checkbox" name="contains_chicken" checked>
+                                                                                {% else %}
+                                                                                <input id="{{form_wed.contains_chicken.id}}" type="checkbox" name="contains_chicken">
+                                                                                {% endif %}
+                                                                            </div>
+                                                                            <div class="col-xl-8">
+                                                                                <label for="{{form_wed.contains_chicken.id}}"><i class="fas fa-drumstick-bite"></i> &emsp; Contains Chicken</label>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="modal-footer">
+                                                                        <button class="btn btn-secondary" type="button" data-dismiss="modal">Close</button>
+                                                                        <button class="btn btn-primary" type="submit">Save changes</button>
+                                                                    </div>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                {% endfor %}
+                                            </tr>
+                                        </tbody>
+                                        <tbody>
+                                            <tr style="background-color:#FFE5CC;">
+                                                <th style="background-color: #C0C0C0; border: 2px solid black;">THURSDAY</th>
+                                                {% for en, form_thurs, v, e, c in weekly_menu.Thursday %}
+                                                <td>
+                                                    <button style="padding: 0;border: none;background: none;" type="button" data-toggle="modal" data-target="#Thur{{en.id}}" data-backdrop='static'>
+                                                        {{en.items}}
+                                                        {% if v %}
+                                                            <i class="fa fa-leaf"></i>
+                                                        {%endif%}
+                                                        {% if e %}
+                                                            <i class="fas fa-egg"></i>
+                                                        {%endif%}
+                                                        {% if c %}
+                                                            <i class="fas fa-drumstick-bite"></i>
+                                                        {%endif%}
+                                                    </button>
+                                                    <!-- Modal -->
+                                                    <div class="modal fade" id="Thur{{en.id}}" tabindex="-1" role="dialog" aria-labelledby="ThurLabel{{en.id}}" aria-hidden="true">
+                                                        <div class="modal-dialog" role="document">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title" id="ThurLabel{{en.id}}">Update Menu Items</h5>
+                                                                    <button class="close" type="button" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                                                                </div>
+                                                                <form method="POST" enctype="multipart/form-data">
+                                                                    {% csrf_token %}
+                                                                    <div class="modal-body text-left">
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4">
+                                                                                <label for="{{form_thurs.day.id}}">Day: </label>
+                                                                            </div>
+                                                                            <div class="col-xl-4">
+                                                                                <input id="{{form_thurs.day.id}}" type="text" name="day" value="{{en.day}}" readonly>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4">
+                                                                                <label for="{{form_thurs.meal.id}}">Meal:</label>
+                                                                            </div>
+                                                                            <div class="col-xl-4">
+                                                                                <input id="{{form_thurs.meal.id}}" type="text" name="meal" value="{{en.meal}}" readonly>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4">
+                                                                                <label for="{{form_thurs.items.id}}">Items:</label>
+                                                                            </div>
+                                                                            <div class="col-xl-4">
+                                                                                <input id="{{form_thurs.items.id}}" type="text" name="items" value="{{en.items}}">
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-8"><label>Check the ones that apply:</label></div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4 text-right">
+                                                                                {% if v %}
+                                                                                <input id="{{form_thurs.special_menu.id}}" type="checkbox" name="special_menu" checked>
+                                                                                {% else %}
+                                                                                <input id="{{form_thurs.special_menu.id}}" type="checkbox" name="special_menu">
+                                                                                {% endif %}
+                                                                            </div>
+                                                                            <div class="col-xl-8">
+                                                                                <label for="{{form_thurs.special_menu.id}}"><i class="fa fa-leaf"></i> &emsp; Special Menu Items</label>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4 text-right">
+                                                                                {% if e %}
+                                                                                <input id="{{form_thurs.contains_egg.id}}" type="checkbox" name="contains_egg" checked>
+                                                                                {% else %}
+                                                                                <input id="{{form_thurs.contains_egg.id}}" type="checkbox" name="contains_egg">
+                                                                                {% endif %}
+                                                                            </div>
+                                                                            <div class="col-xl-8">
+                                                                                <label for="{{form_thurs.contains_egg.id}}"><i class="fas fa-egg"></i> &emsp; Contains Egg</label>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4 text-right">
+                                                                                {% if c %}
+                                                                                <input id="{{form_thurs.contains_chicken.id}}" type="checkbox" name="contains_chicken" checked>
+                                                                                {% else %}
+                                                                                <input id="{{form_thurs.contains_chicken.id}}" type="checkbox" name="contains_chicken">
+                                                                                {% endif %}
+                                                                            </div>
+                                                                            <div class="col-xl-8">
+                                                                                <label for="{{form_thurs.contains_chicken.id}}"><i class="fas fa-drumstick-bite"></i> &emsp; Contains Chicken</label>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="modal-footer">
+                                                                        <button class="btn btn-secondary" type="button" data-dismiss="modal">Close</button>
+                                                                        <button class="btn btn-primary" type="submit">Save changes</button>
+                                                                    </div>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                {% endfor %}
+                                            </tr>
+                                        </tbody>
+                                        <tbody>
+                                            <tr style="background-color: #CCFFCC;">
+                                                <th style="background-color: #C0C0C0; border: 2px solid black;">FRIDAY</th>
+                                                {% for en, form_fri, v, e, c in weekly_menu.Friday %}
+                                                <td>
+                                                    <button style="padding: 0;border: none;background: none;" type="button" data-toggle="modal" data-target="#Fri{{en.id}}" data-backdrop='static'>
+                                                        {{en.items}}
+                                                        {% if v %}
+                                                            <i class="fa fa-leaf"></i>
+                                                        {%endif%}
+                                                        {% if e %}
+                                                            <i class="fas fa-egg"></i>
+                                                        {%endif%}
+                                                        {% if c %}
+                                                            <i class="fas fa-drumstick-bite"></i>
+                                                        {%endif%}
+                                                    </button>
+                                                    <!-- Modal -->
+                                                    <div class="modal fade" id="Fri{{en.id}}" tabindex="-1" role="dialog" aria-labelledby="FriLabel{{en.id}}" aria-hidden="true">
+                                                        <div class="modal-dialog" role="document">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title" id="FriLabel{{en.id}}">Update Menu Items</h5>
+                                                                    <button class="close" type="button" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                                                                </div>
+                                                                <form method="POST" enctype="multipart/form-data">
+                                                                    {% csrf_token %}
+                                                                    <div class="modal-body text-left">
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4">
+                                                                                <label for="{{form_fri.day.id}}">Day: </label>
+                                                                            </div>
+                                                                            <div class="col-xl-4">
+                                                                                <input id="{{form_fri.day.id}}" type="text" name="day" value="{{en.day}}" readonly>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4">
+                                                                                <label for="{{form_fri.meal.id}}">Meal:</label>
+                                                                            </div>
+                                                                            <div class="col-xl-4">
+                                                                                <input id="{{form_fri.meal.id}}" type="text" name="meal" value="{{en.meal}}" readonly>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4">
+                                                                                <label for="{{form_fri.items.id}}">Items:</label>
+                                                                            </div>
+                                                                            <div class="col-xl-4">
+                                                                                <input id="{{form_fri.items.id}}" type="text" name="items" value="{{en.items}}">
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-8"><label>Check the ones that apply:</label></div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4 text-right">
+                                                                                {% if v %}
+                                                                                <input id="{{form_fri.special_menu.id}}" type="checkbox" name="special_menu" checked>
+                                                                                {% else %}
+                                                                                <input id="{{form_fri.special_menu.id}}" type="checkbox" name="special_menu">
+                                                                                {% endif %}
+                                                                            </div>
+                                                                            <div class="col-xl-8">
+                                                                                <label for="{{form_fri.special_menu.id}}"><i class="fa fa-leaf"></i> &emsp; Special Menu Items</label>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4 text-right">
+                                                                                {% if e %}
+                                                                                <input id="{{form_fri.contains_egg.id}}" type="checkbox" name="contains_egg" checked>
+                                                                                {% else %}
+                                                                                <input id="{{form_fri.contains_egg.id}}" type="checkbox" name="contains_egg">
+                                                                                {% endif %}
+                                                                            </div>
+                                                                            <div class="col-xl-8">
+                                                                                <label for="{{form_fri.contains_egg.id}}"><i class="fas fa-egg"></i> &emsp; Contains Egg</label>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4 text-right">
+                                                                                {% if c %}
+                                                                                <input id="{{form_fri.contains_chicken.id}}" type="checkbox" name="contains_chicken" checked>
+                                                                                {% else %}
+                                                                                <input id="{{form_fri.contains_chicken.id}}" type="checkbox" name="contains_chicken">
+                                                                                {% endif %}
+                                                                            </div>
+                                                                            <div class="col-xl-8">
+                                                                                <label for="{{form_fri.contains_chicken.id}}"><i class="fas fa-drumstick-bite"></i> &emsp; Contains Chicken</label>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="modal-footer">
+                                                                        <button class="btn btn-secondary" type="button" data-dismiss="modal">Close</button>
+                                                                        <button class="btn btn-primary" type="submit">Save changes</button>
+                                                                    </div>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                {% endfor %}
+                                            </tr>
+                                        </tbody>
+                                        <tbody>
+                                            <tr style="background-color:#FFE5CC;">
+                                                <th style="background-color: #C0C0C0;border: 2px solid black;">SATURDAY</th>
+                                                {% for en, form_sat, v, e, c in weekly_menu.Saturday %}
+                                                <td>
+                                                    <button style="padding: 0;border: none;background: none;" type="button" data-toggle="modal" data-target="#Sat{{en.id}}" data-backdrop='static'>
+                                                        {{en.items}}
+                                                        {% if v %}
+                                                            <i class="fa fa-leaf"></i>
+                                                        {%endif%}
+                                                        {% if e %}
+                                                            <i class="fas fa-egg"></i>
+                                                        {%endif%}
+                                                        {% if c %}
+                                                            <i class="fas fa-drumstick-bite"></i>
+                                                        {%endif%}
+                                                    </button>
+                                                    <!-- Modal -->
+                                                    <div class="modal fade" id="Sat{{en.id}}" tabindex="-1" role="dialog" aria-labelledby="SatLabel{{en.id}}" aria-hidden="true">
+                                                        <div class="modal-dialog" role="document">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title" id="SatLabel{{en.id}}">Update Menu Items</h5>
+                                                                    <button class="close" type="button" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                                                                </div>
+                                                                <form method="POST" enctype="multipart/form-data">
+                                                                    {% csrf_token %}
+                                                                    <div class="modal-body text-left">
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4">
+                                                                                <label for="{{form_sat.day.id}}">Day: </label>
+                                                                            </div>
+                                                                            <div class="col-xl-4">
+                                                                                <input id="{{form_sat.day.id}}" type="text" name="day" value="{{en.day}}" readonly>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4">
+                                                                                <label for="{{form_sat.meal.id}}">Meal:</label>
+                                                                            </div>
+                                                                            <div class="col-xl-4">
+                                                                                <input id="{{form_sat.meal.id}}" type="text" name="meal" value="{{en.meal}}" readonly>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4">
+                                                                                <label for="{{form_sat.items.id}}">Items:</label>
+                                                                            </div>
+                                                                            <div class="col-xl-4">
+                                                                                <input id="{{form_sat.items.id}}" type="text" name="items" value="{{en.items}}">
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-8"><label>Check the ones that apply:</label></div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4 text-right">
+                                                                                {% if v %}
+                                                                                <input id="{{form_sat.special_menu.id}}" type="checkbox" name="special_menu" checked>
+                                                                                {% else %}
+                                                                                <input id="{{form_sat.special_menu.id}}" type="checkbox" name="special_menu">
+                                                                                {% endif %}
+                                                                            </div>
+                                                                            <div class="col-xl-8">
+                                                                                <label for="{{form_sat.special_menu.id}}"><i class="fa fa-leaf"></i> &emsp; Special Menu Items</label>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4 text-right">
+                                                                                {% if e %}
+                                                                                <input id="{{form_sat.contains_egg.id}}" type="checkbox" name="contains_egg" checked>
+                                                                                {% else %}
+                                                                                <input id="{{form_sat.contains_egg.id}}" type="checkbox" name="contains_egg">
+                                                                                {% endif %}
+                                                                            </div>
+                                                                            <div class="col-xl-8">
+                                                                                <label for="{{form_sat.contains_egg.id}}"><i class="fas fa-egg"></i> &emsp; Contains Egg</label>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4 text-right">
+                                                                                {% if c %}
+                                                                                <input id="{{form_sat.contains_chicken.id}}" type="checkbox" name="contains_chicken" checked>
+                                                                                {% else %}
+                                                                                <input id="{{form_sat.contains_chicken.id}}" type="checkbox" name="contains_chicken">
+                                                                                {% endif %}
+                                                                            </div>
+                                                                            <div class="col-xl-8">
+                                                                                <label for="{{form_sat.contains_chicken.id}}"><i class="fas fa-drumstick-bite"></i> &emsp; Contains Chicken</label>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="modal-footer">
+                                                                        <button class="btn btn-secondary" type="button" data-dismiss="modal">Close</button>
+                                                                        <button class="btn btn-primary" type="submit">Save changes</button>
+                                                                    </div>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                {% endfor %}
+                                            </tr>
+                                        </tbody>
+                                        <tbody>
+                                            <tr style="background-color: #CCFFCC;">
+                                                <th style="background-color: #C0C0C0; border: 2px solid black;">SUNDAY</th>
+                                                {% for en, form_sun, v, e, c in weekly_menu.Sunday %}
+                                                <td>
+                                                    <button style="padding: 0;border: none;background: none;" type="button" data-toggle="modal" data-target="#Sun{{en.id}}" data-backdrop='static'>
+                                                        {{en.items}}
+                                                        {% if v %}
+                                                            <i class="fa fa-leaf"></i>
+                                                        {%endif%}
+                                                        {% if e %}
+                                                            <i class="fas fa-egg"></i>
+                                                        {%endif%}
+                                                        {% if c %}
+                                                            <i class="fas fa-drumstick-bite"></i>
+                                                        {%endif%}
+                                                    </button>
+                                                    <!-- Modal -->
+                                                    <div class="modal fade" id="Sun{{en.id}}" tabindex="-1" role="dialog" aria-labelledby="SunLabel{{en.id}}" aria-hidden="true">
+                                                        <div class="modal-dialog" role="document">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title" id="SunLabel{{en.id}}">Update Menu Items</h5>
+                                                                    <button class="close" type="button" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                                                                </div>
+                                                                <form method="POST" enctype="multipart/form-data">
+                                                                    {% csrf_token %}
+                                                                    <div class="modal-body text-left">
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4">
+                                                                                <label for="{{form_sun.day.id}}">Day: </label>
+                                                                            </div>
+                                                                            <div class="col-xl-4">
+                                                                                <input id="{{form_sun.day.id}}" type="text" name="day" value="{{en.day}}" readonly>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4">
+                                                                                <label for="{{form_sun.meal.id}}">Meal:</label>
+                                                                            </div>
+                                                                            <div class="col-xl-4">
+                                                                                <input id="{{form_sun.meal.id}}" type="text" name="meal" value="{{en.meal}}" readonly>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4">
+                                                                                <label for="{{form_sun.items.id}}">Items:</label>
+                                                                            </div>
+                                                                            <div class="col-xl-4">
+                                                                                <input id="{{form_sun.items.id}}" type="text" name="items" value="{{en.items}}">
+                                                                            </div>
+                                                                        </div>
+
+                                                                        <div class="row">
+                                                                            <div class="col-xl-8"><label>Check the ones that apply:</label></div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4 text-right">
+                                                                                {% if v %}
+                                                                                <input id="{{form_sun.special_menu.id}}" type="checkbox" name="special_menu" checked>
+                                                                                {% else %}
+                                                                                <input id="{{form_sun.special_menu.id}}" type="checkbox" name="special_menu">
+                                                                                {% endif %}
+                                                                            </div>
+                                                                            <div class="col-xl-8">
+                                                                                <label for="{{form_sun.special_menu.id}}"><i class="fa fa-leaf"></i> &emsp; Special Menu Items</label>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4 text-right">
+                                                                                {% if e %}
+                                                                                <input id="{{form_sun.contains_egg.id}}" type="checkbox" name="contains_egg" checked>
+                                                                                {% else %}
+                                                                                <input id="{{form_sun.contains_egg.id}}" type="checkbox" name="contains_egg">
+                                                                                {% endif %}
+                                                                            </div>
+                                                                            <div class="col-xl-8">
+                                                                                <label for="{{form_sun.contains_egg.id}}"><i class="fas fa-egg"></i> &emsp; Contains Egg</label>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-xl-4 text-right">
+                                                                                {% if c %}
+                                                                                <input id="{{form_sun.contains_chicken.id}}" type="checkbox" name="contains_chicken" checked>
+                                                                                {% else %}
+                                                                                <input id="{{form_sun.contains_chicken.id}}" type="checkbox" name="contains_chicken">
+                                                                                {% endif %}
+                                                                            </div>
+                                                                            <div class="col-xl-8">
+                                                                                <label for="{{form_sun.contains_chicken.id}}"><i class="fas fa-drumstick-bite"></i> &emsp; Contains Chicken</label>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="modal-footer">
+                                                                        <button class="btn btn-secondary" type="button" data-dismiss="modal">Close</button>
+                                                                        <button class="btn btn-primary" type="submit">Save changes</button>
+                                                                    </div>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                {% endfor %}
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card shadow-lg border-0 rounded-lg mb-4" style="width:100%;">
+                            <div class="card-header">
+                                <h3 class="text-center font-weight-light my-4">Special Mess Menu</h3>
+                                <button class="btn btn-primary" type="button" data-toggle="modal" data-target="#AddEntryModal" data-backdrop='static'  style="float: right;">
+                                    <i class="fa fa-plus" aria-hidden="true"></i> Add Entry
+                                </button>
+                                <!-- Modal -->
+                                <div class="modal fade" id="AddEntryModal" tabindex="-1" role="dialog" aria-labelledby="AddEntryLabel" aria-hidden="true">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="AddEntryLabel">Add New Special Menu Items Entry</h5>
+                                                <button class="close" type="button" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                                            </div>
+                                            <form  method="POST" enctype="multipart/form-data">
+                                                {% csrf_token %}
+                                                <div class="modal-body text-left">
+                                                    <div class="row">
+                                                        <div class="col-xl-4">
+                                                            <label for="{{form2.date.id}}">Date:</label>
+                                                        </div>
+                                                        <div class="col-xl-4">
+                                                            <input id="{{form2.date.id}}" type="date" name="date" >
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-xl-4">
+                                                            <label for="{{form2.meal.id}}">Meal:</label>
+                                                        </div>
+                                                        <div class="col-xl-4">
+                                                            <input id="{{form2.meal.id}}" type="select" name="meal" list="meal">
+                                                            <datalist id="meal">
+                                                              <option value="Breakfast">
+                                                              <option value="Lunch">
+                                                              <option value="Snacks">
+                                                              <option value="Dinner">
+                                                            </datalist>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-xl-4">
+                                                            <label for="{{form2.occasion.id}}">Occasion:</label>
+                                                        </div>
+                                                        <div class="col-xl-4">
+                                                            <input id="{{form2.occasion.id}}" type="text" name="occasion">
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-xl-4">
+                                                            <label for="{{form2.items.id}}">Items:</label>
+                                                        </div>
+                                                        <div class="col-xl-4">
+                                                            <input id="{{form2.items.id}}" type="text" name="items">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Close</button>
+                                                    <button class="btn btn-primary" type="submit">Save changes</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0" style="text-align:center;">
+                                    <thead data-orderable="false">
+                                        <tr style="background-color: #C0C0C0;">
+                                            <th data-orderable="false" style="border: 1px solid black;">DATE</th>
+                                            <th data-orderable="false" style="border: 1px solid black;">MEAL</th>
+                                            <th data-orderable="false" style="border: 1px solid black;">OCCASION</th>
+                                            <th data-orderable="false" style="border: 1px solid black;">ITEMS</th>
+                                            <td data-orderable="false" style="border: 1px solid black;"></td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for en in list %}
+                                        <tr>
+                                            <td>{{en.date}}</td>
+                                            <td>{{en.meal}}</td>
+                                            <td>{{en.occasion}}</td>
+                                            <td>{{en.items}} </td>
+                                            <td><a href="{% url 'del-mess-menu' itemid=en.id%}"><i class="far fa-trash-alt"></i></a></td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+                <footer class="py-4 bg-light mt-auto">
+                    <div class="container-fluid">
+                        <div class="d-flex align-items-center justify-content-between small">
+                            <div class="text-muted">Copyright &copy; MIDAS 2021</div>
+<!--                            <div>-->
+<!--                                <a href="#">Privacy Policy</a>-->
+<!--                                &middot;-->
+<!--                                <a href="#">Terms &amp; Conditions</a>-->
+<!--                            </div>-->
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </div>
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+        <script src="{% static 'dist/js/scripts.js' %}"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js" crossorigin="anonymous"></script>
+        <script src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js" crossorigin="anonymous"></script>
+        <script src="https://cdn.datatables.net/1.10.20/js/dataTables.bootstrap4.min.js" crossorigin="anonymous"></script>
+        <script src="{% static 'dist/assets/demo/datatables-demo.js' %}"></script>
+    </body>
+</html>

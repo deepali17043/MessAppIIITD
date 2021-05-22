@@ -1,0 +1,80 @@
+{% load static %}
+<html>
+<head>
+    <title> Home | Vendor </title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=width-device, initial-scale=1.0">
+    <link  rel= "stylesheet" type = "text/css" href = "{% static 'css/dashboard_style.css' %}">
+</head>
+<body>
+    <div class="bar">
+        <div class="bar_content">
+            <img src="{% static 'img/Aahar.png' %}" class="logo">
+            <a href="{% url 'logout' %}">Logout</a>
+        </div>
+    </div>
+    <div class="heading">
+        <h1>Hi, {{request.user.name}}!</h1>
+    </div>
+    <div class="vendors_dashboard">
+        <div class="menu_options">
+            <a href="{% url 'vendor-menu' %}">
+                <img src="{% static 'img/MenuOptions.png' %}" class="menu_icon">
+                <h3>Menu Options</h3>
+            </a>
+        </div>
+        <div class="feedback">
+            <a href="{% url 'vendor-feedback' %}">
+                <img src="{% static 'img/Feedback.png' %}" class="feedback_icon">
+                <h3> Feedback</h3>
+            </a>
+        </div>
+        <div class="fines">
+            <a href="{% url 'vendor-fines' %}">
+                <img src="{% static 'img/Fines.png' %}" class="fines_icon">
+                <h3> Fines</h3>
+            </a>
+        </div>
+        <div class="profile">
+            <a href="{% url 'vendor-profile' %}">
+                <img src="{% static 'img/Profile.png' %}" class="profile_icon">
+                <h3>Profile</h3>
+            </a>
+        </div>
+        <div class="settings">
+            <a href="{% url 'vendor-settings' %}">
+                <img src="{% static 'img/Settings.png' %}" class="settings_icon">
+                <h3> Settings</h3>
+            </a>
+        </div>
+    </div>
+    <div class="vendor_orders">
+        <div class="heading_orders"> <h4> Orders </h4> </div>
+        <div class = "vendor_order_table">
+            <table class="content-table">
+                <thead>
+                    <tr>
+                        <th>Customer Name</th>
+                        <th>Food Item</th>
+                        <th>Quantity</th>
+                        <th>Status</th>
+                        <th>Update Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr>
+                        <td>{{order.customer.name}}</td>
+                        <td>{{order.item.itemName}}</td>
+                        <td>{{order.qty}}</td>
+                        <td>{{order.status}}</td>
+                        <td><a href="{% url 'update-order-status' cartItemId=order.id %}">update status</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+              </table>
+        </div>
+    </div>
+</body>
+</html>
+

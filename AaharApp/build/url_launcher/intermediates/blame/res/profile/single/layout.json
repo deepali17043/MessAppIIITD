@@ -1,0 +1,26 @@
+[
+    {
+        "merged": "/Users/shauryasingh/Downloads/AaharApp/build/url_launcher/intermediates/res/merged/profile/layout/notification_action_tombstone.xml",
+        "source": "/Users/shauryasingh/.gradle/caches/transforms-2/files-2.1/6cdf211888e0a7ccbf81d39b63072413/core-1.1.0/res/layout/notification_action_tombstone.xml"
+    },
+    {
+        "merged": "/Users/shauryasingh/Downloads/AaharApp/build/url_launcher/intermediates/res/merged/profile/layout/notification_action.xml",
+        "source": "/Users/shauryasingh/.gradle/caches/transforms-2/files-2.1/6cdf211888e0a7ccbf81d39b63072413/core-1.1.0/res/layout/notification_action.xml"
+    },
+    {
+        "merged": "/Users/shauryasingh/Downloads/AaharApp/build/url_launcher/intermediates/res/merged/profile/layout/notification_template_part_chronometer.xml",
+        "source": "/Users/shauryasingh/.gradle/caches/transforms-2/files-2.1/6cdf211888e0a7ccbf81d39b63072413/core-1.1.0/res/layout/notification_template_part_chronometer.xml"
+    },
+    {
+        "merged": "/Users/shauryasingh/Downloads/AaharApp/build/url_launcher/intermediates/res/merged/profile/layout/custom_dialog.xml",
+        "source": "/Users/shauryasingh/.gradle/caches/transforms-2/files-2.1/6cdf211888e0a7ccbf81d39b63072413/core-1.1.0/res/layout/custom_dialog.xml"
+    },
+    {
+        "merged": "/Users/shauryasingh/Downloads/AaharApp/build/url_launcher/intermediates/res/merged/profile/layout/notification_template_icon_group.xml",
+        "source": "/Users/shauryasingh/.gradle/caches/transforms-2/files-2.1/6cdf211888e0a7ccbf81d39b63072413/core-1.1.0/res/layout/notification_template_icon_group.xml"
+    },
+    {
+        "merged": "/Users/shauryasingh/Downloads/AaharApp/build/url_launcher/intermediates/res/merged/profile/layout/notification_template_part_time.xml",
+        "source": "/Users/shauryasingh/.gradle/caches/transforms-2/files-2.1/6cdf211888e0a7ccbf81d39b63072413/core-1.1.0/res/layout/notification_template_part_time.xml"
+    }
+]

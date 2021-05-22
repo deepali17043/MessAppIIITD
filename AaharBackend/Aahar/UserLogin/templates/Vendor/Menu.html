@@ -1,0 +1,47 @@
+{% load static %}
+<html>
+<head>
+    <title> Menu | Vendor </title>
+    <link  rel= "stylesheet" type = "text/css" href = "{% static 'css/vendor/menu_style.css' %}">
+</head>
+<body>
+    <div class="bar">
+        <div class="bar_content">
+            <img src="{% static 'img/Aahar.png' %}" class="logo">
+            <a href="{% url 'logout' %}">Logout</a>
+        </div>
+    </div>
+    <div class="vendor_menu_back">
+        <a href="{% url 'personalised-dashboard' %}">Back</a>
+    </div>
+    <div class= "menu_buttons">
+        <button id = "add_item"> <a href="{% url 'add-item' %}"> Add Item </a> </button>
+        <button id = "upload_list" ><a href="{% url 'add-items' %}"> Upload Menu </a></button>
+        <button id = "remove_item"><a href="{% url 'remove-item' %}"> Remove Item </a></button>
+        <button id = "hide_item" > <a href="{% url 'hide-item' %}"> Hide Item </a></button>
+        <button id = "unhide_item" > <a href="{% url 'un-hide-item' %}"> Unhide Item </a></button>
+    </div>
+        <div class="vendor_menu_main_box">
+            <h4> Current Menu</h4>
+            <div class = "table">
+                <table class="content-table">
+                    <thead>
+                        <tr>
+                            <th>Food Item</th>
+                            <th>Price</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in menu %}
+                        <tr>
+                            <td>{{item.itemName}}</td>
+                            <td>Rs. {{item.price}}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+</body>
+</html>
+

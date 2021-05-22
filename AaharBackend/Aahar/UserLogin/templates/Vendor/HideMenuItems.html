@@ -1,0 +1,44 @@
+{% load static %}
+<html>
+<head>
+    <title>Aahar | Menu Options</title>
+    <link  rel= "stylesheet" type = "text/css" href = "{% static 'css/vendor/menu_style.css' %}">
+</head>
+<body>
+    <div class="bar">
+        <div class="bar_content">
+            <img src="{% static 'img/Aahar.png' %}" class="logo">
+            <a href="{% url 'logout' %}">Logout</a>
+        </div>
+    </div>
+    <div class="back">
+        <a href="{% url 'vendor-menu' %}">Back</a>
+    </div>
+    <div class="main_box">
+        <div class="remove_item_op"> <h4> Hide items from Menu </h4> </div>
+        <div class = "table">
+            <table class="content-table">
+                <thead>
+                <tr>
+                    <th>Food Item</th>
+                    <th>Price</th>
+                    <th></th>
+                    <!-- <th> Remove</th> -->
+                </tr>
+                </thead>
+                <tbody>
+                {% for i in menu %}
+                <tr>
+                    <td>{{i.itemName}}</td>
+                    <td>Rs. {{i.price}}</td>
+                    <td>
+                        <a href="{% url 'hide-item' %}{{i.id}}">Hide</a> <br>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+              </table>
+        </div>
+    </div>
+</body>
+</html>

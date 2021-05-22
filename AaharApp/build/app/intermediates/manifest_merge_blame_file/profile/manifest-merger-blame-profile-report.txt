@@ -1,0 +1,78 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.example.Aahar"
+4    android:versionCode="1"
+5    android:versionName="1.0.0" >
+6
+7    <uses-sdk
+8        android:minSdkVersion="16"
+9        android:targetSdkVersion="30" />
+10    <!--
+11         Flutter needs it to communicate with the running application
+12         to allow setting breakpoints, to provide hot reload, etc.
+13    -->
+14    <uses-permission android:name="android.permission.INTERNET" />
+14-->/Users/shauryasingh/Downloads/AaharApp/android/app/src/main/AndroidManifest.xml:9:5-66
+14-->/Users/shauryasingh/Downloads/AaharApp/android/app/src/main/AndroidManifest.xml:9:22-64
+15
+16    <application
+16-->/Users/shauryasingh/Downloads/AaharApp/android/app/src/main/AndroidManifest.xml:11:5-34:19
+17        android:name="io.flutter.app.FlutterApplication"
+17-->/Users/shauryasingh/Downloads/AaharApp/android/app/src/main/AndroidManifest.xml:12:9-57
+18        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+18-->[androidx.core:core:1.1.0] /Users/shauryasingh/.gradle/caches/transforms-2/files-2.1/6cdf211888e0a7ccbf81d39b63072413/core-1.1.0/AndroidManifest.xml:24:18-86
+19        android:debuggable="true"
+20        android:icon="@mipmap/ic_launcher"
+20-->/Users/shauryasingh/Downloads/AaharApp/android/app/src/main/AndroidManifest.xml:14:9-43
+21        android:label="Aahar" >
+21-->/Users/shauryasingh/Downloads/AaharApp/android/app/src/main/AndroidManifest.xml:13:9-30
+22        <activity
+22-->/Users/shauryasingh/Downloads/AaharApp/android/app/src/main/AndroidManifest.xml:15:9-33:20
+23            android:name="com.example.Aahar.MainActivity"
+23-->/Users/shauryasingh/Downloads/AaharApp/android/app/src/main/AndroidManifest.xml:16:13-41
+24            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+24-->/Users/shauryasingh/Downloads/AaharApp/android/app/src/main/AndroidManifest.xml:19:13-144
+25            android:hardwareAccelerated="true"
+25-->/Users/shauryasingh/Downloads/AaharApp/android/app/src/main/AndroidManifest.xml:20:13-47
+26            android:launchMode="singleTop"
+26-->/Users/shauryasingh/Downloads/AaharApp/android/app/src/main/AndroidManifest.xml:17:13-43
+27            android:theme="@style/LaunchTheme"
+27-->/Users/shauryasingh/Downloads/AaharApp/android/app/src/main/AndroidManifest.xml:18:13-47
+28            android:windowSoftInputMode="adjustResize" >
+28-->/Users/shauryasingh/Downloads/AaharApp/android/app/src/main/AndroidManifest.xml:21:13-55
+29
+30            <!--
+31                 This keeps the window background of the activity showing
+32                 until Flutter renders its first frame. It can be removed if
+33                 there is no splash screen (such as the default splash screen
+34                 defined in @style/LaunchTheme).
+35            -->
+36            <meta-data
+36-->/Users/shauryasingh/Downloads/AaharApp/android/app/src/main/AndroidManifest.xml:26:13-28:40
+37                android:name="io.flutter.app.android.SplashScreenUntilFirstFrame"
+37-->/Users/shauryasingh/Downloads/AaharApp/android/app/src/main/AndroidManifest.xml:27:17-82
+38                android:value="true" />
+38-->/Users/shauryasingh/Downloads/AaharApp/android/app/src/main/AndroidManifest.xml:28:17-37
+39
+40            <intent-filter>
+40-->/Users/shauryasingh/Downloads/AaharApp/android/app/src/main/AndroidManifest.xml:29:13-32:29
+41                <action android:name="android.intent.action.MAIN" />
+41-->/Users/shauryasingh/Downloads/AaharApp/android/app/src/main/AndroidManifest.xml:30:17-68
+41-->/Users/shauryasingh/Downloads/AaharApp/android/app/src/main/AndroidManifest.xml:30:25-66
+42
+43                <category android:name="android.intent.category.LAUNCHER" />
+43-->/Users/shauryasingh/Downloads/AaharApp/android/app/src/main/AndroidManifest.xml:31:17-76
+43-->/Users/shauryasingh/Downloads/AaharApp/android/app/src/main/AndroidManifest.xml:31:27-74
+44            </intent-filter>
+45        </activity>
+46        <activity
+46-->[:url_launcher] /Users/shauryasingh/Downloads/AaharApp/build/url_launcher/intermediates/library_manifest/profile/AndroidManifest.xml:8:9-11:74
+47            android:name="io.flutter.plugins.urllauncher.WebViewActivity"
+47-->[:url_launcher] /Users/shauryasingh/Downloads/AaharApp/build/url_launcher/intermediates/library_manifest/profile/AndroidManifest.xml:9:13-74
+48            android:exported="false"
+48-->[:url_launcher] /Users/shauryasingh/Downloads/AaharApp/build/url_launcher/intermediates/library_manifest/profile/AndroidManifest.xml:10:13-37
+49            android:theme="@android:style/Theme.NoTitleBar.Fullscreen" />
+49-->[:url_launcher] /Users/shauryasingh/Downloads/AaharApp/build/url_launcher/intermediates/library_manifest/profile/AndroidManifest.xml:11:13-71
+50    </application>
+51
+52</manifest>

@@ -1,0 +1,27 @@
+{% load static %}
+<html>
+<head>
+    <title> Aahar | Menu Options </title>
+    <link  rel= "stylesheet" type = "text/css" href = "{% static 'css/vendor/menu_style.css' %}">
+</head>
+<body>
+    <div class="bar">
+        <div class="bar_content">
+            <img src="{% static 'img/Aahar.png' %}" class="logo">
+            <a href="{% url 'logout' %}">Logout</a>
+        </div>
+    </div>
+    <div class="back">
+        <a href="{% url 'vendor-menu' %}">Back</a>
+    </div>
+    <div class="main_box">
+        <div class="remove_item_op"> <h4> Add Menu item </h4> </div>
+        <form method="POST">
+            {% csrf_token %}
+            {{form.as_p}}
+            <button type="submit">Add</button>
+        </form>
+    </div>
+    <div class = "item_name"> </div>
+</body>
+</html>
